@@ -1,12 +1,27 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Upload-key credentials. android/key.properties and the keystore it points at
+// are never committed (handbook rule 31). Without it, release builds fall back
+// to debug keys so `flutter run --release` still works locally; a store build
+// must have it, or Play will reject the bundle as debug-signed.
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        keystorePropertiesFile.inputStream().use(::load)
+    }
+}
+val hasReleaseKeystore = keystorePropertiesFile.exists()
+
 android {
-    namespace = "shop.atompay.app"
+    namespace = "com.ecommerce.atompay"
     compileSdk = flutter.compileSdkVersion
+    // Overridden for every Android subproject in android/build.gradle.kts.
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -15,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "shop.atompay.app"
+        applicationId = "com.ecommerce.atompay"
         // Android 8+ (handbook §1.7).
         minSdk = 26
         targetSdk = flutter.targetSdkVersion
@@ -49,11 +64,25 @@ android {
         }
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO(release): real signing config from android/key.properties (never committed).
-            // Debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                // Local release testing only. Never upload a bundle built this way.
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

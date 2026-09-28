@@ -1,0 +1,15 @@
+# Copy to android/key.properties and fill in. NEVER commit the real file or the
+# keystore it points at (handbook rule 31; both are gitignored).
+#
+# Generate an upload keystore:
+#   keytool -genkey -v -keystore ~/atompay-upload.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Keep the .jks and these passwords safe and backed up. If Play App Signing is
+# enabled this is the *upload* key, which Google can reset; without it, losing
+# the key means you can never update the listing again.
+
+storeFile=/absolute/path/to/atompay-upload.jks
+storePassword=
+keyAlias=upload
+keyPassword=
