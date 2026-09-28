@@ -1,4 +1,4 @@
-package shop.atompay.app
+package com.ecommerce.atompay
 
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
@@ -10,7 +10,7 @@ class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         // FLAG_SECURE on KYC screens: no screenshots, blank recents preview.
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "shop.atompay.app/secure")
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.ecommerce.atompay/secure")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "setSecure" -> {

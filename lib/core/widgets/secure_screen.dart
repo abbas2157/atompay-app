@@ -16,7 +16,7 @@ class SecureScreen extends StatefulWidget {
 
   final Widget child;
 
-  static const _channel = MethodChannel('shop.atompay.app/secure');
+  static const _channel = MethodChannel('com.ecommerce.atompay/secure');
   static int _active = 0;
 
   static Future<void> _set({required bool secure}) async {

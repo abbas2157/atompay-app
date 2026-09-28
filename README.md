@@ -42,8 +42,8 @@ flutter test
 
 | Flavour | Android `applicationId` |
 |---|---|
-| dev | `shop.atompay.app.dev` |
-| staging | `shop.atompay.app.staging` |
-| prod | `shop.atompay.app` |
+| dev | `com.ecommerce.atompay.dev` |
+| staging | `com.ecommerce.atompay.staging` |
+| prod | `com.ecommerce.atompay` |
 
-iOS bundle id is `shop.atompay.app`. iOS flavours (schemes + xcconfigs) still need to be set up on a Mac.
+iOS bundle id is `com.ecommerce.atompay`. iOS flavours (schemes + xcconfigs) still need to be set up on a Mac.
