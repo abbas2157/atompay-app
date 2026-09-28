@@ -237,7 +237,7 @@ void main() {
   ) async {
     final calls = <bool>[];
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('shop.atompay.app/secure'),
+      const MethodChannel('com.ecommerce.atompay/secure'),
       (call) async {
         calls.add(call.arguments as bool);
         return null;
