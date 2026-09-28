@@ -10,7 +10,7 @@ The full spec (product, architecture, design, screens, rules, tasks, API) is
 ```sh
 flutter pub get
 flutter gen-l10n
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
 Generated files (`*.g.dart`, `*.freezed.dart`, `lib/l10n/gen/`) are not committed. CI generates them.
