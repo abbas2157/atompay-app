@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand "nucleus" (handbook §4.1): icon background and launch screen. -->
+    <color name="nucleus">#050708</color>
+</resources>
