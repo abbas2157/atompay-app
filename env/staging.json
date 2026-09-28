@@ -1,0 +1,4 @@
+{
+  "FLAVOR": "staging",
+  "API_BASE_URL": "https://staging.atompay.shop/api/v1"
+}

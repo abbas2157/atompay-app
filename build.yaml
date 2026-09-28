@@ -1,0 +1,8 @@
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          # API JSON is snake_case, Dart is camelCase (handbook §3.2).
+          field_rename: snake
+          explicit_to_json: true
