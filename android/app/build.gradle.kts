@@ -21,7 +21,6 @@ val hasReleaseKeystore = keystorePropertiesFile.exists()
 android {
     namespace = "com.ecommerce.atompay"
     compileSdk = flutter.compileSdkVersion
-    // Overridden for every Android subproject in android/build.gradle.kts.
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
