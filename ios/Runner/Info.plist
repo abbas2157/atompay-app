@@ -26,6 +26,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>AtomPay uses the camera to photograph your CNIC and take a selfie for identity verification.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>AtomPay uses Face ID to unlock the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AtomPay lets you choose a photo of your CNIC from your library for identity verification.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -47,12 +53,6 @@
 			</array>
 		</dict>
 	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>AtomPay uses the camera to photograph your CNIC and take a selfie for identity verification.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>AtomPay uses Face ID to unlock the app.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>AtomPay lets you choose a photo of your CNIC from your library for identity verification.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
