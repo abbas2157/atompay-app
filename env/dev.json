@@ -1,4 +1,4 @@
 {
   "FLAVOR": "dev",
-  "API_BASE_URL": "http://10.0.2.2/atompay/api/v1"
+  "API_BASE_URL": "https://atompay.shop/api/v1"
 }

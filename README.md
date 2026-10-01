@@ -21,12 +21,13 @@ Each flavour pairs an Android product flavour with a Dart defines file:
 
 | Flavour | Command | API |
 |---|---|---|
-| dev | `flutter run --flavor dev --dart-define-from-file=env/dev.json` | `http://10.0.2.2/atompay/api/v1` (Android emulator → local XAMPP) |
-| staging | `flutter run --flavor staging --dart-define-from-file=env/staging.json` | TBD |
+| dev | `flutter run --flavor dev --dart-define-from-file=env/dev.json` | `https://atompay.shop/api/v1` |
+| staging | `flutter run --flavor staging --dart-define-from-file=env/staging.json` | `https://atompay.shop/api/v1` (no staging server yet) |
 | prod | `flutter run --flavor prod --dart-define-from-file=env/prod.json` | `https://atompay.shop/api/v1` |
 
-On a real phone in dev, change `API_BASE_URL` to `http://<PC-LAN-IP>/atompay/api/v1`. Cleartext HTTP is allowed
-in the dev flavour only.
+All flavours currently use the live API. To use a local XAMPP server in dev, add
+`--dart-define=API_BASE_URL=http://10.0.2.2/atompay/api/v1` (emulator) or `http://<PC-LAN-IP>/atompay/api/v1`
+(real phone). Cleartext HTTP is allowed in the dev flavour only.
 
 In dev, one-time codes aren't really sent. They're in the server's `storage/logs/laravel.log`.
 

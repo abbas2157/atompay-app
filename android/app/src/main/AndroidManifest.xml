@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- API access. Debug/profile manifests add this too, but release needs it here. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Biometric unlock (local_auth). -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <application
