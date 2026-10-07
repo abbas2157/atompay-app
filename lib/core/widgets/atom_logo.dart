@@ -1,75 +1,44 @@
-import 'dart:math' as math;
-
-import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:flutter/material.dart';
 
-/// The AtomPay mark (handbook §4.5): a nucleus disc, two orbits and an "A".
-/// [orbit] rotates the orbits for the splash animation (0…1 = one turn).
+/// The AtomPay "AP" mark.
+///
+/// Brand art is raster (`assets/brand/`), so this draws the asset rather than
+/// painting geometry. The navy limb would disappear on dark surfaces, so a
+/// recoloured variant is used there; the coral and amber read on both.
+///
+/// [orbit] (0…1 = one cycle) drives a gentle breathing scale on the splash.
+/// The mark has no orbits of its own, but the callers animate this value and
+/// stop it when reduce-motion is on.
 class AtomLogo extends StatelessWidget {
   const new({super.key, this.size = 44, this.orbit = 0});
 
   final double size;
+
+  /// 0…1. Callers hold it at 0 when the mark should be still.
   final double orbit;
+
+  /// Widest the breathing scale goes, at the midpoint of a cycle.
+  static const _pulse = 0.04;
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    // Triangle wave: 0 → 1 → 0 across one cycle, so it never jumps at the wrap.
+    final phase = orbit <= 0.5 ? orbit * 2 : (1 - orbit) * 2;
     return Semantics(
       label: 'AtomPay',
       image: true,
       child: SizedBox.square(
         dimension: size,
-        child: CustomPaint(painter: _AtomPainter(orbit)),
+        child: Transform.scale(
+          scale: 1 + _pulse * phase,
+          child: Image.asset(
+            dark ? 'assets/brand/mark_dark.png' : 'assets/brand/mark.png',
+            fit: BoxFit.contain,
+            excludeFromSemantics: true,
+          ),
+        ),
       ),
     );
   }
-}
-
-class _AtomPainter extends CustomPainter {
-  const new(this.orbit);
-
-  final double orbit;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 44;
-    final c = Offset(size.width / 2, size.height / 2);
-    canvas.drawCircle(c, 20 * s, Paint()..color = AppColors.nucleus);
-
-    final spin = orbit * 2 * math.pi;
-    for (final (color, degrees) in [
-      (AppColors.amber, 28.0),
-      (AppColors.coral, -28.0),
-    ]) {
-      canvas
-        ..save()
-        ..translate(c.dx, c.dy)
-        ..rotate(degrees * math.pi / 180 + spin)
-        ..drawOval(
-          Rect.fromCenter(center: Offset.zero, width: 34 * s, height: 14 * s),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.6 * s
-            ..color = color,
-        )
-        ..restore();
-    }
-
-    final a = TextPainter(
-      text: TextSpan(
-        text: 'A',
-        style: TextStyle(
-          fontFamily: FontFamilies.display,
-          fontWeight: FontWeight.w800,
-          fontSize: 17 * s,
-          color: AppColors.white,
-          height: 1,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    a.paint(canvas, c - Offset(a.width / 2, a.height / 2));
-  }
-
-  @override
-  bool shouldRepaint(_AtomPainter old) => old.orbit != orbit;
 }

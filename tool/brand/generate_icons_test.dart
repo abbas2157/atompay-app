@@ -1,5 +1,5 @@
-// Renders the AtomPay mark (the same geometry as `AtomLogo`) into every
-// launcher-icon and launch-image PNG the platforms need.
+// Renders the AtomPay "AP" mark into every launcher-icon and launch-image PNG
+// the platforms need, from the master art in `assets/brand/`.
 //
 // Run from the project root when the brand mark changes:
 //   flutter test tool/brand/generate_icons_test.dart
@@ -11,67 +11,58 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const _nucleus = Color(0xFF050708);
-const _amber = Color(0xFFFAA53A);
-const _coral = Color(0xFFF05465);
+/// The mark's own field. Launch-screen backgrounds come from Android
+/// resources and the iOS storyboard, not from these PNGs.
 const _white = Color(0xFFFFFFFF);
 
-/// Paints the mark into a [size]-pixel square.
+/// Android's adaptive-icon safe zone: a 66dp circle in the 108dp canvas.
+const _safeZone = 66 / 108;
+
+Future<ui.Image> _mark({required bool dark}) async {
+  final bytes = await File(
+    dark ? 'assets/brand/mark_dark.png' : 'assets/brand/mark.png',
+  ).readAsBytes();
+  return (await (await ui.instantiateImageCodec(bytes)).getNextFrame()).image;
+}
+
+/// Draws the mark centred on a [size]-pixel square.
 ///
-/// The 44-unit logo box is scaled to [box] of the canvas. [square] fills the
-/// whole canvas (iOS icons, which the OS rounds itself); [disc] draws the
-/// round nucleus (legacy Android icons).
+/// [box] is the fraction of the canvas it occupies: normally of the longest
+/// side, or — when [diagonal] is set — of a circle the mark's corners must
+/// stay inside, which is what the adaptive-icon safe zone actually requires.
+/// [bg] of null leaves the canvas transparent.
 Future<List<int>> _render(
   int size, {
   double box = 1,
-  bool square = false,
-  bool disc = false,
+  bool diagonal = false,
+  Color? bg,
+  bool dark = false,
   bool raw = false,
 }) async {
+  final art = await _mark(dark: dark);
   final recorder = ui.PictureRecorder();
   final canvas = Canvas(recorder);
   final px = size.toDouble();
-  if (square) {
-    canvas.drawRect(Rect.fromLTWH(0, 0, px, px), Paint()..color = _nucleus);
+  if (bg != null) {
+    canvas.drawRect(Rect.fromLTWH(0, 0, px, px), Paint()..color = bg);
   }
 
-  final s = px * box / 44;
-  final c = Offset(px / 2, px / 2);
-  if (disc) {
-    canvas.drawCircle(c, 20 * s, Paint()..color = _nucleus);
-  }
-  for (final (color, degrees) in [(_amber, 28.0), (_coral, -28.0)]) {
-    canvas
-      ..save()
-      ..translate(c.dx, c.dy)
-      ..rotate(degrees * math.pi / 180)
-      ..drawOval(
-        Rect.fromCenter(center: Offset.zero, width: 34 * s, height: 14 * s),
-        Paint()
-          ..isAntiAlias = true
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.6 * s
-          ..color = color,
-      )
-      ..restore();
-  }
-
-  final builder =
-      ui.ParagraphBuilder(
-          ui.ParagraphStyle(
-            fontFamily: 'BricolageGrotesque',
-            fontWeight: FontWeight.w800,
-            fontSize: 17 * s,
-            height: 1,
-          ),
-        )
-        ..pushStyle(ui.TextStyle(color: _white))
-        ..addText('A');
-  final a = builder.build()..layout(ui.ParagraphConstraints(width: px));
-  canvas.drawParagraph(a, c - Offset(a.maxIntrinsicWidth / 2, a.height / 2));
+  final mw = art.width.toDouble();
+  final mh = art.height.toDouble();
+  final scale = diagonal
+      // half-diagonal == safe radius
+      ? px * box / math.sqrt(mw * mw + mh * mh)
+      : px * box / math.max(mw, mh);
+  final w = mw * scale;
+  final h = mh * scale;
+  canvas.drawImageRect(
+    art,
+    Rect.fromLTWH(0, 0, mw, mh),
+    Rect.fromLTWH((px - w) / 2, (px - h) / 2, w, h),
+    Paint()..filterQuality = FilterQuality.high,
+  );
 
   final image = await recorder.endRecording().toImage(size, size);
   final bytes = await image.toByteData(
@@ -80,13 +71,10 @@ Future<List<int>> _render(
   return bytes!.buffer.asUint8List();
 }
 
-Future<List<int>> _renderRaw(int size, {required double box}) =>
-    _render(size, box: box, square: true, raw: true);
-
 /// Re-encodes an opaque render as an RGB PNG (no alpha channel): the App
 /// Store rejects app icons that carry alpha, even fully opaque alpha.
 Future<List<int>> _opaque(int size, {required double box}) async {
-  final rgba = await _renderRaw(size, box: box);
+  final rgba = await _render(size, box: box, bg: _white, raw: true);
   final raw = BytesBuilder();
   for (var y = 0; y < size; y++) {
     raw.addByte(0); // filter: none
@@ -130,14 +118,6 @@ Future<void> _write(String path, List<int> bytes) async {
 void main() {
   testWidgets('generate brand icons', (tester) async {
     await tester.runAsync(() async {
-      final font = FontLoader('BricolageGrotesque')
-        ..addFont(
-          File('assets/fonts/BricolageGrotesque-ExtraBold.ttf')
-              .readAsBytes()
-              .then(ByteData.sublistView),
-        );
-      await font.load();
-
       const res = 'android/app/src/main/res';
       const densities = {
         'mdpi': 1.0,
@@ -147,24 +127,28 @@ void main() {
         'xxxhdpi': 4.0,
       };
       for (final MapEntry(key: d, value: scale) in densities.entries) {
-        // Legacy/round launcher icon: 48dp, the round mark.
+        // Legacy launcher icon: 48dp on the mark's own white field.
         await _write(
           '$res/mipmap-$d/ic_launcher.png',
-          await _render((48 * scale).round(), box: 0.98, disc: true),
+          await _render((48 * scale).round(), box: 0.80, bg: _white),
         );
-        // Adaptive foreground: 108dp canvas, art inside the 66dp safe zone.
+        // Adaptive foreground: 108dp canvas, art inside the 66dp safe circle.
         await _write(
           '$res/mipmap-$d/ic_launcher_foreground.png',
-          await _render((108 * scale).round(), box: 66 / 108),
+          await _render((108 * scale).round(), box: _safeZone, diagonal: true),
         );
-        // Pre-Android-12 launch screen: the mark on the dark window.
+        // Pre-Android-12 launch screen, light and dark windows.
         await _write(
           '$res/drawable-$d/launch_logo.png',
           await _render((112 * scale).round()),
         );
+        await _write(
+          '$res/drawable-night-$d/launch_logo.png',
+          await _render((112 * scale).round(), dark: true),
+        );
       }
 
-      // iOS app icons: full-bleed dark square; iOS rounds the corners.
+      // iOS app icons: opaque white square; iOS rounds the corners itself.
       const ios = 'ios/Runner/Assets.xcassets';
       const icons = {
         'Icon-App-20x20@1x.png': 20,
@@ -189,7 +173,7 @@ void main() {
           await _opaque(px, box: 0.78),
         );
       }
-      // iOS launch image (112pt), drawn on the storyboard's dark background.
+      // iOS launch image (112pt), on the storyboard's paper background.
       for (final (suffix, scale) in [('', 1), ('@2x', 2), ('@3x', 3)]) {
         await _write(
           '$ios/LaunchImage.imageset/LaunchImage$suffix.png',
