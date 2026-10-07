@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:atompay_mobile/core/router/app_router.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/security/app_lock.dart';
+import 'package:atompay_mobile/core/widgets/atom_logo.dart';
 import 'package:atompay_mobile/features/guest/presentation/welcome_screen.dart';
 import 'package:atompay_mobile/features/notifications/domain/inbox_controller.dart';
 import 'package:atompay_mobile/features/notifications/presentation/inbox_screen.dart';
@@ -239,7 +240,7 @@ void main() {
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('com.ecommerce.atompay/secure'),
       (call) async {
-        calls.add(call.arguments as bool);
+        if (call.method == 'setSecure') calls.add(call.arguments as bool);
         return null;
       },
     );
@@ -293,6 +294,59 @@ void main() {
         overrides: [biometricServiceProvider.overrideWithValue(bio)],
       );
       expect(find.text('AtomPay is locked'), findsOneWidget);
+    });
+
+    testWidgets('hides the app underneath from screen readers', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpApp(
+        tester,
+        _signedInApi(),
+        token: 't',
+        settings: {'settings.biometric': true},
+        overrides: [
+          biometricServiceProvider.overrideWithValue(_RefusingBiometrics()),
+        ],
+      );
+      expect(find.text('AtomPay is locked'), findsOneWidget);
+      // Still built under the lock, but unreachable by TalkBack/VoiceOver.
+      expect(find.text('Hi, Ayesha K.'), findsOneWidget);
+      expect(find.bySemanticsLabel('Hi, Ayesha K.'), findsNothing);
+      semantics.dispose();
+    });
+
+    testWidgets('covers the app switcher snapshot and blanks recents', (
+      tester,
+    ) async {
+      final recents = <bool>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('com.ecommerce.atompay/secure'),
+        (call) async {
+          if (call.method == 'setRecentsHidden') {
+            recents.add(call.arguments as bool);
+          }
+          return null;
+        },
+      );
+      await pumpApp(
+        tester,
+        _signedInApi(),
+        token: 't',
+        settings: {'settings.biometric': true},
+        overrides: [
+          biometricServiceProvider.overrideWithValue(_FakeBiometrics()),
+        ],
+      );
+      expect(recents, [true]);
+
+      final logos = find.byType(AtomLogo).evaluate().length;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pump();
+      expect(find.byType(AtomLogo), findsNWidgets(logos + 1));
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      expect(find.byType(AtomLogo), findsNWidgets(logos));
+      await settle(tester);
     });
 
     testWidgets('never shown to guests', (tester) async {

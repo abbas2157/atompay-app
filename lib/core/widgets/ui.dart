@@ -80,9 +80,15 @@ Future<bool> confirmDialog(
   return result ?? false;
 }
 
+/// Links come from `/app-config` and plan data, so only these schemes open;
+/// anything else (`intent:`, `file:`, `javascript:`…) is refused.
+const _openableSchemes = {'https', 'tel', 'mailto'};
+
 Future<void> openLink(BuildContext context, Uri uri) async {
   final failed = context.l10n.couldNotOpenLink;
-  final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  final ok =
+      _openableSchemes.contains(uri.scheme.toLowerCase()) &&
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!ok) showToast(failed);
 }
 

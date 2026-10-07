@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:atompay_mobile/core/prefs/app_settings.dart';
 import 'package:atompay_mobile/core/security/app_lock.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/atom_logo.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
+import 'package:atompay_mobile/core/widgets/secure_screen.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/auth/domain/auth_controller.dart';
 import 'package:flutter/material.dart';
@@ -23,12 +25,22 @@ class AppLockGate extends ConsumerStatefulWidget {
 class _AppLockGateState extends ConsumerState<AppLockGate> {
   late final AppLifecycleListener _lifecycle;
 
+  /// Not in the foreground: the app-switcher snapshot is taken now.
+  bool _away = false;
+
+  /// What the Android recents thumbnail was last set to.
+  bool _recentsHidden = false;
+
   @override
   void initState() {
     super.initState();
     _lifecycle = AppLifecycleListener(
       onHide: () => ref.read(appLockProvider.notifier).backgrounded(),
       onShow: () => ref.read(appLockProvider.notifier).resumed(),
+      onStateChange: (state) {
+        final away = state != AppLifecycleState.resumed;
+        if (away != _away && mounted) setState(() => _away = away);
+      },
     );
   }
 
@@ -38,14 +50,35 @@ class _AppLockGateState extends ConsumerState<AppLockGate> {
     super.dispose();
   }
 
+  void _syncRecents({required bool hidden}) {
+    if (hidden == _recentsHidden) return;
+    _recentsHidden = hidden;
+    unawaited(SecureScreen.setRecentsHidden(hidden: hidden));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final locked = ref.watch(appLockProvider);
     final signedIn = ref.watch(authControllerProvider) is SignedIn;
+    final lockOn = signedIn && ref.watch(appSettingsProvider).biometricLock;
+    final locked = signedIn && ref.watch(appLockProvider);
+    _syncRecents(hidden: lockOn);
     return Stack(
       children: [
-        widget.child,
-        if (locked && signedIn) const Positioned.fill(child: _LockScreen()),
+        // The app stays mounted under the lock, so keep screen readers and
+        // keyboards out of it: their actions skip the hit test.
+        ExcludeFocus(
+          excluding: locked,
+          child: ExcludeSemantics(excluding: locked, child: widget.child),
+        ),
+        if (locked) const Positioned.fill(child: _LockScreen()),
+        // Balances shouldn't show in the app switcher either.
+        if (lockOn && !locked && _away)
+          Positioned.fill(
+            child: ColoredBox(
+              color: context.tokens.paper,
+              child: const Center(child: AtomLogo(size: 64)),
+            ),
+          ),
       ],
     );
   }
