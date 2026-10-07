@@ -1,8 +1,11 @@
+import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/core/storage/token_storage.dart';
+import 'package:atompay_mobile/features/account/domain/account_controllers.dart';
 import 'package:atompay_mobile/features/auth/data/auth_models.dart';
 import 'package:atompay_mobile/features/auth/data/auth_repository.dart';
 import 'package:atompay_mobile/features/auth/domain/auth_controller.dart';
 import 'package:atompay_mobile/features/profile/data/profile_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/fake_api.dart';
@@ -145,5 +148,81 @@ void main() {
     expect(challenge.id, 'abc');
     expect(challenge.channel, CodeChannel.whatsapp);
     expect(c.read(tokenStorageProvider).token, isNull);
+  });
+
+  group('delete account', () {
+    Future<ProviderContainer> signedIn(FakeApi api) async {
+      api.on('GET', '/me', const FakeReply(200, {'data': userJson}));
+      final c = await makeContainer(api, token: '20|atompay_test');
+      await c.read(authControllerProvider.notifier).restore();
+      c.listen(deleteAccountControllerProvider, (_, _) {});
+      return c;
+    }
+
+    test('sends the password, clears the token and signs out', () async {
+      final api = FakeApi()..on('POST', '/me/delete', const FakeReply(204));
+      final c = await signedIn(api);
+
+      final ok = await c
+          .read(deleteAccountControllerProvider.notifier)
+          .delete('secret-123');
+
+      expect(ok, isTrue);
+      expect(
+        (api.last('POST', '/me/delete')!.data as Map)['password'],
+        'secret-123',
+      );
+      expect(c.read(authControllerProvider), isA<SignedOut>());
+      expect(await c.read(tokenStorageProvider).load(), isNull);
+    });
+
+    test('a wrong password stays signed in with a field error', () async {
+      final api = FakeApi()
+        ..on(
+          'POST',
+          '/me/delete',
+          const FakeReply(422, {
+            'message': "That password isn't right.",
+            'errors': {
+              'password': ["That password isn't right."],
+            },
+          }),
+        );
+      final c = await signedIn(api);
+
+      final ok = await c
+          .read(deleteAccountControllerProvider.notifier)
+          .delete('wrong');
+
+      expect(ok, isFalse);
+      expect(
+        c.read(deleteAccountControllerProvider).field('password'),
+        "That password isn't right.",
+      );
+      expect(c.read(authControllerProvider), isA<SignedIn>());
+      expect(c.read(tokenStorageProvider).token, '20|atompay_test');
+    });
+
+    test('instalments still owed is a general error', () async {
+      const message = 'You still have instalments to pay.';
+      final api = FakeApi()
+        ..on(
+          'POST',
+          '/me/delete',
+          const FakeReply(409, {
+            'message': message,
+            'code': 'outstanding_balance',
+          }),
+        );
+      final c = await signedIn(api);
+
+      await c.read(deleteAccountControllerProvider.notifier).delete('pw');
+
+      final status = c.read(deleteAccountControllerProvider);
+      expect(status.hasGeneralError, isTrue);
+      expect(status.error, isA<Conflict>());
+      expect(status.error!.message, message);
+      expect(c.read(authControllerProvider), isA<SignedIn>());
+    });
   });
 }

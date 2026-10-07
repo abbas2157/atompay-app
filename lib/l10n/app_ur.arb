@@ -326,5 +326,18 @@
   "biometricUnavailable": "یہ استعمال کرنے کے لیے اس فون پر فنگر پرنٹ، چہرہ یا اسکرین لاک سیٹ کریں۔",
   "unlockReason": "AtomPay کھولیں",
   "unlockTitle": "AtomPay لاک ہے",
-  "unlockButton": "کھولیں"
+  "unlockButton": "کھولیں",
+  "legalTitle": "قانونی",
+  "privacyPolicy": "پرائیویسی پالیسی",
+  "termsOfUse": "استعمال کی شرائط",
+  "deleteAccount": "اکاؤنٹ ڈیلیٹ کریں",
+  "deleteAccountHeadline": "اپنا اکاؤنٹ ڈیلیٹ کریں",
+  "deleteAccountIntro": "اس سے آپ کا AtomPay اور AtomShop.pk اکاؤنٹ ہمیشہ کے لیے ڈیلیٹ ہو جائے گا۔ آپ دوبارہ سائن ان نہیں کر سکیں گے، اور اسے واپس نہیں کیا جا سکتا۔",
+  "deleteAccountKept": "ہم آپ کی پروفائل، شناختی کارڈ کی تصاویر اور سیلفی ڈیلیٹ کر دیتے ہیں۔ درخواستوں، آرڈرز اور ادائیگیوں کا ریکارڈ صرف اتنی دیر رکھا جاتا ہے جتنا قانون کے مطابق ضروری ہو۔",
+  "deleteAccountOwed": "اگر آپ کی قسطیں ابھی باقی ہیں تو مکمل ادائیگی کے بعد آپ اپنا اکاؤنٹ ڈیلیٹ کر سکتے ہیں۔",
+  "deleteAccountPasswordLabel": "تصدیق کے لیے اپنا پاس ورڈ لکھیں",
+  "deleteAccountButton": "میرا اکاؤنٹ ڈیلیٹ کریں",
+  "deleteAccountConfirmTitle": "اکاؤنٹ ڈیلیٹ کریں؟",
+  "deleteAccountConfirmText": "اسے واپس نہیں کیا جا سکتا۔",
+  "accountDeletedToast": "آپ کا اکاؤنٹ ڈیلیٹ ہو گیا ہے۔"
 }

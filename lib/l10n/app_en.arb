@@ -350,5 +350,18 @@
   "biometricUnavailable": "Set up a fingerprint, face or screen lock on this phone to use this.",
   "unlockReason": "Unlock AtomPay",
   "unlockTitle": "AtomPay is locked",
-  "unlockButton": "Unlock"
+  "unlockButton": "Unlock",
+  "legalTitle": "Legal",
+  "privacyPolicy": "Privacy policy",
+  "termsOfUse": "Terms of use",
+  "deleteAccount": "Delete account",
+  "deleteAccountHeadline": "Delete your account",
+  "deleteAccountIntro": "This permanently deletes your AtomPay and AtomShop.pk account. You won't be able to sign in again, and it can't be undone.",
+  "deleteAccountKept": "We delete your profile, CNIC images and selfie. Records of applications, orders and payments are kept only as long as the law requires.",
+  "deleteAccountOwed": "If you still have instalments to pay, you can delete your account once they're repaid.",
+  "deleteAccountPasswordLabel": "Enter your password to confirm",
+  "deleteAccountButton": "Delete my account",
+  "deleteAccountConfirmTitle": "Delete your account?",
+  "deleteAccountConfirmText": "This can't be undone.",
+  "accountDeletedToast": "Your account has been deleted."
 }

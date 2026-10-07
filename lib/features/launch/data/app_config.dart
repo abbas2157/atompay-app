@@ -14,6 +14,10 @@ abstract class AppConfig with _$AppConfig {
     @Default(PerPlatform()) PerPlatform storeUrl,
     @Default('https://atomshop.pk') String shopUrl,
     String? passwordResetUrl,
+    // Both stores require the policy inside the app; the default keeps it
+    // reachable before the server sends the field (or offline).
+    @Default('https://atompay.shop/privacy-policy') String privacyUrl,
+    String? termsUrl,
     @Default(Support()) Support support,
     @Default(Features()) Features features,
   }) = _AppConfig;

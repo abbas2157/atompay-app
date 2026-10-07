@@ -162,6 +162,13 @@ class AuthRepository {
 
   Future<void> clearLocalSession() => _tokens.clear();
 
+  /// Deletes the account (both stores require it in-app). The server revokes
+  /// every token, so the local one goes too.
+  Future<void> deleteAccount(String password) async {
+    await _api.post('/me/delete', data: {'password': password});
+    await _tokens.clear();
+  }
+
   Future<User> _signIn(Future<dynamic> call) async {
     final result = AuthResult.fromJson(_map(await call));
     await _tokens.save(token: result.token, expiresAt: result.expiresAt);

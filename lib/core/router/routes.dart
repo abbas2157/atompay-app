@@ -40,6 +40,7 @@ abstract final class Routes {
   static const account = '/account';
   static const accountDevices = '/account/devices';
   static const accountNotifications = '/account/notifications';
+  static const accountDelete = '/account/delete';
 
   /// Reachable while signed out.
   static const signedOutOnly = {welcome, login, register, registerVerify};

@@ -1,7 +1,10 @@
+import 'package:atompay_mobile/core/forms/submit_section.dart';
+import 'package:atompay_mobile/core/forms/validators.dart';
 import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/utils/dates.dart';
+import 'package:atompay_mobile/core/widgets/app_text_field.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
@@ -162,6 +165,40 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           ],
           const Divider(),
           Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Space.gutter,
+              Space.x16,
+              Space.gutter,
+              Space.x4,
+            ),
+            child: Text(
+              l10n.legalTitle.toUpperCase(),
+              style: context.text.eyebrow,
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(l10n.privacyPolicy),
+            trailing: const Icon(Icons.open_in_new),
+            onTap: () => openLink(context, Uri.parse(config.privacyUrl)),
+          ),
+          if (config.termsUrl case final terms?)
+            ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: Text(l10n.termsOfUse),
+              trailing: const Icon(Icons.open_in_new),
+              onTap: () => openLink(context, Uri.parse(terms)),
+            ),
+          ListTile(
+            leading: const Icon(Icons.person_remove_outlined),
+            iconColor: AppColors.coral,
+            textColor: AppColors.coral,
+            title: Text(l10n.deleteAccount),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(Routes.accountDelete),
+          ),
+          const Divider(),
+          Padding(
             padding: const EdgeInsets.all(Space.gutter),
             child: Column(
               children: [
@@ -316,6 +353,92 @@ class NotificationSettingsScreen extends ConsumerWidget {
         ),
         _ => const Center(child: CircularProgressIndicator()),
       },
+    );
+  }
+}
+
+/// In-app account deletion (App Store 5.1.1(v), Google Play account
+/// deletion policy). The password confirms it's the owner holding the phone.
+class DeleteAccountScreen extends ConsumerStatefulWidget {
+  const new({super.key});
+
+  @override
+  ConsumerState<DeleteAccountScreen> createState() =>
+      _DeleteAccountScreenState();
+}
+
+class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
+  final _password = TextEditingController();
+  String? _local;
+
+  @override
+  void dispose() {
+    _password.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final l10n = context.l10n;
+    setState(() => _local = Validators(l10n).required(_password.text));
+    if (_local != null) return;
+    FocusScope.of(context).unfocus();
+    final go = await confirmDialog(
+      context,
+      title: l10n.deleteAccountConfirmTitle,
+      message: l10n.deleteAccountConfirmText,
+      confirmLabel: l10n.deleteAccountButton,
+      destructive: true,
+    );
+    if (!go || !mounted) return;
+    final ok = await ref
+        .read(deleteAccountControllerProvider.notifier)
+        .delete(_password.text);
+    // The router leaves this screen once signed out.
+    if (ok) showToast(l10n.accountDeletedToast);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final text = context.text;
+    final status = ref.watch(deleteAccountControllerProvider);
+    final controller = ref.read(deleteAccountControllerProvider.notifier);
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.deleteAccount)),
+      body: ListView(
+        padding: const EdgeInsets.all(Space.gutter),
+        children: [
+          Text(l10n.deleteAccountHeadline, style: text.headline),
+          const SizedBox(height: Space.x12),
+          Text(l10n.deleteAccountIntro),
+          const SizedBox(height: Space.x12),
+          Text(l10n.deleteAccountKept, style: text.bodySmall),
+          const SizedBox(height: Space.x8),
+          Text(l10n.deleteAccountOwed, style: text.bodySmall),
+          const SizedBox(height: Space.x24),
+          AppTextField(
+            label: l10n.deleteAccountPasswordLabel,
+            controller: _password,
+            obscure: true,
+            showPasswordLabel: l10n.showPassword,
+            hidePasswordLabel: l10n.hidePassword,
+            autofillHints: const [AutofillHints.password],
+            textInputAction: TextInputAction.done,
+            errorText: _local ?? status.field('password'),
+            onChanged: (_) {
+              controller.clearField('password');
+              if (_local != null) setState(() => _local = null);
+            },
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: Space.x24),
+          SubmitSection(
+            status: status,
+            label: l10n.deleteAccountButton,
+            onPressed: _submit,
+          ),
+        ],
+      ),
     );
   }
 }
