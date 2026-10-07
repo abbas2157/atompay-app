@@ -4,7 +4,7 @@ publish_to: 'none'
 
 # Bump for every store build. /app-config.min_version is compared against the
 # semver part (before the +).
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.13.4
@@ -43,6 +43,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+
+  # Brand mark. Single source of truth: tool/brand/generate_icons_test.dart
+  # renders every launcher icon and launch image from these.
+  assets:
+    - assets/brand/
 
   # Bundled so the first launch works offline (handbook §4.3). SIL OFL, see assets/fonts/OFL.txt.
   fonts:

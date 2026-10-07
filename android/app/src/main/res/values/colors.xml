@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand "nucleus" (handbook §4.1): icon background and launch screen. -->
-    <color name="nucleus">#050708</color>
+    <!-- Adaptive-icon field. Not night-qualified: a launcher icon keeps one
+         look regardless of the system theme. -->
+    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Launch screen field. The AP mark's navy limb needs a light ground;
+         values-night/ overrides this and drawable-night-*/launch_logo.png
+         carries the light-limbed variant. -->
+    <color name="launch_background">#FBFAF7</color>
 </resources>
