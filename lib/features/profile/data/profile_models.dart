@@ -35,7 +35,11 @@ abstract class Profile with _$Profile {
 
 @freezed
 abstract class City with _$City {
-  const factory City({required int id, required String name}) = _City;
+  const factory City({
+    // Some responses send the id as a string; the picker compares ints.
+    @JsonKey(fromJson: _intId) required int id,
+    required String name,
+  }) = _City;
 
   factory City.fromJson(Map<String, dynamic> json) => _$CityFromJson(json);
 }
@@ -107,3 +111,5 @@ class ProfileInput {
   final String residentialAddress;
   final int? cityId;
 }
+
+int _intId(Object? v) => v is num ? v.toInt() : int.parse('$v');
