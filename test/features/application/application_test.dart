@@ -46,7 +46,11 @@ Map<String, Object?> _assessment({
   'decided_at': limit == null ? null : '2026-09-25T07:10:00+00:00',
 };
 
-FakeApi _api({bool canApply = true, Map<String, Object?>? latest}) => FakeApi()
+FakeApi _api({
+  bool canApply = true,
+  Map<String, Object?>? latest,
+  Map<String, Object?>? active,
+}) => FakeApi()
   ..on('GET', '/me', const FakeReply(200, {'data': userJson}))
   ..on(
     'GET',
@@ -73,7 +77,7 @@ FakeApi _api({bool canApply = true, Map<String, Object?>? latest}) => FakeApi()
         'can_apply': canApply,
         'requires': canApply ? null : 'profile',
         'latest': latest,
-        'active': null,
+        'active': active,
       },
     }),
   );
@@ -217,6 +221,96 @@ void main() {
     await scrollTo(tester, find.text('Provide a salary slip.'));
     expect(find.text('PKR 45,000'), findsOneWidget);
     expect(find.text('12 months'), findsOneWidget);
+  });
+
+  group('with an approved limit the form is a limit review', () {
+    final approved = _assessment(id: 300, status: 'approved', limit: 150000);
+    const review = 'Request limit review';
+
+    testWidgets('keeps the limit, blocks unchanged figures, then submits', (
+      tester,
+    ) async {
+      final api = _api(latest: approved, active: approved)
+        ..on('POST', '/application', FakeReply(201, {'data': _assessment()}));
+      await _openForm(tester, api);
+
+      expect(find.text('Request a limit review'), findsOneWidget);
+      expect(
+        find.text(
+          'Your PKR 150,000 limit stays active while we review. '
+          'You can keep shopping with it.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Change your income details to request a higher limit.'),
+        findsOneWidget,
+      );
+      expect(find.text('Submit application'), findsNothing);
+
+      // Same figures as on file: nothing to review yet.
+      await scrollTo(tester, find.text(review));
+      expect(
+        find.text('Change your income details to request a review.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text(review));
+      await settle(tester);
+      expect(api.last('POST', '/application'), isNull);
+
+      await enterField(tester, 'Monthly income', '250000');
+      expect(
+        find.text('Change your income details to request a review.'),
+        findsNothing,
+      );
+      await scrollTo(tester, find.text(review));
+      await tester.tap(find.text(review));
+      await settle(tester);
+
+      expect(
+        (api.last('POST', '/application')!.data as Map)['monthly_income'],
+        250000,
+      );
+      expect(find.byType(ApplicationStatusScreen), findsOneWidget);
+      expect(
+        find.text(
+          'Limit review requested. Your current limit stays active until '
+          'our team decides.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('409 nothing_changed shows the message and stays', (
+      tester,
+    ) async {
+      const message =
+          'Nothing has changed since your limit was set. Update your income '
+          'details to request a review.';
+      final api = _api(latest: _assessment(), active: approved)
+        ..on(
+          'POST',
+          '/application',
+          const FakeReply(409, {'message': message, 'code': 'nothing_changed'}),
+        );
+      await _openForm(tester, api);
+
+      // A review is already pending.
+      expect(
+        find.text(
+          'A review is already with our team; submitting again updates it.',
+        ),
+        findsOneWidget,
+      );
+      await enterField(tester, 'Monthly income', '210000');
+      await scrollTo(tester, find.text(review));
+      await tester.tap(find.text(review));
+      await settle(tester);
+
+      expect(find.text(message), findsOneWidget);
+      expect(find.byType(ApplicationStatusScreen), findsNothing);
+      expect(find.text('Request a limit review'), findsOneWidget);
+    });
   });
 
   testWidgets('estimator is public and labelled as an estimate', (

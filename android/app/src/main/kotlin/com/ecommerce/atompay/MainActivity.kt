@@ -1,5 +1,6 @@
 package com.ecommerce.atompay
 
+import android.os.Build
 import android.view.WindowManager
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -18,6 +19,13 @@ class MainActivity : FlutterFragmentActivity() {
                             window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                         } else {
                             window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        }
+                        result.success(null)
+                    }
+                    // Biometric lock on: blank recents thumbnail (Android 13+).
+                    "setRecentsHidden" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            setRecentsScreenshotEnabled(call.arguments != true)
                         }
                         result.success(null)
                     }

@@ -2,10 +2,34 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// `ThisDeviceOnly`: the token never moves to another phone through an
+/// encrypted backup or iCloud Keychain.
+const secureStorage = FlutterSecureStorage(
+  iOptions: IOSOptions(
+    accessibility: KeychainAccessibility.first_unlock_this_device,
+  ),
+);
 
 final tokenStorageProvider = Provider<TokenStorage>(
-  (ref) => TokenStorage(const FlutterSecureStorage()),
+  (ref) => TokenStorage(secureStorage),
 );
+
+const _installedKey = 'app.installed';
+
+/// iOS keeps Keychain items after the app is deleted, but not
+/// SharedPreferences. Without this, a reinstall would come back signed in
+/// with biometric lock off. Runs once per install, before anything reads the
+/// token.
+Future<void> clearSessionAfterReinstall(
+  SharedPreferences prefs, {
+  FlutterSecureStorage storage = secureStorage,
+}) async {
+  if (prefs.getBool(_installedKey) ?? false) return;
+  await storage.deleteAll();
+  await prefs.setBool(_installedKey, true);
+}
 
 /// The bearer token and the last-known user live here and nowhere else
 /// (handbook rule 9). Keeps an in-memory copy of the token so the HTTP
