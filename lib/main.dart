@@ -1,6 +1,7 @@
 import 'package:atompay_mobile/app.dart';
 import 'package:atompay_mobile/core/config/device.dart';
 import 'package:atompay_mobile/core/prefs/app_settings.dart';
+import 'package:atompay_mobile/core/storage/token_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ Future<void> main() async {
     await loadDeviceInfo(),
     await SharedPreferences.getInstance(),
   );
+  await clearSessionAfterReinstall(prefs);
 
   runApp(
     ProviderScope(

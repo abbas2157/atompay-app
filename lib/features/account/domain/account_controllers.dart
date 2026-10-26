@@ -1,3 +1,4 @@
+import 'package:atompay_mobile/core/forms/form_controller.dart';
 import 'package:atompay_mobile/core/network/api_client.dart';
 import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/features/auth/data/auth_models.dart';
@@ -16,6 +17,22 @@ Future<void> revokeSession(WidgetRef ref, DeviceSession session) async {
     await ref.read(authControllerProvider.notifier).signedOutLocally();
   } else {
     ref.invalidate(sessionsProvider);
+  }
+}
+
+/// `POST /me/delete`. A `409` (instalments still owed) is a general error
+/// shown above the button; a wrong password is a `422` on `password`.
+final deleteAccountControllerProvider =
+    NotifierProvider.autoDispose<DeleteAccountController, FormStatus>(
+      DeleteAccountController.new,
+    );
+
+class DeleteAccountController extends FormController {
+  Future<bool> delete(String password) {
+    return run(() async {
+      await ref.read(authRepositoryProvider).deleteAccount(password);
+      await ref.read(authControllerProvider.notifier).signedOutLocally();
+    });
   }
 }
 

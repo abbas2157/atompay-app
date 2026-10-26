@@ -7,6 +7,7 @@ import 'package:atompay_mobile/core/widgets/app_text_field.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/picker_field.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
+import 'package:atompay_mobile/core/widgets/status.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
 import 'package:atompay_mobile/features/application/domain/application_controllers.dart';
@@ -16,7 +17,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// KYC section 3: income (handbook §5.8). Loads the application (for
-/// `can_apply` and pre-fill) and the picker options first.
+/// `can_apply` and pre-fill) and the picker options first. With a limit
+/// already in force (`active`) the same form is a limit review: the current
+/// limit stays usable while staff look at the new figures.
 class ApplicationFormScreen extends ConsumerWidget {
   const new({super.key});
 
@@ -37,11 +40,21 @@ class ApplicationFormScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.applicationFormTitle)),
+      appBar: AppBar(
+        title: Text(
+          overview.value?.active != null
+              ? l10n.limitReviewTitle
+              : l10n.applicationFormTitle,
+        ),
+      ),
       body: switch ((overview, options)) {
         (AsyncData(value: final o), AsyncData(value: final opts)) =>
           o.canApply
-              ? _ApplicationForm(latest: o.latest, options: opts)
+              ? _ApplicationForm(
+                  latest: o.latest,
+                  active: o.active,
+                  options: opts,
+                )
               : const _ProfileFirst(),
         (AsyncError(:final error), _) ||
         (_, AsyncError(:final error)) => failed(error),
@@ -80,9 +93,16 @@ class _ProfileFirst extends StatelessWidget {
 }
 
 class _ApplicationForm extends ConsumerStatefulWidget {
-  const new({required this.latest, required this.options});
+  const new({
+    required this.latest,
+    required this.active,
+    required this.options,
+  });
 
   final Assessment? latest;
+
+  /// The limit in force. Set → this submit asks for a limit review.
+  final Assessment? active;
   final FormOptions options;
 
   @override
@@ -112,6 +132,15 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
   );
   Map<String, String?> _local = const {};
 
+  late final _typed = Listenable.merge([
+    _employer,
+    _income,
+    _instalments,
+    _expenses,
+  ]);
+
+  bool get _isReview => widget.active != null;
+
   /// Pre-fill only with a value the current options still offer.
   static String? _known(String? value, Iterable<String> allowed) =>
       value != null && allowed.contains(value) ? value : null;
@@ -134,12 +163,35 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
 
   bool get _needsEmployer => _employmentOption?.hasEmployer ?? false;
 
+  /// A review with the same figures as [Assessment] `latest` would be
+  /// refused with `409 nothing_changed`; the server checks it too.
+  bool get _unchanged {
+    final latest = widget.latest;
+    if (!_isReview || latest == null) return false;
+    String employer(String? v) => v?.trim() ?? '';
+    return _employment == latest.employmentStatus &&
+        (!_needsEmployer ||
+            employer(_employer.text) == employer(latest.employerName)) &&
+        _source == latest.incomeSource &&
+        MoneyInputFormatter.parse(_income.text) == latest.monthlyIncome &&
+        (MoneyInputFormatter.parse(_instalments.text) ?? 0) ==
+            latest.existingInstalments &&
+        (MoneyInputFormatter.parse(_expenses.text) ?? 0) ==
+            latest.monthlyExpenses;
+  }
+
   String? _error(String field) =>
       _local[field] ??
       ref.read(applicationSubmitControllerProvider).field(field);
 
   void _edited(String field) {
-    ref.read(applicationSubmitControllerProvider.notifier).clearField(field);
+    final submit = ref.read(applicationSubmitControllerProvider.notifier);
+    if (ref.read(applicationSubmitControllerProvider).error case Conflict(
+      code: 'nothing_changed',
+    )) {
+      submit.clearError();
+    }
+    submit.clearField(field);
     if (_local[field] != null) {
       setState(() => _local = {..._local, field: null});
     }
@@ -205,6 +257,7 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
 
   Future<void> _submit() async {
     final l10n = context.l10n;
+    if (_unchanged) return;
     final income = MoneyInputFormatter.parse(_income.text);
     setState(() {
       _local = {
@@ -234,7 +287,9 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
           ),
         );
     if (ok && mounted) {
-      showToast(l10n.applicationSubmitted);
+      showToast(
+        _isReview ? l10n.limitReviewRequested : l10n.applicationSubmitted,
+      );
       context.pushReplacement(Routes.applicationStatus);
     }
   }
@@ -244,10 +299,16 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
     final l10n = context.l10n;
     final status = ref.watch(applicationSubmitControllerProvider);
 
-    // No profile yet (e.g. it was withdrawn meanwhile): identity first.
     ref.listen(applicationSubmitControllerProvider, (_, next) {
-      if (next.error case Conflict(code: 'profile_required')) {
-        context.pushReplacement(Routes.profileEditThenApply);
+      switch (next.error) {
+        // No profile yet (e.g. it was withdrawn meanwhile): identity first.
+        case Conflict(code: 'profile_required'):
+          context.pushReplacement(Routes.profileEditThenApply);
+        // Same figures as the limit already set; nothing was created. The
+        // server's message shows above the button and the form stays.
+        case Conflict(code: 'nothing_changed'):
+          break;
+        case _:
       }
     });
 
@@ -266,7 +327,22 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
         Space.x40,
       ),
       children: [
-        Text(l10n.applicationIntro, style: context.text.body),
+        if (widget.active case final active?) ...[
+          AppBanner(
+            tone: StatusTone.ok,
+            title: l10n.limitReviewKeepsLimit(
+              MoneyInputFormatter.format(active.approvedLimit ?? 0),
+            ),
+            text: widget.latest?.status == 'pending'
+                ? l10n.limitReviewPending
+                : l10n.limitReviewChangeToRaise,
+          ),
+          const SizedBox(height: Space.x16),
+        ],
+        Text(
+          _isReview ? l10n.limitReviewIntro : l10n.applicationIntro,
+          style: context.text.body,
+        ),
         const SizedBox(height: Space.x24),
         PickerField(
           label: l10n.employmentStatusLabel,
@@ -324,10 +400,31 @@ class _ApplicationFormState extends ConsumerState<_ApplicationForm> {
           onSubmitted: (_) => _submit(),
         ),
         const SizedBox(height: Space.x32),
-        SubmitSection(
-          status: status,
-          label: l10n.submitApplication,
-          onPressed: _submit,
+        ListenableBuilder(
+          listenable: _typed,
+          builder: (context, _) {
+            final unchanged = _unchanged;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (unchanged && !status.hasGeneralError) ...[
+                  Text(
+                    l10n.limitReviewUnchanged,
+                    style: context.text.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: Space.x8),
+                ],
+                SubmitSection(
+                  status: status,
+                  label: _isReview
+                      ? l10n.requestLimitReview
+                      : l10n.submitApplication,
+                  onPressed: unchanged ? null : _submit,
+                ),
+              ],
+            );
+          },
         ),
       ],
     );

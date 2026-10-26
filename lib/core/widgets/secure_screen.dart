@@ -19,10 +19,18 @@ class SecureScreen extends StatefulWidget {
   static const _channel = MethodChannel('com.ecommerce.atompay/secure');
   static int _active = 0;
 
-  static Future<void> _set({required bool secure}) async {
+  static Future<void> _set({required bool secure}) =>
+      _invoke('setSecure', secure);
+
+  /// Android 13+: a blank recent-apps thumbnail for the whole app, without
+  /// blocking screenshots. Used while biometric lock is on.
+  static Future<void> setRecentsHidden({required bool hidden}) =>
+      _invoke('setRecentsHidden', hidden);
+
+  static Future<void> _invoke(String method, bool value) async {
     if (defaultTargetPlatform != TargetPlatform.android) return;
     try {
-      await _channel.invokeMethod<void>('setSecure', secure);
+      await _channel.invokeMethod<void>(method, value);
     } on MissingPluginException {
       // Widget tests and platforms without the channel.
     } on PlatformException {

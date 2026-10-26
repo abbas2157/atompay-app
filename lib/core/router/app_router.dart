@@ -176,6 +176,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'notifications',
             builder: (_, _) => const NotificationSettingsScreen(),
           ),
+          GoRoute(
+            path: 'delete',
+            builder: (_, _) => const DeleteAccountScreen(),
+          ),
         ],
       ),
     ],

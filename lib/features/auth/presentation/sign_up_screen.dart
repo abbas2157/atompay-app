@@ -138,7 +138,17 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
         const SizedBox(height: Space.x16),
         Text(l10n.signUpSmallPrint, style: context.text.bodySmall),
-        const SizedBox(height: Space.x24),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton(
+            onPressed: () => openLink(
+              context,
+              Uri.parse(ref.read(appConfigProvider).privacyUrl),
+            ),
+            child: Text(l10n.privacyPolicy),
+          ),
+        ),
+        const SizedBox(height: Space.x8),
         SubmitSection(
           status: status,
           label: l10n.sendCodeButton,
