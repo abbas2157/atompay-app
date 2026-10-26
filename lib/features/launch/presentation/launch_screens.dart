@@ -10,7 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Nucleus background with the logo (handbook §5.2). Also shows the
+/// The mark on the same field as the native launch screen (handbook §5.2,
+/// adapted for the AP mark, which needs a light ground). Also shows the
 /// "offline, nothing cached" retry.
 class SplashScreen extends ConsumerStatefulWidget {
   const new({super.key});
@@ -55,11 +56,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final offline = ref.watch(authControllerProvider) is AuthOffline;
-    // Light status-bar icons on the dark splash.
+    final tokens = context.tokens;
+    // Matches the native launch screen (@color/launch_background), so there is
+    // no change of field as the OS splash hands over to this one. Status-bar
+    // icons invert against it.
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: AppColors.nucleus,
+        backgroundColor: tokens.paper,
         body: SafeArea(
           child: Center(
             child: Column(
@@ -76,14 +81,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: Text(
                       context.l10n.launchOffline,
                       textAlign: TextAlign.center,
-                      style: context.text.body.copyWith(color: AppColors.white),
+                      style: context.text.body,
                     ),
                   ),
                   const SizedBox(height: Space.x16),
                   TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.white,
-                    ),
                     onPressed: () =>
                         ref.read(launchControllerProvider.notifier).start(),
                     child: Text(context.l10n.tryAgain),
