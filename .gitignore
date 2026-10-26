@@ -62,3 +62,6 @@ ios/Runner/GoogleService-Info.plist
 ios/config/*/GoogleService-Info.plist
 .env
 .env.*
+
+# Xcode writes here when building from the IDE or flutter build ipa.
+/ios/build/
