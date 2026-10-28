@@ -3,6 +3,21 @@
 > Paste everything below the line into the backend agent / hand it to the backend developer.
 > The mobile app (v1.0.0) is already built against this contract and is waiting on it for the
 > Google Play and App Store submissions.
+>
+> **Status, verified live on 2026-10-27.** Items 1–4 have shipped, but at different URLs than
+> this prompt originally asked for. The paths below have been corrected to what is actually
+> serving; use these, not the originals. Item 5 is unverified.
+>
+> | Item | State |
+> |---|---|
+> | `POST /me/delete` | Live — returns `401` unauthenticated, so the route exists and is auth-gated |
+> | `privacy_url` | Live at `https://atompay.shop/privacy` (`/privacy-policy` redirects to it) |
+> | `terms_url` | `null` in `/app-config`; `https://atompay.shop/terms` is a 404. Optional, so not a blocker |
+> | Deletion page | Live at `https://atompay.shop/delete-account`. **`/account/delete` is a 404** |
+> | Password-reset bug (item 5) | Not verified either way |
+>
+> One gap remains: the deletion page lists what is deleted and what is retained, but states no
+> **retention period** for the kept records. Play’s account-deletion policy asks for one.
 
 ---
 
@@ -61,9 +76,9 @@ it customer-friendly.
 {
   "data": {
     "...": "existing fields unchanged",
-    "privacy_url": "https://atompay.shop/privacy-policy",
-    "terms_url": "https://atompay.shop/terms",
-    "account_deletion_url": "https://atompay.shop/account/delete"
+    "privacy_url": "https://atompay.shop/privacy",
+    "terms_url": null,
+    "account_deletion_url": "https://atompay.shop/delete-account"
   }
 }
 ```
@@ -75,7 +90,7 @@ it customer-friendly.
 
 Make them config/env driven (`ATOMPAY_PRIVACY_URL`, `ATOMPAY_TERMS_URL`, `ATOMPAY_ACCOUNT_DELETION_URL`).
 
-## 3. Public web page: `https://atompay.shop/privacy-policy`
+## 3. Public web page: `https://atompay.shop/privacy` — shipped
 
 Publicly reachable without login, HTTPS, no geo-blocking (Apple and Google reviewers are outside
 Pakistan). It must name **AtomPay / the legal entity** and cover, at minimum:
@@ -92,9 +107,10 @@ Pakistan). It must name **AtomPay / the legal entity** and cover, at minimum:
 - **How to delete the account**: in the app (Account → Delete account) **and** via the web page in item 4.
 - Contact for privacy requests (email address), and the date of the last update.
 
-Also publish `https://atompay.shop/terms` if terms exist.
+Also publish `https://atompay.shop/terms` if terms exist. Currently a 404, and `terms_url` is
+`null`, so the app hides the link. Optional for both stores.
 
-## 4. Public web page: `https://atompay.shop/account/delete`
+## 4. Public web page: `https://atompay.shop/delete-account` — shipped
 
 Google Play requires a **web** link where someone can request deletion **without installing the app**.
 The page must name AtomPay, list the steps, say what is deleted and what is kept (same rules as item 1),
