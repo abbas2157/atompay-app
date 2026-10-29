@@ -4,7 +4,7 @@ publish_to: 'none'
 
 # Bump for every store build. /app-config.min_version is compared against the
 # semver part (before the +).
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: ^3.13.4
