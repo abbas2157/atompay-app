@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Maintenance</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 28px; text-align: center">
+    <span class="ico amber" style="width: 80px; height: 80px; border-radius: 24px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span>
+    <h1 class="h2">We'll be right back</h1>
+    <p class="lead" style="max-width: 300px">AtomPay is being updated. Your limit, orders and payments are safe and unchanged.</p>
+    <span class="badge b-amber">Back by about 4:30 pm</span>
+  </div>
+  <div style="padding: 0 20px 34px; display: flex; flex-direction: column; gap: 12px">
+    <button class="btn btn-p btn-lg btn-block">Try again</button>
+    <a href="#" class="btn btn-g btn-block">WhatsApp support</a>
+    <p class="tiny u-center u-lh"><span class="tbd">[not built yet]</span> app-config has no maintenance flag. Until it does, a 503 from <span class="num">php artisan down</span> shows this screen with no time.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Blocking, like Update required: reached with go() (replaces the stack),
+  // PopScope(canPop: false), so Back or a swipe cannot reach anything behind
+  // it - Android back leaves the app instead. Try again re-runs app-config and
+  // continues to wherever the user was going. Support uses app-config.support.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

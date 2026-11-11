@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Key Fact Statement</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.kfs{display:flex;flex-direction:column}
+.kfs div{display:grid;grid-template-columns:42% 58%;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.kfs div:first-child{border-top:0;padding-top:0}
+.kfs dt{font-size:13px;font-weight:700;color:var(--muted)}
+.kfs dd{margin:0;font-size:14px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div class="scr" style="height: 1240px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="PlanDetail.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Key Fact Statement</span></div>
+  </div>
+  <div class="content u-gap14">
+    <div class="card u-pad">
+        <div class="sec-h u-mb12"><h2>Order AS-01279</h2><span class="tiny">OXY 3218L Android</span></div>
+        <dl class="kfs">
+          <div><dt>Lender</dt><dd><span class="tbd">[LICENSED ENTITY NAME]</span> · SECP licence <span class="tbd">[NO.]</span></dd></div>
+          <div><dt>Product</dt><dd>AtomPay instalment plan</dd></div>
+          <div><dt>Amount financed</dt><dd>Rs. 47,000 (cash price)</dd></div>
+          <div><dt>Advance</dt><dd>Rs. 0</dd></div>
+          <div><dt>Markup</dt><dd>0%</dd></div>
+          <div><dt>Processing fee</dt><dd>3% · Rs. 1,410 <span class="tbd">[confirm it is charged]</span></dd></div>
+          <div><dt>Annual percentage rate (APR)</dt><dd>18.5% including the fee <span class="tbd">[0% if no fee is charged]</span></dd></div>
+          <div><dt>Tenor</dt><dd>3 months</dd></div>
+          <div><dt>Instalments</dt><dd>10 Dec 2026 · Rs. 15,666<br>10 Jan 2027 · Rs. 15,666<br>10 Feb 2027 · Rs. 15,668</dd></div>
+          <div><dt>Total you repay</dt><dd>Rs. 47,000 in instalments</dd></div>
+          <div><dt>Delivery</dt><dd>Charges apply, shown at checkout</dd></div>
+          <div><dt>Late payment</dt><dd><span class="tbd">[CHARGES, IF ANY]</span></dd></div>
+          <div><dt>Paying early</dt><dd><span class="tbd">[EARLY SETTLEMENT TERMS]</span></dd></div>
+          <div><dt>Complaints</dt><dd>In the app: Help › Complaints. Then the SECP.</dd></div>
+        </dl>
+      </div>
+    <div class="note blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>These terms must be shown and accepted at Atomshop checkout before the order is approved <span class="tbd">[not built yet]</span>. This copy stays here for you.</span></div>
+    <button class="btn btn-p btn-block">Email or SMS me a copy</button>
+    <button class="btn btn-g btn-block">Share</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  // English only, by decision. SECP Circular 15/2022 also asks for the KFS in
+  // Urdu - open item on the Compliance board. Shared by screenshot and email/SMS. "Share" uses the system share sheet - saving to
+  // the gallery would need a storage permission lending apps may not hold.
+  // APR: 3% fee on 3 equal monthly instalments = 1.539%/month = 18.5% nominal.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

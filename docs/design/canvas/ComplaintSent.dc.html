@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Complaint sent</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.refbox{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:300px;padding:14px 16px;border:1px dashed var(--line-3);border-radius:16px;background:var(--surface)}
+.refbox b{font-size:var(--fs-h4);font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.copy{min-height:48px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--white);font:inherit;font-size:var(--fs-md);font-weight:700;color:var(--primary);cursor:pointer}
+.copy:active{background:var(--primary-soft)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div class="content state" role="status" aria-live="polite">
+    <span class="ico green"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+    <h1 class="h2">Complaint sent</h1>
+    <p class="small">A person will read it and reply in the app and by email within <span class="tbd">[RESPONSE TIME]</span>.</p>
+    <div class="refbox"><span class="u-grow" style="text-align: left"><span class="tiny u-block">Your reference</span><b>CMP-1042</b></span><button class="copy" aria-label="Copy reference">Copy</button></div>
+    <div class="acts">
+      <a href="HelpCentre.dc.html" class="btn btn-p btn-block">Back to Help</a>
+      <a href="HomeRepaying.dc.html" class="btn btn-g btn-block">Go to Home</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Success screens: one clear outcome, the reference to quote, and where to
+  // go next. Reached with go(): Back goes to Help, not to the sent form.
+  // The reference format is an example - no complaints API exists yet.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

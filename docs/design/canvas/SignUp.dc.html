@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create an account</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div class="appbar"><a href="Splash.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a></div>
+  <div class="content" style="padding-top: 4px; gap: 22px">
+    <div>
+      <span class="eyebrow ap">Create an account</span>
+      <h1 class="h1 u-mt8">Start with your name</h1>
+      <p class="lead u-mt8">Sign up with your email and we email you a code, or with your mobile number and we send it on WhatsApp.</p>
+    </div>
+    <div class="form">
+      <div class="field"><label for="su1">Full name</label><div class="input"><input id="su1" value="Ayesha Khan"></div></div>
+      <div class="field"><label for="su2">Email or mobile number</label><div class="input focus"><input id="su2" value="0300 7013707"></div><span class="hint">A mobile number gets its code on WhatsApp.</span></div>
+      <div class="two">
+        <div class="field"><label for="su3">Password</label><div class="input"><input id="su3" type="password" value="password12"></div></div>
+        <div class="field"><label for="su4">Confirm</label><div class="input"><input id="su4" type="password" value="password12"></div></div>
+      </div>
+      <span class="tiny">At least 8 characters. This also creates your AtomShop.pk account.</span>
+    </div>
+    <a href="VerifyCode.dc.html" class="btn btn-p btn-lg btn-block">Send my code</a>
+    <p class="small" style="text-align: center; margin-top: auto; padding-bottom: 28px">Already have an account? <a href="SignIn.dc.html" style="font-weight: 800; text-decoration: none">Sign in</a></p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,123 +1,157 @@
+import 'dart:async';
+
 import 'package:atompay_mobile/core/config/env.dart';
-import 'package:atompay_mobile/core/network/auth_interceptor.dart';
+import 'package:atompay_mobile/core/fake/fake_server.dart';
+import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/core/network/error_mapper.dart';
 import 'package:atompay_mobile/core/storage/token_storage.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
+import 'package:dio/io.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final sessionEventsProvider = Provider<SessionEvents>((ref) {
-  final events = SessionEvents();
-  ref.onDispose(events.dispose);
-  return events;
+/// Things any request can learn that the whole app must react to. The
+/// session and launch controllers listen; the network layer never imports
+/// them.
+sealed class ApiEvent {
+  const new();
+}
+
+/// A signed-in call got 401 or 403: the token is gone.
+final class SessionLost extends ApiEvent {
+  const new({this.message});
+
+  /// The 403 message ("Please sign in with an AtomShop customer
+  /// account."), shown as written. Null for a 401.
+  final String? message;
+}
+
+/// A 503: the server is down for maintenance.
+final class MaintenanceDetected extends ApiEvent {
+  const new();
+}
+
+final apiEventsProvider = Provider<StreamController<ApiEvent>>((ref) {
+  final controller = StreamController<ApiEvent>.broadcast();
+  ref.onDispose(controller.close);
+  return controller;
 });
 
-final dioProvider = Provider<Dio>((ref) {
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: Env.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json'},
-    ),
-  );
-  dio.interceptors.add(
-    AuthInterceptor(
-      ref.watch(tokenStorageProvider),
-      ref.watch(sessionEventsProvider),
-    ),
-  );
-  if (kDebugMode && !Env.isProd) {
-    // Method, path and status only. Bodies, headers and `extra` carry PII
-    // and the token (handbook rule 10), so no LogInterceptor.
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onResponse: (r, handler) {
-          final o = r.requestOptions;
-          debugPrint('[api] ${o.method} ${o.path} → ${r.statusCode}');
-          handler.next(r);
-        },
-        onError: (e, handler) {
-          final o = e.requestOptions;
-          final status = e.response?.statusCode ?? e.type.name;
-          debugPrint('[api] ${o.method} ${o.path} → $status');
-          handler.next(e);
-        },
-      ),
-    );
-  }
-  ref.onDispose(dio.close);
-  return dio;
-});
-
-final apiClientProvider = Provider<ApiClient>(
-  (ref) => ApiClient(ref.watch(dioProvider)),
+/// The in-memory API. Answers everything under `FAKE_API=true`, and the
+/// brief §7.2 endpoints the server hasn't shipped.
+final fakeServerProvider = Provider<FakeServer>(
+  (ref) => FakeServer(
+    scenario: FakeScenario.parse(Env.fakeScenario),
+    trustAnyToken: !Env.fakeEverything,
+  ),
 );
 
-/// Thin wrapper over Dio: unwraps the `{ "data": … }` envelope and turns
-/// every failure into an `ApiException`.
-class ApiClient {
-  new(this._dio);
+final dioProvider = Provider<Dio>((ref) {
+  final tokens = ref.watch(tokenStorageProvider);
+  final events = ref.watch(apiEventsProvider);
+  final fake = ref.watch(fakeServerProvider);
+  return buildDio(
+    tokens: tokens,
+    events: events,
+    adapter: RoutingAdapter(
+      live: IOHttpClientAdapter(),
+      fake: fake,
+      useFake: (o) => Env.useFakeFor(o.uri.path),
+    ),
+  );
+});
 
-  final Dio _dio;
+Dio buildDio({
+  required TokenStorage tokens,
+  required StreamController<ApiEvent> events,
+  HttpClientAdapter? adapter,
+  String baseUrl = Env.apiBaseUrl,
+}) {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: const {'Accept': 'application/json'},
+    ),
+  );
+  if (adapter != null) dio.httpClientAdapter = adapter;
+  dio.interceptors.add(AuthInterceptor(tokens: tokens, events: events));
+  // No body logging, ever: requests carry CNICs, incomes and tokens.
+  return dio;
+}
 
-  /// Longer timeout for multipart uploads on slow networks (handbook §1.7).
-  static const uploadTimeout = Duration(seconds: 120);
+/// Adds the bearer token, and turns 401/403 on a signed-in call into
+/// [SessionLost] after clearing the token, and any 503 into
+/// [MaintenanceDetected].
+class AuthInterceptor extends Interceptor {
+  new({required this.tokens, required this.events});
 
-  Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
-      _send(() => _dio.get<dynamic>(path, queryParameters: query));
+  final TokenStorage tokens;
+  final StreamController<ApiEvent> events;
 
-  /// The whole body, for paginated lists that need `links` and `meta`.
-  Future<Map<String, dynamic>> getPage(
-    String path, {
-    Map<String, dynamic>? query,
-  }) async {
-    try {
-      final response = await _dio.get<dynamic>(path, queryParameters: query);
-      final body = response.data;
-      return body is Map ? body.cast<String, dynamic>() : const {};
-    } on Object catch (e) {
-      throw ErrorMapper.map(e);
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final token = tokens.token;
+    if (token != null) options.headers['Authorization'] = 'Bearer $token';
+    handler.next(options);
+  }
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final mapped = ErrorMapper.map(err);
+    final hadToken = err.requestOptions.headers.containsKey('Authorization');
+    if (hadToken && (mapped is Unauthenticated || mapped is Forbidden)) {
+      await tokens.clear();
+      events.add(
+        SessionLost(message: mapped is Forbidden ? mapped.message : null),
+      );
+    } else if (mapped is Server && mapped.isMaintenance) {
+      events.add(const MaintenanceDetected());
     }
+    handler.next(err.copyWith(error: mapped));
   }
+}
 
-  Future<dynamic> post(String path, {Object? data}) =>
-      _send(() => _dio.post<dynamic>(path, data: data));
+/// Riverpod 3 retries failed providers on its own. The app doesn't: every
+/// error screen has its own "Try again", and a 404 or 422 never heals.
+Duration? noRetry(int retryCount, Object error) => null;
 
-  Future<dynamic> patch(String path, {Object? data}) =>
-      _send(() => _dio.patch<dynamic>(path, data: data));
-
-  Future<dynamic> delete(String path, {Object? data}) =>
-      _send(() => _dio.delete<dynamic>(path, data: data));
-
-  Future<dynamic> upload(
-    String path,
-    FormData form, {
-    void Function(double progress)? onProgress,
-  }) {
-    return _send(
-      () => _dio.post<dynamic>(
-        path,
-        data: form,
-        options: Options(sendTimeout: uploadTimeout),
-        onSendProgress: onProgress == null
-            ? null
-            : (sent, total) {
-                if (total > 0) onProgress(sent / total);
-              },
-      ),
-    );
+/// Runs [call] and rethrows any failure as an [ApiException].
+Future<T> guard<T>(Future<T> Function() call) async {
+  try {
+    return await call();
+  } on DioException catch (e) {
+    throw ErrorMapper.map(e);
   }
+}
 
-  /// Returns the `data` member, or null for an empty body (204).
-  Future<dynamic> _send(Future<Response<dynamic>> Function() call) async {
-    try {
-      final response = await call();
-      final body = response.data;
-      return body is Map ? body['data'] : null;
-    } on Object catch (e) {
-      throw ErrorMapper.map(e);
-    }
+/// Reads `{ "data": ... }` as an object.
+Map<String, dynamic> dataOf(Response<dynamic> response) =>
+    dataIn(response.data);
+
+/// Reads `{ "data": [ ... ] }` as a list of objects.
+List<Map<String, dynamic>> listOf(Response<dynamic> response) =>
+    listIn(response.data);
+
+/// [dataOf] for a body that was cached rather than just received.
+Map<String, dynamic> dataIn(Object? body) {
+  if (body is Map && body['data'] is Map) {
+    return (body['data'] as Map).cast<String, dynamic>();
   }
+  throw const Server(statusCode: 0);
+}
+
+/// [listOf] for a body that was cached rather than just received.
+List<Map<String, dynamic>> listIn(Object? body) {
+  if (body is Map && body['data'] is List) {
+    return [
+      for (final item in body['data'] as List)
+        (item as Map).cast<String, dynamic>(),
+    ];
+  }
+  throw const Server(statusCode: 0);
 }

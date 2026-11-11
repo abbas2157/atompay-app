@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Limit review pending</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+</style>
+</helmet>
+<div class="scr" style="height: 1000px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="AppHistory.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Limit review</span><span class="badge b-amber u-mr8">Under review</span></div>
+  </div>
+  <div class="content u-gap14">
+    <div class="note green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Your <b>Rs. 60,000</b> limit stays active while we review — you can keep shopping with it.</span></div>
+    <div class="card u-pad">
+      <div class="sec-h" style="margin-bottom: 14px"><h2>Where it is</h2><span class="tiny num">Application #939</span></div>
+      <ol class="track">
+        <li class="done"><span class="d"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span><span><b>Review requested</b><small>✓ 9 Nov 2026</small></span></li>
+        <li class="now"><span class="d"></span><span><b>Risk assessment</b><small>Reviewed by AtomPay</small></span></li>
+        <li><span class="d"></span><span><b>New limit decided</b><small>We'll notify you and update Home</small></span></li>
+      </ol>
+    </div>
+    <div class="card u-pad">
+      <div class="sec-h u-mb12"><h2>What you told us</h2><a href="ApplyIncome.dc.html">Change</a></div>
+      <dl class="kv">
+        <div><dt>Work</dt><dd>Salaried · Cubic Reach (Pvt) Ltd</dd></div>
+        <div><dt>Income</dt><dd class="num">Rs. 260,000 a month</dd></div>
+        <div><dt>Outgoings</dt><dd class="num">Rs. 80,000</dd></div>
+        <div><dt>Disposable</dt><dd class="num">Rs. 180,000</dd></div>
+      </dl>
+    </div>
+    <div class="spend">
+      <div class="lbl">Provisional limit</div>
+      <div class="amt">Rs. 78,000</div>
+      <div class="row"><span>Up to Rs. 26,000 a month</span><span>30% of income</span></div>
+      <p style="font-size: 13px; font-weight: 600; margin-top: 10px">Final figures are set by our team after the risk assessment.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  // Real data: assessment #939, raised while testing the v2 wizard. Submitting
+  // again updates the same pending review rather than opening another.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

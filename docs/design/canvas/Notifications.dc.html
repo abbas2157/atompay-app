@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.unread{background:var(--surface-2)}
+.unread b::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-left:8px;vertical-align:2px}
+</style>
+</helmet>
+<div class="scr" style="height: 844px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="HomeRepaying.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Notifications</span><button class="btn" style="min-height: 48px; padding: 0 12px; background: transparent; color: var(--primary); font-size: 14px">Mark all read</button></div>
+  </div>
+  <sc-if value="{{isReady}}" hint-placeholder-val="{{ true }}"><div class="content">
+    <span class="eyebrow" style="color: var(--muted)">Yesterday · 9 Nov</span>
+    <div class="list">
+      <a href="PlanDetail.dc.html" class="li unread u-top"><span class="ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span><span class="u-grow"><b>Payment received</b><span class="d">Rs. 15,666 for the 1st month of AS-01279, by JazzCash.</span></span></a>
+      <a href="PlanDetail.dc.html" class="li u-top"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg></span><span class="u-grow"><b>Your order was delivered</b><span class="d">OXY 3218L Android. Your three months have started.</span></span></a>
+      <a href="HomeApproved.dc.html" class="li u-top"><span class="ico wash"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3 6 6 .9-4.5 4.4 1 6.2L12 16.5 6.5 19.5l1-6.2L3 8.9 9 8z"/></svg></span><span class="u-grow"><b>Your limit is approved</b><span class="d">Rs. 60,000 to spend on Atomshop.pk, up to Rs. 20,000 a month.</span></span></a>
+      <a href="Verification.dc.html" class="li u-top"><span class="ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="u-grow"><b>Identity and address verified</b><span class="d">Our team checked your documents and visited your address.</span></span></a>
+      <a href="Verification.dc.html" class="li u-top"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg></span><span class="u-grow"><b>Application received</b><span class="d">We will verify your address and confirm your limit.</span></span></a>
+    </div>
+    <p class="tiny u-center u-lh">The same alerts arrive by email. Turn email off in Account; the inbox here always works.</p>
+  </div></sc-if>
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}"><div class="content u-gap14" aria-busy="true" aria-label="Loading notifications">
+    <div class="skel" style="width: 36%; height: 10px; border-radius: 99px"></div>
+    <div class="list"><div class="li u-top"><div class="skel" style="width: 36px; height: 36px; border-radius: 12px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 2px"><div class="skel" style="width: 75%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 95%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 30%; height: 10px; border-radius: 99px"></div></div></div><div class="li u-top"><div class="skel" style="width: 36px; height: 36px; border-radius: 12px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 2px"><div class="skel" style="width: 75%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 95%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 30%; height: 10px; border-radius: 99px"></div></div></div><div class="li u-top"><div class="skel" style="width: 36px; height: 36px; border-radius: 12px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 2px"><div class="skel" style="width: 75%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 95%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 30%; height: 10px; border-radius: 99px"></div></div></div><div class="li u-top"><div class="skel" style="width: 36px; height: 36px; border-radius: 12px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 2px"><div class="skel" style="width: 75%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 95%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 30%; height: 10px; border-radius: 99px"></div></div></div><div class="li u-top"><div class="skel" style="width: 36px; height: 36px; border-radius: 12px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 2px"><div class="skel" style="width: 75%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 95%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 30%; height: 10px; border-radius: 99px"></div></div></div><div class="li u-top"><div class="skel" style="width: 36px; height: 36px; border-radius: 12px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px; padding-top: 2px"><div class="skel" style="width: 75%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 95%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 30%; height: 10px; border-radius: 99px"></div></div></div></div>
+  </div></sc-if>
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}"><div class="content state" role="status">
+    <span class="ico green"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+    <h2 class="h3">You're all caught up</h2>
+    <p class="small">Payment reminders and decisions on your limit will appear here.</p>
+    <div class="acts"><a href="NotifSettings.dc.html" class="btn btn-g btn-block">Notification settings</a></div>
+    
+  </div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["ready", "loading", "empty"],"default":"ready","section":"State"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // States: ready, loading (skeleton in this screen's shape), empty.
+  stateVals() {
+    const s = this.props.state || 'ready';
+    return { isReady: s === 'ready' || s === 'offline', isLoading: s === 'loading', isError: s === 'error', isEmpty: s === 'empty', isOffline: s === 'offline' };
+  }
+  renderVals() { return this.stateVals(); }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Apply · personal details</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+textarea{border:0;outline:0;background:transparent;font:inherit;color:inherit;width:100%;resize:none;padding:12px 0;min-height:76px}
+</style>
+</helmet>
+<div class="scr" style="height: 1010px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar">
+      <a href="HomeNoLimit.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+      <span class="t">Apply for your limit</span>
+    </div>
+    <div style="padding: 0 16px 14px">
+      <div class="wsteps"><i class="on"></i><i></i><i></i><i></i></div>
+      <div style="display: flex; justify-content: space-between; margin-top: 8px"><span class="tiny">Step 1 of 4</span><span class="tiny" style="color: var(--ink); font-weight: 800">Personal details</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <div>
+      <h1 class="h2">Personal details</h1>
+      <p class="small u-mt6">Enter these exactly as they appear on your CNIC — the visit team checks them against the card.</p>
+    </div>
+    <div class="form">
+      <div class="field"><label for="ap1">Full name</label><div class="input"><input id="ap1" value="Ayesha Khan" autocomplete="name"></div></div>
+      <div class="field"><label for="ap2">CNIC number</label><div class="input"><input id="ap2" value="42101-9876543-2" inputmode="numeric"></div><span class="hint">13 digits. The dashes are added for you.</span></div>
+      <div class="two">
+        <div class="field"><label for="ap3">Mobile number</label><div class="input"><input id="ap3" value="0300 7013707" inputmode="tel"></div></div>
+        <div class="field"><span>Date of birth</span><button class="input picker" aria-label="Date of birth, 12 Apr 1995"><span>12 Apr 1995</span><svg class="u-body" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></button></div>
+      </div>
+      <div class="field"><span>City</span><a href="CityPicker.dc.html" class="input picker u-plain" aria-label="City, Lahore. Change"><span>Lahore</span><svg class="u-body" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a></div>
+      <div class="field"><span>Area</span><a href="AreaPicker.dc.html" class="input picker focus u-plain" aria-label="Area, choose one"><span class="ph">Search 474 areas in Lahore</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></a><span class="hint">Helps us deliver to the right part of Lahore.</span></div>
+      <div class="field"><label for="ap7">Residential address</label><div class="input u-top"><textarea id="ap7" rows="3">House 14, Street 7, Block E</textarea></div></div>
+    </div>
+  </div>
+  <div class="actionbar"><a href="ApplyDocuments.dc.html" class="btn btn-p btn-lg">Continue</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1010}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,35 +1,59 @@
-// freezed needs the classic `factory Name(...)` form; fields follow the API's
-// JSON order rather than required-first.
+// freezed needs the classic `factory Name(...)` form.
 // ignore_for_file: unnecessary_type_name_in_constructor
-// ignore_for_file: always_put_required_named_parameters_first
 
+import 'package:atompay_mobile/features/launch/data/app_config.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'application_models.freezed.dart';
 part 'application_models.g.dart';
 
-/// `GET /application` (handbook §8.9b).
+/// `GET /profile`: identity details (KYC section 1). Before the first
+/// submission it's a draft pre-filled from AtomShop, `status:
+/// not_started`.
 @freezed
-abstract class ApplicationOverview with _$ApplicationOverview {
-  const factory ApplicationOverview({
-    @Default(false) bool canApply,
+abstract class Profile with _$Profile {
+  const factory Profile({
+    /// `not_started` · `pending` · `verified` · `rejected`.
+    @Default('not_started') String status,
+    String? fullName,
+    String? cnic,
+    String? cnicFormatted,
+    String? mobile,
+    String? mobileFormatted,
 
-    /// `profile` when [canApply] is false.
-    String? requires,
+    /// `YYYY-MM-DD`.
+    String? dateOfBirth,
+    String? residentialAddress,
+    Place? city,
 
-    /// Pre-fills the form.
-    Assessment? latest,
+    /// Brief §7.2.
+    Place? area,
+    @Default({}) Map<String, DocumentInfo> documents,
+    @Default(false) bool addressVerified,
+    DateTime? verifiedAt,
+    DateTime? submittedAt,
+  }) = _Profile;
 
-    /// The limit in force; differs from [latest] while a re-application is
-    /// pending.
-    Assessment? active,
-  }) = _ApplicationOverview;
-
-  factory ApplicationOverview.fromJson(Map<String, dynamic> json) =>
-      _$ApplicationOverviewFromJson(json);
+  factory Profile.fromJson(Map<String, dynamic> json) =>
+      _$ProfileFromJson(json);
 }
 
-/// One income assessment. Every submission creates a new one.
+extension ProfileX on Profile {
+  bool get submitted => status != 'not_started';
+  bool uploaded(String doc) => documents[doc]?.uploaded ?? false;
+}
+
+@freezed
+abstract class DocumentInfo with _$DocumentInfo {
+  const factory DocumentInfo({@Default(false) bool uploaded, String? url}) =
+      _DocumentInfo;
+
+  factory DocumentInfo.fromJson(Map<String, dynamic> json) =>
+      _$DocumentInfoFromJson(json);
+}
+
+/// One income application (KYC section 3). The decision fields stay null
+/// until staff decide.
 @freezed
 abstract class Assessment with _$Assessment {
   const factory Assessment({
@@ -37,26 +61,22 @@ abstract class Assessment with _$Assessment {
 
     /// `pending` · `approved` · `conditional` · `rejected`.
     required String status,
-    required String statusLabel,
+    String? statusLabel,
     @Default(false) bool isUsable,
-    required String employmentStatus,
-    required String employmentStatusLabel,
+    String? employmentStatus,
+    String? employmentStatusLabel,
     String? employerName,
-    required String incomeSource,
-    required String incomeSourceLabel,
-    required int monthlyIncome,
+    String? incomeSource,
+    String? incomeSourceLabel,
+    @Default(0) int monthlyIncome,
     @Default(0) int existingInstalments,
     @Default(0) int monthlyExpenses,
-
-    /// Can be negative.
-    @Default(0) int disposableIncome,
-
-    /// Null until staff decide.
+    int? disposableIncome,
     int? approvedLimit,
     int? maxInstalment,
     int? approvedTenure,
 
-    /// Written by staff for the customer.
+    /// The reviewer's note, shown exactly as written.
     String? notes,
     DateTime? submittedAt,
     DateTime? decidedAt,
@@ -66,39 +86,26 @@ abstract class Assessment with _$Assessment {
       _$AssessmentFromJson(json);
 }
 
-/// `GET /options` (handbook §8.12). Send `value`, show `label`.
+/// `GET /application`.
 @freezed
-abstract class FormOptions with _$FormOptions {
-  const factory FormOptions({
-    @Default([]) List<EmploymentOption> employmentStatuses,
-    @Default([]) List<Option> incomeSources,
-  }) = _FormOptions;
+abstract class ApplicationInfo with _$ApplicationInfo {
+  const factory ApplicationInfo({
+    @Default(false) bool canApply,
 
-  factory FormOptions.fromJson(Map<String, dynamic> json) =>
-      _$FormOptionsFromJson(json);
+    /// `profile` when the profile must come first.
+    String? requires,
+    Assessment? latest,
+
+    /// The limit in force; can differ from [latest] during a review.
+    Assessment? active,
+  }) = _ApplicationInfo;
+
+  factory ApplicationInfo.fromJson(Map<String, dynamic> json) =>
+      _$ApplicationInfoFromJson(json);
 }
 
-@freezed
-abstract class EmploymentOption with _$EmploymentOption {
-  const factory EmploymentOption({
-    required String value,
-    required String label,
-    @Default(false) bool hasEmployer,
-  }) = _EmploymentOption;
-
-  factory EmploymentOption.fromJson(Map<String, dynamic> json) =>
-      _$EmploymentOptionFromJson(json);
-}
-
-@freezed
-abstract class Option with _$Option {
-  const factory Option({required String value, required String label}) =
-      _Option;
-
-  factory Option.fromJson(Map<String, dynamic> json) => _$OptionFromJson(json);
-}
-
-/// `POST /estimate`. Always labelled "estimate".
+/// `POST /estimate`: a preview from income alone. Always labelled as an
+/// estimate.
 @freezed
 abstract class Estimate with _$Estimate {
   const factory Estimate({
@@ -109,33 +116,4 @@ abstract class Estimate with _$Estimate {
 
   factory Estimate.fromJson(Map<String, dynamic> json) =>
       _$EstimateFromJson(json);
-}
-
-/// What `POST /application` sends.
-class ApplicationInput {
-  const new({
-    required this.employmentStatus,
-    required this.incomeSource,
-    required this.monthlyIncome,
-    this.employerName,
-    this.existingInstalments,
-    this.monthlyExpenses,
-  });
-
-  final String employmentStatus;
-  final String? employerName;
-  final String incomeSource;
-  final int monthlyIncome;
-  final int? existingInstalments;
-  final int? monthlyExpenses;
-
-  Map<String, dynamic> toJson() => {
-    'employment_status': employmentStatus,
-    if (employerName != null && employerName!.trim().isNotEmpty)
-      'employer_name': employerName!.trim(),
-    'income_source': incomeSource,
-    'monthly_income': monthlyIncome,
-    'existing_instalments': existingInstalments ?? 0,
-    'monthly_expenses': monthlyExpenses ?? 0,
-  };
 }

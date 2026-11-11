@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Store and regulatory compliance</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.tb{display:grid;grid-template-columns:2.3fr 1.05fr 1.7fr 1.5fr;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--white)}
+.tb div{padding:7px 12px;font-size:12px;line-height:1.4;color:var(--body);font-weight:600;border-top:1px solid var(--grey-soft)}
+.tb .h{background:var(--surface);border-top:0;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.tb b{color:var(--ink);font-weight:700}
+.tb .badge{font-size:11px;padding:3px 8px}
+</style>
+</helmet>
+<div style="width: 1360px; height: 900px; box-sizing: border-box; padding: 36px 44px; background: var(--white); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--ink); display: flex; flex-direction: column; gap: 14px">
+  <div style="display: flex; align-items: flex-end; gap: 20px">
+    <div class="u-grow"><div class="eyebrow ap">Must clear before submission</div><div style="font-size: 24px; font-weight: 800; letter-spacing: -.7px; margin-top: 4px">Store and regulatory compliance</div></div>
+    <div style="display: flex; gap: 8px"><span class="badge b-green">Designed in</span><span class="badge b-amber">Needs a decision</span><span class="badge b-rose">Blocker</span></div>
+  </div>
+  <div class="tb">
+    <div class="h">Requirement</div><div class="h">Source</div><div class="h">Where in the app</div><div class="h">Status</div>
+
+    <div><b>Proof of SECP approval to offer or facilitate digital lending in Pakistan</b>; Personal Loan App Declaration</div><div>Google Play · Financial Services</div><div>Licence shown on First run, KFS, About</div><div><span class="badge b-rose">Blocker</span> Name the licensed entity</div>
+    <div><b>Corporate name and licensing status</b> displayed in the app</div><div>SECP Circular 15/2022</div><div>First run · KFS · About and legal</div><div><span class="badge b-amber">Placeholders</span> Supply name, licence no.</div>
+    <div><b>No contacts, photo gallery, media, storage, precise location, phone numbers, call logs</b> (even with consent)</div><div>Google Play · SECP</div><div>CNIC by camera only; area chosen from a list</div><div><span class="badge b-green">Designed in</span> Handbook F7 changed</div>
+    <div><b>Key Fact Statement</b> before disbursement: amount, APR, tenor, each instalment and date, all fees — <b>English and Urdu</b></div><div>SECP Circular 15/2022</div><div>Key Fact Statement, from each plan and order</div><div><span class="badge b-rose">Decision</span> App is English only; SECP asks for an Urdu KFS too. Accepted at Atomshop checkout</div>
+    <div><b>Disclose APR including costs and fees</b>, and payment due dates</div><div>Apple 3.2.2(ix)</div><div>KFS · product plan</div><div><span class="badge b-rose">Blocker</span> Is the 3% fee charged? 18.5% vs 0%</div>
+    <div>APR at most 36%; <b>not repaid in full within 60 days</b></div><div>Apple 3.2.2(ix) · Google Play</div><div>3 months, APR ≤ 18.5%</div><div><span class="badge b-green">Meets it</span></div>
+    <div><b>Grievance redressal</b> mechanism for borrowers</div><div>SECP Circular 15/2022</div><div>Complaints, with SECP escalation</div><div><span class="badge b-amber">Server</span> No complaints API yet</div>
+    <div>No coercive recovery; respectful reminders</div><div>SECP digital lending standards</div><div>Order · payment late</div><div><span class="badge b-green">Designed in</span></div>
+    <div><b>Borrower data stored in Pakistan</b>, not on foreign cloud</div><div>SECP Circular 15/2022</div><div>About and legal; no PII in push or crash reports</div><div><span class="badge b-amber">Decision</span> Confirm hosting; FCM / Crashlytics</div>
+    <div>Only one digital lending app per lender</div><div>SECP · Google Play</div><div>—</div><div><span class="badge b-amber">Decision</span> Confirm vs Atomshop app</div>
+    <div><b>In-app account deletion</b>, plus a web link for the store listing</div><div>Apple 5.1.1(v) · Google Play</div><div>Delete account · atompay.shop/delete-account</div><div><span class="badge b-green">Designed in</span> Shared Atomshop account explained</div>
+    <div>Privacy policy in the app and the listing; Play Data safety form; App Store privacy labels</div><div>Google Play · Apple</div><div>First run · About and legal</div><div><span class="badge b-amber">To do</span> Fill the forms at submission</div>
+    <div><b>Prominent disclosure</b> before collecting sensitive data</div><div>Google Play User Data</div><div>First run · Camera permission</div><div><span class="badge b-green">Designed in</span></div>
+    <div>Ask for permissions in context, with a reason; Android 13+ notifications</div><div>Google Play · Apple HIG</div><div>Camera and notification pre-prompts</div><div><span class="badge b-green">Designed in</span></div>
+    <div>Screenshots blocked on KYC screens; documents never cached</div><div>AtomPay handbook NFR, F9</div><div>Capture · Document viewer</div><div><span class="badge b-green">Designed in</span></div>
+    <div>Force update below the minimum version</div><div>AtomPay handbook F13</div><div>Update required</div><div><span class="badge b-green">Designed in</span></div>
+    <div>WCAG AA contrast, 48 dp targets, text to 200%, status not by colour alone</div><div>AtomPay handbook NFR</div><div>Every screen</div><div><span class="badge b-green">Designed in</span></div>
+    <div>No tracking, so no App Tracking Transparency prompt; no social login, so no Sign in with Apple</div><div>Apple 5.1.2 · 4.8</div><div>—</div><div><span class="badge b-green">Not needed</span> Keep it so</div>
+  </div>
+  <p class="tiny" style="line-height: 1.5">Sources: Google Play Console Help, Financial Services (support.google.com/googleplay/android-developer/answer/9876821) · Apple App Review Guidelines 3.2.2(ix), updated 13 Nov 2025 · SECP Circular No. 15 of 2022, digital lending standards. Policies change; re-check the live text at submission. Not legal advice.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

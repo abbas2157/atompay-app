@@ -1,55 +1,49 @@
+import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-/// App version and a human device name, loaded once at launch.
-@immutable
+/// The device name sent on sign-in ("Pixel 7 · Android 14") and the app's
+/// version. No identifiers beyond what the sessions list shows.
 class DeviceInfo {
-  const new({
-    required this.appVersion,
-    required this.deviceName,
-    required this.platform,
-  });
+  String? _name;
 
-  /// `1.0.0` (no build number), compared against `/app-config.min_version`.
-  final String appVersion;
+  Future<String> name() async {
+    if (_name != null) return _name!;
+    try {
+      final info = DeviceInfoPlugin();
+      if (!kIsWeb && Platform.isAndroid) {
+        final a = await info.androidInfo;
+        return _name = '${a.model} · Android ${a.version.release}';
+      }
+      if (!kIsWeb && Platform.isIOS) {
+        final i = await info.iosInfo;
+        return _name = '${i.utsname.machine} · iOS ${i.systemVersion}';
+      }
+    } on Object {
+      // Fall through to the generic name.
+    }
+    return _name = 'AtomPay app';
+  }
 
-  /// Shown in the signed-in devices list, e.g. `Pixel 7 · Android 14`.
-  final String deviceName;
-
-  /// `android` or `ios`, as the API spells it.
-  final String platform;
+  String get platform => !kIsWeb && Platform.isIOS ? 'ios' : 'android';
 }
 
-/// Overridden in `main()` with the loaded value, and in tests.
-final deviceInfoProvider = Provider<DeviceInfo>(
-  (ref) => throw UnimplementedError('deviceInfoProvider is set in main()'),
+final deviceInfoProvider = Provider<DeviceInfo>((ref) => DeviceInfo());
+
+/// Overridden in `main()` once the platform answers.
+final packageInfoProvider = Provider<PackageInfo>(
+  (ref) => PackageInfo(
+    appName: 'AtomPay',
+    packageName: 'com.ecommerce.atompay',
+    version: '1.0.0',
+    buildNumber: '1',
+  ),
 );
 
-Future<DeviceInfo> loadDeviceInfo() async {
-  final package = await PackageInfo.fromPlatform();
-  final plugin = DeviceInfoPlugin();
-  var name = 'Unknown device';
-  var platform = 'android';
-  try {
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        final a = await plugin.androidInfo;
-        name = '${a.model} · Android ${a.version.release}';
-      case TargetPlatform.iOS:
-        platform = 'ios';
-        final i = await plugin.iosInfo;
-        name = '${i.modelName} · iOS ${i.systemVersion}';
-      case _:
-        break;
-    }
-  } on Object {
-    // Device name is cosmetic; never block launch on it.
-  }
-  return DeviceInfo(
-    appVersion: package.version,
-    deviceName: name.length > 100 ? name.substring(0, 100) : name,
-    platform: platform,
-  );
+extension VersionLabel on PackageInfo {
+  /// "Version 1.0.0 (1)".
+  String get label => 'Version $version ($buildNumber)';
 }

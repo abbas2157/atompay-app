@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AtomPay App v2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.cov h3{margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--primary)}
+.cov ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.cov li{font-size:15px;line-height:1.5;color:var(--body);font-weight:500}
+.cov li b{color:var(--ink)}
+</style>
+</helmet>
+<div class="cov" style="width: 1360px; height: 900px; box-sizing: border-box; padding: 64px 72px; background: var(--surface); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--ink); display: flex; flex-direction: column; gap: 44px">
+  <div style="display: flex; align-items: center; gap: 28px">
+    <img src="/_blob/4880a9013800ba40779b757969c512d9" alt="AtomPay" style="height: 96px">
+    <div class="u-grow">
+      <div style="font-size: 12px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--rose)">Customer app · Android and iOS</div>
+      <h1 style="margin: 8px 0 10px; font-size: 52px; font-weight: 800; letter-spacing: -1.6px; line-height: 1.05">AtomPay App v2</h1>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: var(--body); max-width: 760px">The app redesigned to match atompay.shop: Atomshop storefront v2's navy and royal blue, Plus Jakarta Sans, and AtomPay's own coral and amber from the logo.</p>
+    </div>
+    <div style="height: 170px; width: 260px; border-radius: 20px; background: var(--apay-grad); padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+      <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink)">Available to spend</span>
+      <span style="font-size: 40px; font-weight: 800; letter-spacing: -1.4px; color: var(--ink); font-variant-numeric: tabular-nums">Rs. 28,666</span>
+      <span style="font-size: 13px; font-weight: 700; color: var(--ink)">of Rs. 60,000 · Rs. 31,334 in use</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; flex: 1">
+    <div style="background: var(--white); border: 1px solid var(--line); border-radius: 24px; padding: 28px">
+      <h3>What changes from the old app</h3>
+      <ul>
+        <li><b>The real AtomPay mark</b> replaces the orbit-ring logo.</li>
+        <li><b>Plus Jakarta Sans</b>, one family, 500–800.</li>
+        <li><b>Rs. 157,999</b> everywhere, as on the site and Atomshop.</li>
+        <li><b>One plan:</b> 3 months, no advance, 0% markup. No down-payment slider, no tenure chips.</li>
+        <li><b>Every dropdown is searchable</b>, and Area follows City.</li>
+        <li><b>Ask Atom</b> sits in the middle of the tab bar.</li>
+        <li><b>Camera only</b> for CNIC photos: no gallery, contacts or location.</li>
+      </ul>
+    </div>
+    <div style="background: var(--white); border: 1px solid var(--line); border-radius: 24px; padding: 28px">
+      <h3>The flows on this canvas</h3>
+      <ul>
+        <li><b>Start</b> · splash, update required, disclosures, sign in, sign up, code, forgot password ×3</li>
+        <li><b>Home</b> · no limit, approved, repaying, notifications, permissions</li>
+        <li><b>Apply</b> · 4-step wizard, area picker, camera capture, status, review, rejected, history</li>
+        <li><b>Shop and repay</b> · products, plan, calculator, orders, late, every status, Key Fact Statement</li>
+        <li><b>Help and account</b> · Ask Atom, help, complaints, devices, settings, delete, legal</li>
+      </ul>
+      <p style="margin: 18px 0 0; font-size: 14px; color: var(--muted); font-weight: 600">45 phone screens and 5 reference boards. Press Play on any phone: they link to each other.</p>
+    </div>
+    <div style="background: var(--apay-wash); border: 1px solid var(--apay-line); border-radius: 24px; padding: 28px">
+      <h3 style="color: var(--rose)">Before it can be built</h3>
+      <ul>
+        <li><b>Licence:</b> Google Play needs proof of SECP approval to offer or facilitate lending in Pakistan.</li>
+        <li><b>APR:</b> if the 3% fee is charged, disclose 18.5%, not just "0% markup".</li>
+        <li><b>KFS:</b> shown at Atomshop checkout. The app is English only; SECP also asks for Urdu.</li>
+        <li><b>API:</b> quote is wrong; no areas, products, KFS, complaints or Ask Atom endpoints.</li>
+        <li><b>Logo:</b> a 1024 px or vector mark for the iOS icon.</li>
+      </ul>
+      <p style="margin: 18px 0 0; font-size: 14px; color: var(--body); font-weight: 600">Sample customer throughout: Ayesha Khan, Lahore, limit Rs. 60,000.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

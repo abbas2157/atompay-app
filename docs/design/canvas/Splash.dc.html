@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome to AtomPay</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.terms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.terms div{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:14px 10px;text-align:center}
+.terms b{display:block;font-size:20px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.terms span{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+</style>
+</helmet>
+<div class="scr" style="height: 844px">
+  <div class="safe"></div>
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 18px; padding: 0 28px; text-align: center">
+    <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="" style="width: 96px; height: 96px; border-radius: 26px; background: var(--white); box-shadow: 0 16px 40px rgba(20,33,61,.08)">
+    <div>
+      <div style="font-size: 30px; font-weight: 800; letter-spacing: -.8px; line-height: 1">ATOMPAY</div>
+      <div style="font-size: 11px; font-weight: 700; letter-spacing: 3.4px; color: var(--muted); margin-top: 6px">PAY IN STEPS</div>
+    </div>
+    <p class="lead" style="max-width: 300px">Buy on Atomshop.pk now and pay the cash price over three months.</p>
+  </div>
+  <div style="padding: 0 20px 18px; display: flex; flex-direction: column; gap: 14px">
+    <div class="terms">
+      <div><b>Rs. 0</b><span>advance</span></div>
+      <div><b>0%</b><span>markup</span></div>
+      <div><b>3</b><span>months</span></div>
+    </div>
+    <a href="FirstRun.dc.html" class="btn btn-p btn-lg btn-block">Create an account</a>
+    <a href="SignIn.dc.html" class="btn btn-g btn-lg btn-block">Sign in</a>
+    <p class="tiny" style="text-align: center; line-height: 1.5; padding-bottom: 14px">Part of the Atom ecosystem: Atomshop · AtomPay · Atom Seller · AtomBrand</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

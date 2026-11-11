@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Architecture map</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.tb{display:grid;grid-template-columns:1.25fr 1.35fr .9fr 1.7fr;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--white)}
+.tb div{padding:4px 10px;font-size:12px;line-height:1.35;color:var(--body);font-weight:600;border-top:1px solid var(--grey-soft)}
+.tb .h{background:var(--surface);border-top:0;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:7px 10px}
+.tb b{color:var(--ink);font-weight:700}
+.tb code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--primary-dark)}
+.miss{color:var(--rose);font-weight:800}
+.side{display:flex;flex-direction:column;gap:14px}
+.box{border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--surface-2)}
+.box h3{margin:0 0 10px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.box p,.box li{font-size:13px;line-height:1.5;color:var(--body);font-weight:600;margin:0}
+.box ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:5px}
+.nav5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px}
+.nav5 span{background:var(--white);border:1px solid var(--line-2);border-radius:10px;padding:8px 2px;text-align:center;font-size:11px;font-weight:800;color:var(--ink)}
+.nav5 span.c{background:var(--ink);color:var(--white);border-color:var(--ink)}
+</style>
+</helmet>
+<div style="width: 1360px; height: 900px; box-sizing: border-box; padding: 32px 40px; background: var(--white); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--ink); display: flex; flex-direction: column; gap: 12px">
+  <div><div class="eyebrow">Flutter · feature-first, layered (handbook §3)</div><div style="font-size: 24px; font-weight: 800; letter-spacing: -.7px; margin-top: 4px">Architecture map</div></div>
+  <div style="display: flex; gap: 20px; flex: 1; min-height: 0">
+    <div class="tb" style="flex: 1; align-self: flex-start">
+      <div class="h">Screen</div><div class="h">go_router path</div><div class="h">Feature</div><div class="h">API (/api/v1)</div>
+      <div><b>Splash · Update required</b></div><div><code>/splash · /update</code></div><div>launch</div><div>GET /app-config (min_version) · GET /me</div>
+      <div><b>Before you start</b></div><div><code>/welcome</code></div><div>launch</div><div>local consent flag · app-config.legal <span class="miss">new</span></div>
+      <div><b>Sign in · Sign up · Code</b></div><div><code>/login · /register · /register/verify</code></div><div>auth</div><div>POST /auth/login · /auth/register · /verify · /resend</div>
+      <div><b>Forgot password ×3</b></div><div><code>/forgot · /forgot/verify · /forgot/reset</code></div><div>auth</div><div>POST /auth/password/forgot · /verify · /reset</div>
+      <div><b>Home (3 states)</b></div><div><code>/home</code></div><div>dashboard</div><div>GET /dashboard</div>
+      <div><b>Notifications</b></div><div><code>/home/notifications</code></div><div>notifications</div><div>GET /notifications · POST /{id}/read · /read-all</div>
+      <div><b>Apply 1–4</b></div><div><code>/application?step=1..4</code></div><div>application</div><div>POST /profile (multipart) · POST /application</div>
+      <div><b>Area picker (sheet)</b></div><div><code>sheet, no route</code></div><div>profile</div><div>GET /cities · <span class="miss">GET /areas/{city} missing</span></div>
+      <div><b>Capture CNIC · selfie</b></div><div><code>/application/capture/:doc</code></div><div>profile</div><div>camera only · FLAG_SECURE · upload ≤ 4 MB</div>
+      <div><b>Status · history · review</b></div><div><code>/application/status · /history</code></div><div>application</div><div>GET /application · /application/history</div>
+      <div><b>Document viewer</b></div><div><code>/profile/document/:doc</code></div><div>profile</div><div>GET /profile/documents/{doc} (never cached)</div>
+      <div><b>Eligible products · plan</b></div><div><code>/shop · /shop/:id</code></div><div>catalogue <span class="miss">new</span></div><div><span class="miss">eligible-products endpoint missing</span></div>
+      <div><b>Calculator</b></div><div><code>/calculator</code></div><div>calculator</div><div>POST /quote · <span class="miss">returns seller financing</span></div>
+      <div><b>Orders · detail · late</b></div><div><code>/plans · /plans/:orderId</code></div><div>plans</div><div>GET /plans · GET /plans/{order}</div>
+      <div><b>Key Fact Statement</b></div><div><code>/plans/:orderId/kfs</code></div><div>plans</div><div><span class="miss">KFS endpoint missing</span></div>
+      <div><b>Ask Atom</b></div><div><code>/atom</code></div><div>atom <span class="miss">new</span></div><div><span class="miss">web route only; needs API</span></div>
+      <div><b>Help · Complaints</b></div><div><code>/help · /help/complaint</code></div><div>support <span class="miss">new</span></div><div>app-config.support · <span class="miss">complaints API missing</span></div>
+      <div><b>Account · About</b></div><div><code>/account · /account/about</code></div><div>account</div><div>GET /me · app-config</div>
+      <div><b>Devices</b></div><div><code>/account/devices</code></div><div>account</div><div>GET /auth/sessions · DELETE /auth/sessions/{id}</div>
+      <div><b>Notifications</b></div><div><code>/account/notifications</code></div><div>account</div><div>GET/PATCH /me/preferences · POST/DELETE /devices</div>
+      <div><b>Delete account</b></div><div><code>/account/delete</code></div><div>account</div><div>POST /me/delete (409 outstanding_balance)</div>
+    </div>
+    <div class="side" style="width: 360px; flex: none">
+      <div class="box">
+        <h3>Bottom navigation</h3>
+        <div class="nav5"><span>Home</span><span>Shop</span><span class="c">Ask Atom</span><span>Orders</span><span>Account</span></div>
+        <p style="margin-top: 10px">Replaces the handbook's Home · Plans · Profile (§5.1), to match Atom Seller's Ask Atom bar. <b style="color: var(--rose)">Needs sign-off.</b></p>
+      </div>
+      <div class="box">
+        <h3>Layer rules</h3>
+        <ul>
+          <li>presentation → repository → Dio. Widgets never import Dio.</li>
+          <li>Screens switch on a sealed <code>ApiException</code>, never status codes.</li>
+          <li>401/403 anywhere: clear token, signed out, back to Sign in.</li>
+          <li>422: errors under each field; 429: countdown from Retry-After.</li>
+          <li>Money is an int of rupees; shown as Rs. 1,234.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>Data on the phone</h3>
+        <ul>
+          <li>Token in secure storage only.</li>
+          <li>KYC images: never on disk after upload.</li>
+          <li>No PII in logs, analytics, crash reports or push payloads.</li>
+          <li>No contacts, gallery, storage or location permissions.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

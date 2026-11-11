@@ -1,31 +1,33 @@
 import 'package:atompay_mobile/core/network/api_exception.dart';
+import 'package:atompay_mobile/core/utils/app_clock.dart';
 import 'package:dio/dio.dart';
 
-/// The only place in the app that reads HTTP status codes (handbook rule 20).
+/// The only place in the app that reads HTTP status codes.
 abstract final class ErrorMapper {
   static const _defaultRetryAfter = Duration(seconds: 60);
 
   static ApiException map(Object error) {
     if (error is ApiException) return error;
-    if (error is! DioException) return const UnexpectedError();
+    if (error is! DioException) return const Server(statusCode: 0);
+    if (error.error is ApiException) return error.error! as ApiException;
 
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-      case DioExceptionType.connectionError:
       case DioExceptionType.transformTimeout:
+        return const Timeout();
+      case DioExceptionType.connectionError:
       case DioExceptionType.badCertificate:
-        return const NetworkError();
+        return const Offline();
       case DioExceptionType.cancel:
-        return const UnexpectedError('Cancelled');
       case DioExceptionType.badResponse:
       case DioExceptionType.unknown:
         break;
     }
 
     final response = error.response;
-    if (response == null) return const NetworkError();
+    if (response == null) return const Offline();
 
     final body = response.data;
     final json = body is Map
@@ -34,24 +36,25 @@ abstract final class ErrorMapper {
     final message = json['message'] is String
         ? json['message'] as String
         : null;
+    final status = response.statusCode ?? 0;
 
-    return switch (response.statusCode ?? 0) {
-      401 => Unauthorized(message ?? 'Unauthenticated.'),
-      403 => Forbidden(
-        message ?? 'Please sign in with an AtomShop customer account.',
-      ),
+    return switch (status) {
+      401 => Unauthenticated(message ?? 'Unauthenticated.'),
+      403 => message == null ? const Forbidden() : Forbidden(message),
       404 => NotFound(message ?? 'Not found.'),
       409 => Conflict(
         message ?? '',
         code: json['code'] is String ? json['code'] as String : '',
       ),
-      422 => Validation(message ?? '', errors: _errors(json['errors'])),
+      422 => Validation(message ?? '', fieldErrors: _errors(json['errors'])),
       429 => RateLimited(
         message ?? 'Too Many Attempts.',
         retryAfter: _retryAfter(response.headers),
       ),
-      >= 500 && < 600 => const ServerError(),
-      _ => const UnexpectedError(),
+      _ => Server(
+        statusCode: status,
+        reference: response.headers.value('x-request-id') ?? _localRef(),
+      ),
     };
   }
 
@@ -69,5 +72,11 @@ abstract final class ErrorMapper {
     return seconds == null || seconds <= 0
         ? _defaultRetryAfter
         : Duration(seconds: seconds);
+  }
+
+  /// A short code the customer can read out to support, e.g. `E-7K2Q9`.
+  static String _localRef() {
+    final n = AppClock.now().millisecondsSinceEpoch % 60466176;
+    return 'E-${n.toRadixString(36).toUpperCase().padLeft(5, '0')}';
   }
 }

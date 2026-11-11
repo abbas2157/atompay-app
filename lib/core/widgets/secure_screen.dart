@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:atompay_mobile/core/theme/tokens.dart';
-import 'package:atompay_mobile/core/widgets/atom_logo.dart';
+import 'package:atompay_mobile/core/widgets/brand.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Wrap KYC screens and the document viewer (handbook rule 11).
+/// Wrap capture, document and Key Fact Statement screens (brief §12).
 ///
 /// Android: sets `FLAG_SECURE` (no screenshots, blank recents preview) while
-/// any secure screen is mounted. Both platforms: covers the content while the
-/// app is inactive, so the iOS app-switcher snapshot shows the logo instead.
+/// any secure screen is visible. Both platforms: covers the content while
+/// the app is inactive, so the iOS app-switcher snapshot shows the mark.
 class SecureScreen extends StatefulWidget {
   const new({required this.child, super.key});
 
@@ -19,18 +19,10 @@ class SecureScreen extends StatefulWidget {
   static const _channel = MethodChannel('com.ecommerce.atompay/secure');
   static int _active = 0;
 
-  static Future<void> _set({required bool secure}) =>
-      _invoke('setSecure', secure);
-
-  /// Android 13+: a blank recent-apps thumbnail for the whole app, without
-  /// blocking screenshots. Used while biometric lock is on.
-  static Future<void> setRecentsHidden({required bool hidden}) =>
-      _invoke('setRecentsHidden', hidden);
-
-  static Future<void> _invoke(String method, bool value) async {
+  static Future<void> _set({required bool secure}) async {
     if (defaultTargetPlatform != TargetPlatform.android) return;
     try {
-      await _channel.invokeMethod<void>(method, value);
+      await _channel.invokeMethod<void>('setSecure', secure);
     } on MissingPluginException {
       // Widget tests and platforms without the channel.
     } on PlatformException {
@@ -45,8 +37,6 @@ class SecureScreen extends StatefulWidget {
 class _SecureScreenState extends State<SecureScreen> {
   late final AppLifecycleListener _lifecycle;
   bool _covered = false;
-
-  /// Whether this screen currently counts towards `FLAG_SECURE`.
   bool _registered = false;
 
   @override
@@ -60,9 +50,8 @@ class _SecureScreenState extends State<SecureScreen> {
     );
   }
 
-  /// Bottom-tab branches and routes under a pushed page stay mounted but
-  /// hidden, with tickers disabled. Only a *visible* secure screen may hold
-  /// the flag, or every other screen would become unscreenshottable too.
+  /// Tab branches and routes under a pushed page stay mounted but hidden,
+  /// with tickers off. Only a visible secure screen may hold the flag.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -89,18 +78,16 @@ class _SecureScreenState extends State<SecureScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        widget.child,
-        if (_covered)
-          Positioned.fill(
-            child: ColoredBox(
-              color: context.tokens.paper,
-              child: const Center(child: AtomLogo(size: 64)),
-            ),
+  Widget build(BuildContext context) => Stack(
+    children: [
+      widget.child,
+      if (_covered)
+        Positioned.fill(
+          child: ColoredBox(
+            color: context.colors.white,
+            child: const Center(child: AtomPayMark(size: 64)),
           ),
-      ],
-    );
-  }
+        ),
+    ],
+  );
 }

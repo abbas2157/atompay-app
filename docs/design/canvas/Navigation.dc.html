@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Navigation rules</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+.nb{width:1360px;height:900px;box-sizing:border-box;padding:30px 40px;background:var(--white);font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);display:flex;flex-direction:column;gap:16px}
+.g3{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:28px;flex:1;min-height:0}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.nb h2{margin:0 0 6px;font-size:var(--fs-sm);font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm);line-height:1.4}
+td{padding:5px 8px 5px 0;border-top:1px solid var(--line);vertical-align:top;color:var(--body);font-weight:600}
+td:first-child{color:var(--ink);font-weight:700;width:42%}
+code{font-family:ui-monospace,Menlo,monospace;font-size:var(--fs-xs);background:var(--surface);border-radius:6px;padding:1px 5px;color:var(--ink)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:var(--fs-sm);font-weight:700}
+.flow span{padding:5px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.flow span.b{background:var(--amber-soft);border-color:var(--amber);color:var(--amber-ink)}
+.flow i{font-style:normal;color:var(--muted)}
+ol.g{margin:0;padding-left:18px;font-size:var(--fs-sm);font-weight:600;color:var(--body);line-height:1.45;display:flex;flex-direction:column;gap:3px}
+ol.g b{color:var(--ink)}
+</style>
+</helmet>
+<div class="nb">
+  <div><div class="eyebrow">go_router · one router, one set of rules</div><div style="font-size: var(--fs-h1b); font-weight: 800; letter-spacing: -.7px; margin-top: 4px">Navigation rules</div></div>
+  <div class="g3">
+    <div class="col">
+      <div>
+        <h2>Shape</h2>
+        <div class="flow"><span class="b">Launch gates</span><i>→</i><span>Sign in</span><i>→</i><span>Tabs</span><i>→</i><span>Secondary screens</span><i>→</i><span>Sheets, dialogs</span></div>
+        <p class="small u-mt8 u-lh">Five tabs in a <code>StatefulShellRoute.indexedStack</code>: Home · Shop · Ask Atom · Orders · Account. Each tab keeps its own back stack, scroll position and filters when you switch away and back. Tab roots have no back button; every pushed screen does. Ask Atom opens full screen over the current tab with a <b>Close</b> (×) and returns to that tab.</p>
+      </div>
+      <div>
+        <h2>Back, everywhere the same</h2>
+        <table>
+          <tr><td>Secondary screen</td><td>Pops one screen. The app-bar arrow, Android back and the iOS edge swipe all call the same <code>pop()</code>; no screen hard-codes where back goes.</td></tr>
+          <tr><td>Shop, Orders, Account root</td><td>Goes to the Home tab.</td></tr>
+          <tr><td>Home root</td><td>Leaves the app (Android's predictive back shows the launcher).</td></tr>
+          <tr><td>Apply wizard step</td><td>Previous step, with what was typed kept.</td></tr>
+          <tr><td>Form with changes</td><td>"Discard your changes?" — Keep editing (default) or Discard.</td></tr>
+          <tr><td>While sending</td><td>Blocked until the request finishes, then the result shows.</td></tr>
+          <tr><td>Sheet or dialog open</td><td>Closes it first.</td></tr>
+          <tr><td>Camera</td><td>Cancels the capture; back to Documents.</td></tr>
+          <tr><td>Update, Maintenance, First run</td><td><code>canPop: false</code>. Back leaves the app; nothing behind them is reachable.</td></tr>
+        </table>
+        <p class="tiny u-mt6">Android: <code>enableOnBackInvokedCallback="true"</code>; guards use <code>PopScope</code>, never the deprecated <code>WillPopScope</code>.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div>
+        <h2>Guards, checked on every navigation</h2>
+        <ol class="g">
+          <li><b>Version</b> below <code>min_version</code> → Update required.</li>
+          <li><b>Maintenance</b> (flag or any 503) → Maintenance.</li>
+          <li><b>No consent</b> recorded → First run.</li>
+          <li><b>No token</b> → Sign in, remembering <code>?from=/the/route</code>.</li>
+          <li><b>401 or 403</b> on any call → token cleared, "You've been signed out", then Sign in with <code>from</code>. Never loops.</li>
+          <li><b>No limit yet</b> on a limit-only route → Home (no limit).</li>
+        </ol>
+        <p class="small u-mt8 u-lh">Gates use <code>go()</code>, which replaces the stack, so Back cannot step past them. Sign-out also uses <code>go('/signin')</code>: Back from Sign in leaves the app rather than showing an account that is no longer signed in.</p>
+      </div>
+      <div>
+        <h2>Deep links</h2>
+        <table>
+          <tr><td><code>/app</code></td><td>Home</td></tr>
+          <tr><td><code>/app/orders/{id}</code></td><td>Order detail (push <code>screen: plan</code>)</td></tr>
+          <tr><td><code>/app/orders/{id}/kfs</code></td><td>Key Fact Statement</td></tr>
+          <tr><td><code>/app/apply</code> · <code>/app/application</code></td><td>Apply · KYC and verification</td></tr>
+          <tr><td><code>/app/notifications</code> · <code>/app/ask</code></td><td>Notifications · Ask Atom</td></tr>
+          <tr><td><code>/app/account</code></td><td>Account (push <code>screen: profile</code>)</td></tr>
+          <tr><td>Anything else</td><td>Home, with "That link isn't available".</td></tr>
+        </table>
+        <p class="tiny u-mt6 u-lh">Links open with their parent underneath (order → Orders tab), so Back works the same as normal use. They pass through every guard first; signed out → Sign in → the link. No tokens or personal data in any URL. <span class="tbd">[not built yet]</span> atompay.shop has no <code>/.well-known/assetlinks.json</code> or <code>apple-app-site-association</code>.</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div>
+        <h2>Where you land after an action</h2>
+        <table>
+          <tr><td>Application sent</td><td>KYC and verification. The wizard is removed from the stack; Back goes Home.</td></tr>
+          <tr><td>Limit review sent</td><td>Limit review; Back goes to Account.</td></tr>
+          <tr><td>CNIC or selfie taken</td><td>Back to Documents, with the photo ticked.</td></tr>
+          <tr><td>Password changed</td><td>Settings, with a confirmation.</td></tr>
+          <tr><td>Password reset by code</td><td>Signed in, at Home.</td></tr>
+          <tr><td>Complaint sent</td><td>Help, showing its reference number.</td></tr>
+          <tr><td>Signed in after a 401</td><td>The screen you were on, from <code>from</code>.</td></tr>
+          <tr><td>Account deleted</td><td>Welcome screen, with the whole stack cleared.</td></tr>
+        </table>
+      </div>
+      <div>
+        <h2>No duplicates, no dead ends</h2>
+        <ol class="g">
+          <li>A tap that navigates disables its control until the new screen is shown: a fast double tap opens it once.</li>
+          <li>Pushing the route that is already on top does nothing.</li>
+          <li>Tapping the current tab scrolls to the top, then pops back to that tab's root.</li>
+          <li>Every route is in one typed route table; a test opens each one, and each Account and Settings row, and checks the screen it lands on.</li>
+          <li>Links leaving the app show ↗ and open in the browser or store.</li>
+        </ol>
+      </div>
+      <div>
+        <h2>Rate us</h2>
+        <p class="small u-lh">The Account row opens the Rate AtomPay screen; its button opens the store listing (App Store with <code>?action=write-review</code>). No rating question first. The in-app prompt, through the store's own API, comes at most after an on-time payment, never after an error and never with a reward.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

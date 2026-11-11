@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Eligible products</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+
+
+
+</style>
+</helmet>
+<div class="scr" style="height: 1120px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><span class="t u-pl8">Shop with AtomPay</span><button class="icon-btn" aria-label="Search products"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button></div>
+  </div>
+  <sc-if value="{{isReady}}" hint-placeholder-val="{{ true }}"><div class="content u-gap14">
+    <div>
+      <span class="eyebrow">Eligible products</span>
+      <h1 class="h2 u-mt6">Look for the badge on the listing.</h1>
+      <p class="small u-mt6">AtomPay is offered on selected listed products only — never on custom orders or offers.</p>
+    </div>
+    <div class="segc" role="group" aria-label="Category">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button class="{{t.cls}}" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}">{{t.label}}</button></sc-for>
+    </div>
+    <div class="pgrid">
+      <sc-for list="{{items}}" as="p" hint-placeholder-count="6">
+        <a href="ProductPlan.dc.html" class="p-card">
+          <div class="p-img">
+            <span class="badge b-rose p-flag">AtomPay eligible</span>
+            <span class="slot">
+              <sc-if value="{{p.tv}}" hint-placeholder-val="{{ true }}"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></sc-if>
+              <sc-if value="{{p.phone}}" hint-placeholder-val="{{ false }}"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></sc-if>
+              Photo from atomshop.pk
+            </span>
+          </div>
+          <div class="p-body">
+            <span class="p-brand">{{p.brand}}</span>
+            <span class="p-title">{{p.title}}</span>
+            <span class="p-monthly">{{p.monthly}}</span>
+            <span class="p-term">per month × 3 · no advance</span>
+            <span class="p-cash">Cash price {{p.price}}</span>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+  </div></sc-if>
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}"><div class="content u-gap14" aria-busy="true" aria-label="Loading products">
+    <div style="display: flex; flex-direction: column; gap: 10px"><div class="skel" style="width: 34%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 88%; height: 22px; border-radius: 8px"></div><div class="skel" style="width: 70%; height: 12px; border-radius: 99px"></div></div>
+    <div class="skel" style="height: 44px; border-radius: 999px"></div>
+    <div class="pgrid"><div class="sk-card" style="padding: 0; overflow: hidden; gap: 10px"><div class="skel" style="height: 140px; border-radius: 0"></div><div style="padding: 0 12px 14px; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 40%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 85%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 60%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 70%; height: 10px; border-radius: 99px"></div></div></div><div class="sk-card" style="padding: 0; overflow: hidden; gap: 10px"><div class="skel" style="height: 140px; border-radius: 0"></div><div style="padding: 0 12px 14px; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 40%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 85%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 60%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 70%; height: 10px; border-radius: 99px"></div></div></div><div class="sk-card" style="padding: 0; overflow: hidden; gap: 10px"><div class="skel" style="height: 140px; border-radius: 0"></div><div style="padding: 0 12px 14px; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 40%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 85%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 60%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 70%; height: 10px; border-radius: 99px"></div></div></div><div class="sk-card" style="padding: 0; overflow: hidden; gap: 10px"><div class="skel" style="height: 140px; border-radius: 0"></div><div style="padding: 0 12px 14px; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 40%; height: 10px; border-radius: 99px"></div><div class="skel" style="width: 85%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 60%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 70%; height: 10px; border-radius: 99px"></div></div></div></div>
+  </div></sc-if>
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}"><div class="content state" role="alert">
+    <span class="ico amber"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+    <h2 class="h3">This is taking too long</h2>
+    <p class="small">Atomshop.pk didn't answer in time. Check your connection and try again.</p>
+    <div class="acts"><button class="btn btn-p btn-block">Try again</button></div>
+    
+  </div></sc-if>
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}"><div class="content state" role="status">
+    <span class="ico grey"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></span>
+    <h2 class="h3">Nothing here right now</h2>
+    <p class="small">No eligible phones fit your limit at the moment. New products are added every week.</p>
+    <div class="acts"><a href="Products.dc.html" class="btn btn-p btn-block">Show all products</a><a href="Calculator.dc.html" class="btn btn-g btn-block">Estimate a plan</a></div>
+    
+  </div></sc-if>
+  <nav class="tabbar" aria-label="Main">
+    <a href="HomeApproved.dc.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>Home</a>
+    <a href="Products.dc.html" class="on" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Shop</a>
+    <a href="AskAtom.dc.html" class="atom"><span class="ring"><img src="/_blob/8cf8a82d79c5f83aa330d31816673915" alt="" width="40" height="40" style="width: 40px; height: 40px; display: block"></span>Ask Atom</a>
+    <a href="Plans.dc.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/></svg>Orders</a>
+    <a href="Account.dc.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["ready", "loading", "empty", "error"],"default":"ready","section":"State"},"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  // Real AtomPay-eligible rows from the shared database. Monthly = price / 3,
+  // rounded down; the last month takes the rounding.
+  constructor(props) { super(props); this.state = { cat: 'all' }; }
+  // States: ready, loading (skeleton in this screen's shape), empty, error.
+  stateVals() {
+    const s = this.props.state || 'ready';
+    return { isReady: s === 'ready' || s === 'offline', isLoading: s === 'loading', isError: s === 'error', isEmpty: s === 'empty', isOffline: s === 'offline' };
+  }
+  renderVals() {
+    const rs = (v) => 'Rs. ' + v.toLocaleString('en-US');
+    const rows = [
+      ['OXY', 'OXY 3218L Android', 47000, 'tv'], ['OPPO', 'Oppo A6K', 53995, 'phone'],
+      ['OXY', 'OXY 4018 Android TV', 62000, 'tv'], ['OPPO', 'Oppo A6', 69995, 'phone'],
+      ['OXY', 'OXY 4318F Smart TV', 70000, 'tv'], ['OXY', 'OXY 6518G Smart TV', 179900, 'tv'],
+      ['SAMSUNG', 'Samsung Galaxy S26 FE', 231995, 'phone'], ['APPLE', 'Apple iPhone 17 Pro', 473999, 'phone'],
+    ];
+    const cat = this.state.cat;
+    const tabs = [['all', 'All'], ['tv', 'TVs'], ['phone', 'Phones']].map(([id, label]) => ({
+      label, cls: id === cat ? 'on' : '', pressed: id === cat ? 'true' : 'false',
+      pick: () => this.setState({ cat: id }),
+    }));
+    const items = rows.filter((r) => cat === 'all' || r[3] === cat).map(([brand, title, price, kind]) => ({
+      brand, title, price: rs(price), monthly: rs(Math.floor(price / 3)), tv: kind === 'tv', phone: kind === 'phone',
+    }));
+    return { tabs, items, ...this.stateVals() };
+  }
+}
+</script>
+</body>
+</html>

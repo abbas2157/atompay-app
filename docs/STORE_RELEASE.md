@@ -10,7 +10,8 @@ be skipped:
 
 - [ ] `POST /me/delete` live (the app's **Account → Delete account** calls it).
 - [ ] `https://atompay.shop/privacy-policy` live and public.
-- [ ] `https://atompay.shop/account/delete` live (Play's "delete account" URL).
+- [ ] `https://atompay.shop/delete-account` live (Play's "delete account" URL; must match
+      `/app-config.account_deletion_url`).
 - [ ] Password-reset → login bug fixed (reviewers can't sign in otherwise).
 - [ ] Two review accounts seeded (one with a plan, one empty for testing deletion).
 
@@ -32,6 +33,11 @@ AtomPay finances AtomShop purchases in instalments, which both stores treat as *
 - [ ] Play listing description must show: minimum and maximum repayment period, maximum APR, a
       representative example of the total cost, and the licensed entity's name. Apple wants the same in
       the app/listing.
+- [ ] **Placeholders still in the app** (shown in rose until supplied, brief §0): licensed entity name,
+      SECP licence no., registered address, data location confirmation (About; KFS), complaint response
+      time and SECP complaint link (Complaints), APR/fee decision (KFS), late-payment and early-settlement
+      terms (KFS), Help answers for Getting started, Applying & KYC and Account, support WhatsApp/phone/email
+      (`/app-config.support`; rows hidden while null).
 - [ ] **Google Play personal accounts** created after Nov 2023 must run a **closed test with at least 12
       testers for 14 days** before production. Organization accounts are exempt.
 
@@ -45,12 +51,18 @@ AtomPay finances AtomShop purchases in instalments, which both stores treat as *
 | iOS privacy manifest | `ios/Runner/PrivacyInfo.xcprivacy` (collected data + UserDefaults reason `CA92.1`), registered in the Xcode project |
 | iOS export compliance | `ITSAppUsesNonExemptEncryption = false` (HTTPS only), so no questionnaire per build |
 | iPhone only | `TARGETED_DEVICE_FAMILY = 1`: no iPad screenshots or iPad review |
-| Permission strings | Camera, photo library, Face ID in `Info.plist` |
+| Permission strings | Camera, microphone, speech recognition, Face ID in `Info.plist` (no photo library, contacts or location). Checked by `test/release/release_rules_test.dart` |
+| iOS permission_handler | `ios/Podfile` enables only `PERMISSION_CAMERA`, `_NOTIFICATIONS`, `_MICROPHONE`, `_SPEECH_RECOGNIZER` |
 | Android target SDK | 36 (Flutter 3.47 default). Meets Play's current requirement |
-| No sensitive Android permissions | Only `INTERNET`, `USE_BIOMETRIC`. `image_picker` uses the system photo picker, so no `READ_MEDIA_*` and no photo/video permission declaration |
+| No sensitive Android permissions | `INTERNET`, `USE_BIOMETRIC`, `CAMERA` (in-app capture), `RECORD_AUDIO` (Ask Atom voice). The camera plugin's `WRITE_EXTERNAL_STORAGE` is stripped. CI builds the prod APK and runs `dart run tool/check_manifest.dart` on the merged manifest (brief §10 forbidden list + allow-list) |
+| Permissions asked only when used | Camera on first capture, microphone on first mic tap, each after an explainer; nothing at launch |
 | HTTPS only | `network_security_config.xml` (Android), ATS default (iOS) |
 | No backups of the session | `allowBackup=false` + `data_extraction_rules.xml` |
-| Screenshot protection on KYC screens | `FLAG_SECURE` / iOS snapshot cover |
+| Screenshot protection | `FLAG_SECURE` / iOS snapshot cover on capture, document and KFS screens |
+| In-app grievance route (SECP 15/2022) | Help › Raise a complaint → reference number |
+| Store review prompt | Rate AtomPay opens the listing only; no rating gate, no `requestReview()` from a button |
+| Accessibility | `test/a11y`: Android/iOS tap targets, labels and text contrast on every screen; 200% text without overflow |
+| Design fidelity | `test/goldens`: one image per canvas board (`flutter test --tags golden`, generated on Windows) |
 | Release signing | `android/key.properties` (not committed). Release falls back to debug keys without it, and **Play rejects that** |
 
 ## 4. Build commands
@@ -58,6 +70,7 @@ AtomPay finances AtomShop purchases in instalments, which both stores treat as *
 ```sh
 # Bump pubspec.yaml version (e.g. 1.0.0+2) for every upload.
 flutter build appbundle --release --flavor prod --dart-define-from-file=env/prod.json
+dart run tool/check_manifest.dart   # fails on any forbidden permission
 flutter build ipa       --release --dart-define-from-file=env/prod.json
 ```
 
@@ -89,15 +102,20 @@ content shared with others. Users interact with the business only.
 | Financial info → Other financial info (income, employment) | Yes | No | Yes | App functionality |
 | Financial info → Purchase history (AtomShop instalment orders) | Yes | No | Yes | App functionality |
 | Photos and videos → Photos (CNIC images, selfie) | Yes | No | Yes | Fraud prevention, security & compliance |
+| Messages → Other in-app messages (complaints, Ask Atom questions) | Yes | No | Optional | App functionality, Customer support |
+| Audio → Voice or sound recordings | **No**² | – | – | – |
 | App info & performance, Device IDs, Location, Contacts, Messages | **No** | – | – | – |
 
 - Data is encrypted in transit: **Yes**.
-- Users can request deletion: **Yes**. URL: `https://atompay.shop/account/delete`.
+- Users can request deletion: **Yes**. URL: `https://atompay.shop/delete-account`.
 - Data is processed ephemerally: No.
 
 ¹ Sending data to AtomShop.pk counts as "sharing" unless AtomShop is the same legal entity or acts as
 AtomPay's service provider. Confirm with legal. Email/WhatsApp providers are service providers, so not
 sharing.
+
+² Ask Atom voice uses the phone's own speech recogniser; only the resulting text is sent to AtomPay.
+Confirm with legal how Google/Apple's recogniser processing should be disclosed.
 
 **Government app / Health / News / COVID**: No.
 
@@ -108,7 +126,8 @@ short description (80 chars) and full description including the lending disclosu
 
 **App Privacy** (must match `PrivacyInfo.xcprivacy`). All items are *linked to the user*, *not used
 for tracking*, purpose *App Functionality*: Name, Email Address, Phone Number, Physical Address, Photos
-or Videos, Credit Info, Other Financial Info, User ID, Other Data (CNIC number). Tracking: **No**.
+or Videos, Credit Info, Other Financial Info, User ID, Customer Support (complaints), Other User Content
+(Ask Atom questions), Other Data (CNIC number). Tracking: **No**.
 
 **Age rating**: answer No to every content question, then set the age rating to **18+** because the
 service is lending.

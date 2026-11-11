@@ -41,7 +41,7 @@ The whole home screen in one call. Refresh it on pull-to-refresh and when the ap
       "amount": 12500, "paid_amount": null, "paid_on": null, "state": "due",
       "order_reference": "AS-01043", "product_title": "Poco C75 8GB RAM"
     },
-    "plans": { "active_count": 1, "has_late": false },
+    "plans": { "active_count": 1, "pending_count": 0, "has_late": false },
     "unread_notifications": 2
   }
 }

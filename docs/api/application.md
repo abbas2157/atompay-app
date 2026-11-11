@@ -76,10 +76,13 @@ decide**. The server computes a provisional figure but never shows it, because s
 
 **`201 Created`** returns the new assessment, with `status: "pending"`.
 **`409`** with `code: "profile_required"` means no profile has been submitted yet.
+**`409`** with `code: "nothing_changed"` means the customer already has a limit and sent exactly the
+figures already on file. Show `message`; nothing was created.
 
-Every submission creates a **new** pending assessment, just as on the website. A limit already in
-force is not affected until staff decide the new one. Reapplying is how a customer asks for a
-higher limit.
+Once a limit is approved, submitting again is a **limit review** (label the button "Request limit
+review", not "Submit application"): it opens a new pending assessment, or updates the one already
+pending, just as on the website. The limit in force (`active` from `GET /application`) keeps working
+until staff decide the review.
 
 ## `GET /application/history`
 

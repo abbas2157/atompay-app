@@ -2,12 +2,14 @@
 
 [← API index](README.md) · [Conventions, errors & limits](conventions.md)
 
-The customer's AtomShop orders that are paid in instalments.
+The customer's AtomShop orders, in every status, with their instalment plans.
 
 ## `GET /plans`
 
-Returns orders that still have repayments running (`Processing`, `Delivered`, `Instalments`). Add
-`?include=completed` to also list fully repaid orders, which is useful for a "History" tab.
+Returns **every** order the customer has placed, newest first, whatever its status: waiting for
+approval, being repaid, repaid or cancelled. Group or filter them in the app by `state` (for example
+an "Active" tab and a "History" tab). AtomPay-financed orders are included. `?include=completed` is
+no longer needed and is ignored.
 
 ```json
 {
@@ -34,7 +36,21 @@ Returns orders that still have repayments running (`Processing`, `Delivered`, `I
 }
 ```
 
-- `state` is `on_track`, `late` (any instalment overdue) or `completed`.
+- `state` is one of:
+
+  | `state` | Meaning | Suggested pill |
+  |---|---|---|
+  | `pending` | Waiting for AtomShop's approval (`order.status` `Pending` or `Varification`). No schedule yet. | amber, "Awaiting approval" / "In verification" |
+  | `processing` | Approved (`Processing` or `Delivered`) but the schedule isn't set yet. | amber, `order.status_label` |
+  | `on_track` | Being repaid, nothing overdue | green |
+  | `late` | Being repaid, an instalment is overdue | coral |
+  | `completed` | Fully repaid | green |
+  | `cancelled` | Cancelled. Never `late`, even if unpaid rows remain | grey |
+
+- When `progress.total_count` is `0` (`pending`, `processing`, usually `cancelled`), there is no
+  schedule to show yet. Show `order.total_price`, `order.advance`, `order.financed` and `order.tenure`
+  instead, with a line about what happens next.
+- `order.status_label` is the display form of `order.status` (`Varification` is shown as "Verification").
 - `product` can be `null` if the AtomShop product was removed.
 - `product.picture_url` is public (served by AtomShop), so no auth header is needed.
 

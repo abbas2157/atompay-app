@@ -1,8 +1,21 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- API access. Debug/profile manifests add this too, but release needs it here. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Biometric unlock (local_auth). -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+    <!-- Ask Atom voice input (speech_to_text). Asked on the first mic tap,
+         after the explainer; never at launch (brief §10). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- The camera plugin asks for storage on old Android. Brief §10 and
+         Google Play's personal-loan policy forbid it: photos stay in memory. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:node="remove"/>
+    <!-- The manifest merger adds READ_EXTERNAL_STORAGE as "implied" by the
+         plugin's WRITE request, even after the removal above. Strip it too;
+         tool/check_manifest.dart catches it if it ever comes back. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        tools:node="remove"/>
     <application
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
@@ -61,6 +74,14 @@
         <intent>
             <action android:name="android.intent.action.SENDTO"/>
             <data android:scheme="mailto"/>
+        </intent>
+        <!-- Ask Atom: the phone's speech recogniser and text-to-speech
+             engine (Android 11+ package visibility). -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
     </queries>
 </manifest>

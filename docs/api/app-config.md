@@ -13,6 +13,9 @@ Call this on every launch, before `GET /me`.
     "store_url": { "android": "https://play.google.com/…", "ios": null },
     "shop_url": "https://atomshop.pk",
     "password_reset_url": "https://atompay.shop/forgot-password",
+    "privacy_url": "https://atompay.shop/privacy",
+    "terms_url": null,
+    "account_deletion_url": "https://atompay.shop/delete-account",
     "support": { "phone": null, "whatsapp": null, "email": null },
     "features": { "push": true, "password_reset_channels": ["email", "whatsapp"], "signup_channels": ["email", "whatsapp"] }
   }
@@ -22,6 +25,10 @@ Call this on every launch, before `GET /me`.
 - If the app's version is **lower than** `min_version[platform]`, show a blocking "Update
   required" screen that links to `store_url[platform]`.
 - **Forgot password** is native in the app ([auth.md](auth.md#forgot-password-otp)). `password_reset_url` is the website's own reset page, a fallback only.
+- `privacy_url` is always set (`ATOMPAY_PRIVACY_URL`, otherwise the site's `/privacy` page). `terms_url` is `null`
+  until terms are published, so hide that link then. `account_deletion_url` is the web page for deleting an account without the
+  app (for the Play Console listing): `ATOMPAY_ACCOUNT_DELETION_URL`, otherwise the site's `/delete-account` page. In the app, deletion is
+  [`POST /me/delete`](account.md#post-medelete).
 - `features.password_reset_channels` is `["email"]` or `["email", "whatsapp"]`. Hide the mobile-number option when WhatsApp isn't listed.
 - `features.signup_channels` has the same values. When WhatsApp isn't listed, the sign-up field should ask for
   an email only, because a mobile number would be refused.

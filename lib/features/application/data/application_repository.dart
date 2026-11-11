@@ -1,40 +1,156 @@
+import 'dart:typed_data';
+
 import 'package:atompay_mobile/core/network/api_client.dart';
+import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:atompay_mobile/features/application/data/capture_doc.dart';
+import 'package:dio/dio.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final applicationRepositoryProvider = Provider<ApplicationRepository>(
-  (ref) => ApplicationRepository(ref.watch(apiClientProvider)),
-);
+part 'application_repository.g.dart';
 
-/// KYC section 3 (income), form options and the public estimate.
+/// What `POST /profile` sends besides the photos. Every text field, every
+/// time.
+class ProfileInput {
+  const new({
+    required this.fullName,
+    required this.cnic,
+    required this.mobile,
+    required this.dateOfBirth,
+    required this.residentialAddress,
+    this.cityId,
+    this.areaId,
+  });
+
+  final String fullName;
+  final String cnic;
+  final String mobile;
+
+  /// `YYYY-MM-DD`.
+  final String dateOfBirth;
+  final String residentialAddress;
+  final int? cityId;
+  final int? areaId;
+}
+
+/// What `POST /application` sends.
+class IncomeInput {
+  const new({
+    required this.employmentStatus,
+    required this.incomeSource,
+    required this.monthlyIncome,
+    this.employerName,
+    this.existingInstalments = 0,
+    this.monthlyExpenses = 0,
+  });
+
+  final String employmentStatus;
+  final String? employerName;
+  final String incomeSource;
+  final int monthlyIncome;
+  final int existingInstalments;
+  final int monthlyExpenses;
+}
+
+/// Profile (KYC section 1) and application (KYC section 3).
 class ApplicationRepository {
-  new(this._api);
+  new(this._dio);
 
-  final ApiClient _api;
+  final Dio _dio;
 
-  Future<ApplicationOverview> overview() async =>
-      ApplicationOverview.fromJson(_map(await _api.get('/application')));
+  Future<Profile> profile() => guard(() async {
+    final r = await _dio.get<dynamic>('/profile');
+    return Profile.fromJson(dataOf(r));
+  });
 
-  /// `201` → the new pending assessment. `409 profile_required` when no
-  /// identity profile has been submitted.
-  Future<Assessment> submit(ApplicationInput input) async =>
-      Assessment.fromJson(
-        _map(await _api.post('/application', data: input.toJson())),
-      );
+  /// Multipart. Photos are sent from memory and never touch the disk;
+  /// omit one to keep the copy on file.
+  Future<Profile> saveProfile(
+    ProfileInput input, {
+    Map<CaptureDoc, Uint8List> photos = const {},
+  }) => guard(() async {
+    final form = FormData.fromMap({
+      'full_name': input.fullName.trim(),
+      'cnic': input.cnic,
+      'mobile': input.mobile,
+      'date_of_birth': input.dateOfBirth,
+      'residential_address': input.residentialAddress.trim(),
+      if (input.cityId != null) 'city_id': input.cityId,
+      if (input.areaId != null) 'area_id': input.areaId,
+      for (final e in photos.entries)
+        e.key.key: MultipartFile.fromBytes(
+          e.value,
+          filename: '${e.key.key}.jpg',
+          contentType: DioMediaType('image', 'jpeg'),
+        ),
+    });
+    final r = await _dio.post<dynamic>(
+      '/profile',
+      data: form,
+      options: Options(sendTimeout: const Duration(minutes: 2)),
+    );
+    return Profile.fromJson(dataOf(r));
+  });
 
-  /// Newest first.
-  Future<List<Assessment>> history() async {
-    final data = await _api.get('/application/history');
-    return [for (final a in data as List) Assessment.fromJson(_map(a))];
+  /// The customer's own photo, into memory only (`no-store`): identity
+  /// documents are never cached. Null when it hasn't been uploaded.
+  Future<Uint8List?> document(CaptureDoc doc) async {
+    try {
+      return await guard(() async {
+        final r = await _dio.get<List<int>>(
+          '/profile/documents/${doc.key}',
+          options: Options(
+            responseType: ResponseType.bytes,
+            headers: {'Cache-Control': 'no-store'},
+          ),
+        );
+        final data = r.data;
+        return data == null ? null : Uint8List.fromList(data);
+      });
+    } on NotFound {
+      return null;
+    }
   }
 
-  Future<FormOptions> options() async =>
-      FormOptions.fromJson(_map(await _api.get('/options')));
+  Future<ApplicationInfo> application() => guard(() async {
+    final r = await _dio.get<dynamic>('/application');
+    return ApplicationInfo.fromJson(dataOf(r));
+  });
 
-  Future<Estimate> estimate(int monthlyIncome) async => Estimate.fromJson(
-    _map(await _api.post('/estimate', data: {'monthly_income': monthlyIncome})),
-  );
+  /// 201 with the new pending assessment. 409 `profile_required` or
+  /// `nothing_changed`.
+  Future<Assessment> apply(IncomeInput input) => guard(() async {
+    final r = await _dio.post<dynamic>(
+      '/application',
+      data: {
+        'employment_status': input.employmentStatus,
+        if (input.employerName != null && input.employerName!.isNotEmpty)
+          'employer_name': input.employerName!.trim(),
+        'income_source': input.incomeSource,
+        'monthly_income': input.monthlyIncome,
+        'existing_instalments': input.existingInstalments,
+        'monthly_expenses': input.monthlyExpenses,
+      },
+    );
+    return Assessment.fromJson(dataOf(r));
+  });
 
-  static Map<String, dynamic> _map(Object? data) =>
-      (data! as Map).cast<String, dynamic>();
+  /// Newest first.
+  Future<List<Assessment>> history() => guard(() async {
+    final r = await _dio.get<dynamic>('/application/history');
+    return listOf(r).map(Assessment.fromJson).toList();
+  });
+
+  /// Public. A preview from income alone; nothing is saved.
+  Future<Estimate> estimate(int monthlyIncome) => guard(() async {
+    final r = await _dio.post<dynamic>(
+      '/estimate',
+      data: {'monthly_income': monthlyIncome},
+    );
+    return Estimate.fromJson(dataOf(r));
+  });
 }
+
+@Riverpod(keepAlive: true)
+ApplicationRepository applicationRepository(Ref ref) =>
+    ApplicationRepository(ref.watch(dioProvider));

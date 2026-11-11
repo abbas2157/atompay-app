@@ -6,7 +6,7 @@ rules, tasks and this whole API), see [../MOBILE_APP_HANDBOOK.md](../MOBILE_APP_
 
 - **Server code:** `routes/api.php`, `app/Http/Controllers/Api/V1/`, `app/Http/Resources/Api/V1/`
 - **Tests** that pin every example in these files: `tests/Feature/Api/`
-- **Status:** Every v1 endpoint is live (34 endpoints).
+- **Status:** Every v1 endpoint is live (35 endpoints).
 
 | | |
 |---|---|
@@ -24,7 +24,7 @@ formats, every error status, the `409` codes, rate limits, and the token lifecyc
 |---|---|
 | [conventions.md](conventions.md) | Base URLs, conventions, errors, rate limits, token lifecycle |
 | [auth.md](auth.md) | Register, login, logout, logout everywhere, signed-in sessions, **forgot password (OTP by email / WhatsApp)** |
-| [account.md](account.md) | `GET /me`, `kyc_status` values, email-alert preference |
+| [account.md](account.md) | `GET /me`, `kyc_status` values, email-alert preference, **account deletion** |
 | [profile.md](profile.md) | KYC Section 1 (identity + CNIC/selfie uploads), own documents, cities |
 | [application.md](application.md) | KYC Section 3 (income → limit), the assessment object, history |
 | [dashboard.md](dashboard.md) | Home screen: limit card, status banner, stepper, next due |
@@ -56,6 +56,7 @@ formats, every error status, the `409` codes, rate limits, and the token lifecyc
 | GET | `/me` | ✓ | [account.md](account.md) |
 | GET | `/me/preferences` | ✓ | [account.md](account.md) |
 | PATCH | `/me/preferences` | ✓ | [account.md](account.md) |
+| POST | `/me/delete` | ✓ | [account.md](account.md#post-medelete) |
 | GET | `/dashboard` | ✓ | [dashboard.md](dashboard.md) |
 | GET | `/profile` | ✓ | [profile.md](profile.md) |
 | POST | `/profile` | ✓ | [profile.md](profile.md) |
@@ -97,6 +98,7 @@ formats, every error status, the `409` codes, rate limits, and the token lifecyc
 
 | Date | Change |
 |---|---|
+| 2026-10-10 | **`GET /plans` lists every order**, in any status, including AtomPay-financed ones. `state` gains `pending`, `processing` and `cancelled`, and `?include=completed` is ignored. `GET /dashboard` gains `plans.pending_count`, and `active_count` counts only orders being repaid. `POST /application` can return `409 nothing_changed` once a limit is approved. |
 | 2026-09-27 | **Sign-up needs a one-time code.** `POST /auth/register` now takes `name`, `login` (an email **or** a mobile) and `password`, and returns `202` with a `signup_id` and no account. The code is sent by email or on WhatsApp, depending on what was typed. The new `POST /auth/register/verify` creates the account and returns the login body (`201`), and `POST /auth/register/resend` resends the code. Mobile-only accounts have `email: null`. `/app-config` gains `features.signup_channels`. The request and response of `/auth/register` changed, which is allowed because no app has shipped. |
 | 2026-09-26 | Forgot password with OTP by email or WhatsApp (`/auth/password/forgot`, `/verify`, `/reset`). `GET/PATCH /me/preferences` for alert emails. New notification type `application_received`, and every notification is also emailed. `/app-config`: `password_reset_url` now points at AtomPay's own page, and `features.password_reset_channels` was added. **Removed `uuid` from `/me`**, because it unlocks AtomShop's reset link. No app has shipped yet, so this is allowed within v1. |
 | 2026-09-24 | Docs split into `docs/api/` (one file per area). No API change. |

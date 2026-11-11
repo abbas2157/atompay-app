@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Loading, empty, error and offline</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.pn{display:flex;flex-direction:column;gap:8px}
+.pn > b{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.pn > span.w{font-size:12px;font-weight:600;color:var(--body);line-height:1.45}
+.mk{height:300px;border-radius:20px;background:var(--surface);border:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;text-align:center}
+.shade{position:absolute;inset:0;background:rgba(20,33,61,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+</style>
+</helmet>
+<div style="width: 1360px; height: 900px; box-sizing: border-box; padding: 32px 44px; background: var(--white); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--ink); display: flex; flex-direction: column; gap: 18px">
+  <div><div class="eyebrow">Shared patterns · each data screen shows them in the States row</div><div style="font-size: 24px; font-weight: 800; letter-spacing: -.7px; margin-top: 4px">Loading, empty, error and offline</div></div>
+  <div class="g4">
+    <div class="pn"><b>Loading</b>
+      <div class="mk" style="padding: 16px; gap: 12px">
+        <div class="skel" style="height: 22px; width: 50%"></div>
+        <div class="skel" style="height: 120px; border-radius: 20px"></div>
+        <div class="skel" style="height: 16px; width: 70%"></div>
+        <div class="skel" style="height: 60px; border-radius: 16px"></div>
+      </div>
+      <span class="w">A skeleton in the shape of the screen. No spinner on a whole screen.</span></div>
+    <div class="pn"><b>Empty</b>
+      <div class="mk"><div class="mid">
+        <span class="ico grey" style="width: 52px; height: 52px; border-radius: 16px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg></span>
+        <b class="u-fs-body">No orders yet</b>
+        <span class="small">Orders you place with AtomPay on Atomshop.pk show here.</span>
+        <a href="#" class="btn btn-p">See eligible products</a>
+      </div></div>
+      <span class="w">One sentence and one action.</span></div>
+    <div class="pn"><b>Error</b>
+      <div class="mk"><div class="mid">
+        <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="" style="width: 48px; height: 48px; border-radius: 12px">
+        <b class="u-fs-body">We couldn't load this</b>
+        <span class="small">Check your connection and try again.</span>
+        <button class="btn btn-g">Try again</button>
+      </div></div>
+      <span class="w">The AtomPay mark, never the old orbit logo. What was typed is never lost.</span></div>
+    <div class="pn"><b>Offline</b>
+      <div class="mk">
+        <div class="offline"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.8M19 13a10 10 0 0 0-2.5-1.9M12 20h.01"/></svg>You're offline. Showing your last update.</div>
+        <div style="padding: 14px; display: flex; flex-direction: column; gap: 12px">
+          <div class="spend" style="padding: 14px"><div class="lbl">Available to spend</div><div class="amt" style="font-size: 24px">Rs. 28,666</div></div>
+          <button class="btn btn-block" disabled>Submit needs a connection</button>
+        </div>
+      </div>
+      <span class="w">Cached data stays readable; submits are disabled.</span></div>
+
+    <div class="pn"><b>Too many attempts (429)</b>
+      <div class="mk"><div class="mid">
+        <span class="ico amber" style="width: 52px; height: 52px; border-radius: 16px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <b class="u-fs-body">Too many tries</b>
+        <span class="small">Please wait, then try again.</span>
+        <span class="num" style="font-size: 30px; font-weight: 800">0:48</span>
+      </div></div>
+      <span class="w">Counts down from the server's Retry-After header.</span></div>
+    <div class="pn"><b>Signed out (401)</b>
+      <div class="mk"><div class="shade"><div class="dlg" style="width: 100%">
+        <b style="font-size: 17px">You've been signed out</b>
+        <span class="small u-body">For your security, please sign in again.</span>
+        <a href="SignIn.dc.html" class="btn btn-p btn-block">Sign in</a>
+      </div></div></div>
+      <span class="w">Any 401 or 403 clears the token and returns to Sign in, without looping.</span></div>
+    <div class="pn"><b>Not a customer account (403)</b>
+      <div class="mk"><div class="shade"><div class="dlg" style="width: 100%">
+        <b style="font-size: 17px">Can't sign in here</b>
+        <span class="small u-body">Please sign in with an AtomShop customer account.</span>
+        <button class="btn btn-g btn-block">OK</button>
+      </div></div></div>
+      <span class="w">The server's own message, shown as written.</span></div>
+    <div class="pn"><b>Success toast</b>
+      <div class="mk" style="justify-content: flex-end; padding: 16px">
+        <div style="background: var(--ink); color: var(--white); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 700"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--green-on-dark)"><path d="M5 12l5 5L20 7"/></svg>Password changed. It works on AtomShop.pk too.</div>
+      </div>
+      <span class="w">Short confirmations; never for errors, which sit on the field.</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

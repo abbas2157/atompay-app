@@ -1,48 +1,40 @@
 import 'package:atompay_mobile/core/config/device.dart';
 import 'package:atompay_mobile/core/network/api_client.dart';
-import 'package:atompay_mobile/core/storage/token_storage.dart';
 import 'package:atompay_mobile/features/auth/data/auth_models.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => AuthRepository(
-    ref.watch(apiClientProvider),
-    ref.watch(tokenStorageProvider),
-    deviceName: ref.watch(deviceInfoProvider).deviceName,
-  ),
-);
+part 'auth_repository.g.dart';
 
-/// Auth and sessions (handbook §8.6) plus `/me`. Every call that returns a
-/// token stores it before returning.
+/// Sign in, sign up, reset, sessions and the account itself.
 class AuthRepository {
-  new(this._api, this._tokens, {required this.deviceName});
+  new(this._dio, this._device);
 
-  final ApiClient _api;
-  final TokenStorage _tokens;
-  final String deviceName;
+  final Dio _dio;
+  final DeviceInfo _device;
 
-  Future<User> login({required String login, required String password}) {
-    return _signIn(
-      _api.post(
-        '/auth/login',
-        data: {
-          'login': login.trim(),
-          'password': password,
-          'device_name': deviceName,
-        },
-      ),
+  Future<AuthSession> login({
+    required String login,
+    required String password,
+  }) => guard(() async {
+    final r = await _dio.post<dynamic>(
+      '/auth/login',
+      data: {
+        'login': login.trim(),
+        'password': password,
+        'device_name': await _device.name(),
+      },
     );
-  }
+    return AuthSession.fromJson(dataOf(r));
+  });
 
-  // ---- Sign-up (one-time code) ----
-
-  Future<CodeChallenge> register({
+  Future<CodeSent> register({
     required String name,
     required String login,
     required String password,
     required String passwordConfirmation,
-  }) async {
-    final data = await _api.post(
+  }) => guard(() async {
+    final r = await _dio.post<dynamic>(
       '/auth/register',
       data: {
         'name': name.trim(),
@@ -51,148 +43,125 @@ class AuthRepository {
         'password_confirmation': passwordConfirmation,
       },
     );
-    return _challenge(data, idKey: 'signup_id');
-  }
+    return CodeSent.fromJson(dataOf(r));
+  });
 
-  Future<CodeChallenge> resendSignupCode(String signupId) async {
-    final data = await _api.post(
+  Future<CodeSent> resendSignupCode(String signupId) => guard(() async {
+    final r = await _dio.post<dynamic>(
       '/auth/register/resend',
       data: {'signup_id': signupId},
     );
-    return _challenge(data, idKey: 'signup_id');
-  }
+    return CodeSent.fromJson(dataOf(r));
+  });
 
-  Future<User> verifySignup({required String signupId, required String code}) {
-    return _signIn(
-      _api.post(
-        '/auth/register/verify',
-        data: {'signup_id': signupId, 'code': code, 'device_name': deviceName},
-      ),
+  Future<AuthSession> verifySignup({
+    required String signupId,
+    required String code,
+  }) => guard(() async {
+    final r = await _dio.post<dynamic>(
+      '/auth/register/verify',
+      data: {
+        'signup_id': signupId,
+        'code': code,
+        'device_name': await _device.name(),
+      },
     );
-  }
+    return AuthSession.fromJson(dataOf(r));
+  });
 
-  // ---- Forgot password (one-time code) ----
-
-  /// Always `202` for well-formed input, even for an unknown account.
-  /// Calling again within 60 s returns the same request (that's "resend").
-  Future<CodeChallenge> forgotPassword(String login) async {
-    final data = await _api.post(
+  Future<CodeSent> forgotPassword(String login) => guard(() async {
+    final r = await _dio.post<dynamic>(
       '/auth/password/forgot',
       data: {'login': login.trim()},
     );
-    return _challenge(data, idKey: 'request_id');
-  }
+    return CodeSent.fromJson(dataOf(r));
+  });
 
-  /// Returns the `reset_token` (valid 15 minutes).
+  /// Returns the reset token.
   Future<String> verifyResetCode({
     required String requestId,
     required String code,
-  }) async {
-    final data = await _api.post(
+  }) => guard(() async {
+    final r = await _dio.post<dynamic>(
       '/auth/password/verify',
       data: {'request_id': requestId, 'code': code},
     );
-    return _map(data)['reset_token'] as String;
-  }
+    return dataOf(r)['reset_token'] as String;
+  });
 
-  /// Changes the password (on AtomShop too), signs out every other device
-  /// and signs this one in.
-  Future<User> resetPassword({
+  Future<AuthSession> resetPassword({
     required String resetToken,
     required String password,
     required String passwordConfirmation,
-  }) {
-    return _signIn(
-      _api.post(
-        '/auth/password/reset',
-        data: {
-          'reset_token': resetToken,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-          'device_name': deviceName,
-        },
-      ),
-    );
-  }
-
-  // ---- Signed in ----
-
-  Future<User> me() async {
-    final json = _map(await _api.get('/me'));
-    await _tokens.cacheUser(json);
-    return User.fromJson(json);
-  }
-
-  Future<User?> cachedUser() async {
-    final json = await _tokens.cachedUser();
-    if (json == null) return null;
-    try {
-      return User.fromJson(json);
-    } on Object {
-      return null;
-    }
-  }
-
-  Future<bool> hasToken() async => await _tokens.load() != null;
-
-  /// Best effort: the local token is cleared even when the call fails.
-  Future<void> logout() async {
-    try {
-      await _api.post('/auth/logout');
-    } on Object {
-      // Offline or already revoked: signing out locally is what matters.
-    } finally {
-      await _tokens.clear();
-    }
-  }
-
-  Future<void> logoutAll() async {
-    await _api.post('/auth/logout-all');
-    await _tokens.clear();
-  }
-
-  Future<List<DeviceSession>> sessions() async {
-    final data = await _api.get('/auth/sessions');
-    return [
-      for (final item in data as List) DeviceSession.fromJson(_map(item)),
-    ];
-  }
-
-  Future<void> revokeSession(int id) => _api.delete('/auth/sessions/$id');
-
-  Future<void> clearLocalSession() => _tokens.clear();
-
-  /// Deletes the account (both stores require it in-app). The server revokes
-  /// every token, so the local one goes too.
-  Future<void> deleteAccount(String password) async {
-    await _api.post('/me/delete', data: {'password': password});
-    await _tokens.clear();
-  }
-
-  Future<User> _signIn(Future<dynamic> call) async {
-    final result = AuthResult.fromJson(_map(await call));
-    await _tokens.save(token: result.token, expiresAt: result.expiresAt);
-    final userJson = result.user.toJson();
-    await _tokens.cacheUser(userJson);
-    return result.user;
-  }
-
-  /// `202` body of register/resend (`signup_id`) or forgot (`request_id`).
-  static CodeChallenge _challenge(Object? data, {required String idKey}) {
-    final json = _map(data);
-    return CodeChallenge(
-      id: json[idKey] as String,
-      channel: switch (json['channel']) {
-        'email' => CodeChannel.email,
-        'whatsapp' => CodeChannel.whatsapp,
-        _ => CodeChannel.unknown,
+  }) => guard(() async {
+    final r = await _dio.post<dynamic>(
+      '/auth/password/reset',
+      data: {
+        'reset_token': resetToken,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+        'device_name': await _device.name(),
       },
-      destination: json['destination'] as String? ?? '',
-      expiresIn: (json['expires_in'] as num?)?.toInt() ?? 0,
-      resendIn: (json['resend_in'] as num?)?.toInt() ?? 60,
     );
-  }
+    return AuthSession.fromJson(dataOf(r));
+  });
 
-  static Map<String, dynamic> _map(Object? data) =>
-      (data! as Map).cast<String, dynamic>();
+  /// Returns the user and the raw JSON, which is cached for offline launch.
+  Future<(User, Map<String, dynamic>)> me() => guard(() async {
+    final r = await _dio.get<dynamic>('/me');
+    final json = dataOf(r);
+    return (User.fromJson(json), json);
+  });
+
+  Future<void> logout() => guard(() => _dio.post<dynamic>('/auth/logout'));
+
+  /// Signs out every device, this one included.
+  Future<void> logoutAll() =>
+      guard(() => _dio.post<dynamic>('/auth/logout-all'));
+
+  Future<List<DeviceSession>> sessions() => guard(() async {
+    final r = await _dio.get<dynamic>('/auth/sessions');
+    return listOf(r).map(DeviceSession.fromJson).toList();
+  });
+
+  Future<void> endSession(int id) =>
+      guard(() => _dio.delete<dynamic>('/auth/sessions/$id'));
+
+  /// Brief §7.2: 204, and every other session is signed out.
+  Future<void> changePassword({
+    required String current,
+    required String password,
+    required String passwordConfirmation,
+  }) => guard(
+    () => _dio.post<dynamic>(
+      '/me/password',
+      data: {
+        'current_password': current,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+    ),
+  );
+
+  /// 409 `outstanding_balance` while anything is owed.
+  Future<void> deleteAccount(String password) => guard(
+    () => _dio.post<dynamic>('/me/delete', data: {'password': password}),
+  );
+
+  Future<bool> emailAlerts() => guard(() async {
+    final r = await _dio.get<dynamic>('/me/preferences');
+    return dataOf(r)['email_alerts'] == true;
+  });
+
+  Future<bool> setEmailAlerts({required bool on}) => guard(() async {
+    final r = await _dio.patch<dynamic>(
+      '/me/preferences',
+      data: {'email_alerts': on},
+    );
+    return dataOf(r)['email_alerts'] == true;
+  });
 }
+
+@Riverpod(keepAlive: true)
+AuthRepository authRepository(Ref ref) =>
+    AuthRepository(ref.watch(dioProvider), ref.watch(deviceInfoProvider));

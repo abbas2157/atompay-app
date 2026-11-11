@@ -1,5 +1,5 @@
 name: atompay_mobile
-description: "AtomPay customer app: purchase limit, KYC and instalment plans for AtomShop.pk."
+description: "AtomPay customer app: your limit, eligible products, orders and help for Atomshop.pk's pay-in-3-months option."
 publish_to: 'none'
 
 # Bump for every store build. /app-config.min_version is compared against the
@@ -10,6 +10,9 @@ environment:
   sdk: ^3.13.4
 
 dependencies:
+  app_links: ^6.4.0
+  camera: ^0.12.2
+  connectivity_plus: ^7.3.1
   device_info_plus: ^13.2.0
   dio: ^5.11.1
   flutter:
@@ -18,16 +21,19 @@ dependencies:
     sdk: flutter
   flutter_riverpod: ^3.4.3
   flutter_secure_storage: ^11.2.0
+  flutter_tts: ^4.2.3
   freezed_annotation: ^3.1.0
   go_router: ^18.0.1
-  image_picker: ^1.2.3
+  in_app_review: ^2.0.10
   intl: ^0.20.3
   json_annotation: ^4.12.0
-  local_auth: ^3.0.2
   package_info_plus: ^10.2.1
+  permission_handler: ^12.0.1
   pub_semver: ^2.2.1
   riverpod_annotation: ^4.0.7
+  share_plus: ^13.3.1
   shared_preferences: ^2.5.5
+  speech_to_text: ^7.5.0
   url_launcher: ^6.3.2
 
 dev_dependencies:
@@ -42,27 +48,21 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  generate: true
 
-  # Bundled so the first launch works offline (handbook §4.3). SIL OFL, see assets/fonts/OFL.txt.
+  assets:
+    - assets/images/
+
+  # Bundled so the first launch works offline. SIL OFL, see assets/fonts/OFL.txt.
   fonts:
-    - family: BricolageGrotesque
+    - family: PlusJakartaSans
       fonts:
-        - asset: assets/fonts/BricolageGrotesque-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/BricolageGrotesque-ExtraBold.ttf
-          weight: 800
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/PlusJakartaSans-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
+        - asset: assets/fonts/PlusJakartaSans-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
+        - asset: assets/fonts/PlusJakartaSans-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/PlusJakartaSans-Bold.ttf
           weight: 700
-    - family: JetBrainsMono
-      fonts:
-        - asset: assets/fonts/JetBrainsMono-Bold.ttf
-          weight: 700
+        - asset: assets/fonts/PlusJakartaSans-ExtraBold.ttf
+          weight: 800

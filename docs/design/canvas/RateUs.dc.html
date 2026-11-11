@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rate AtomPay</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.app{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:12px 0 4px}
+.app img{width:88px;height:88px;border-radius:24px;box-shadow:0 16px 40px rgba(20,33,61,.1);display:block}
+.stars{display:flex;gap:6px;justify-content:center;color:var(--amber)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div class="appbar"><a href="Account.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Rate AtomPay</span></div>
+  <div class="content" style="gap: 22px; padding-top: 8px">
+    <div class="app">
+      <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="">
+      <div><b style="display: block; font-size: var(--fs-h3); letter-spacing: -.4px">AtomPay</b><span class="tiny num">Pay in steps · Version 1.0.0 (1)</span></div>
+      <div class="stars" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>
+      </div>
+    </div>
+    <div class="u-center">
+      <h1 class="h2">Tell others what you think</h1>
+      <p class="lead u-mt8">A review on Google Play helps other shoppers decide whether AtomPay is right for them. Good or bad, it's your honest view we want.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-bottom: 34px">
+      <a href="https://play.google.com/store/apps/details?id=com.ecommerce.atompay" class="btn btn-p btn-lg btn-block">Rate on Google Play<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+      <a href="HelpCentre.dc.html" class="btn btn-g btn-block">Send us feedback</a>
+      <p class="tiny u-center u-lh">Opens the Play Store. Reviews are public and go to Google, not to your AtomPay account.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Store rules: no "do you like us?" question first, no stars that send happy
+  // users to the store and unhappy ones elsewhere, no rewards. Both buttons are
+  // shown to everyone. The stars are decoration, not an input.
+  // Android opens the listing (the In-App Review API must not be tied to a
+  // button). iOS: "Rate on the App Store", apps.apple.com/app/id6817231756?action=write-review.
+  // Back returns to Account, where the user came from.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

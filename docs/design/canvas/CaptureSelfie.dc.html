@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Take a selfie with your CNIC</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+.oval{width:230px;height:300px;border-radius:50%;border:4px dashed var(--apay-amber);align-self:center;position:relative}
+.card{position:absolute;right:-48px;bottom:38px;width:96px;height:62px;border-radius:10px;border:3px solid var(--apay-amber);background:rgba(250,165,58,.08)}
+.cam .icon-btn{color:var(--white)}.cam .icon-btn:hover{background:var(--ink-2);color:var(--white)}
+</style>
+</helmet>
+<div class="scr cam" style="height: 844px">
+  <div class="safe"></div>
+  <div class="appbar">
+    <a href="CaptureCnic.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+    <span class="t" style="color: var(--white); text-align: center">Selfie with CNIC</span>
+    <span style="width: 52px"></span>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px; padding: 0 30px">
+    <p style="text-align: center; font-size: 17px; font-weight: 800">Hold your CNIC next to your face</p>
+    <div class="oval"><span class="card" aria-hidden="true"></span></div>
+    <p style="text-align: center; font-size: 13px; font-weight: 600; color: var(--on-dark-2); line-height: 1.5">Front camera · your face and the card both in view · no hat or dark glasses</p>
+  </div>
+  <div style="padding: 18px 24px 40px; display: flex; justify-content: center; flex: none">
+    <a href="ApplyDocuments.dc.html" class="shutter" aria-label="Take selfie"><i></i></a>
+  </div>
+  <p class="tiny" style="text-align: center; color: var(--on-dark-2); padding-bottom: 18px">Camera only · screenshots are blocked on this screen</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

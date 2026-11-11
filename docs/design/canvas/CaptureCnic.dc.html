@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Photograph your CNIC</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+.frame{position:relative;width:330px;height:210px;border-radius:16px;align-self:center}
+.frame i{position:absolute;width:34px;height:34px;border-color:var(--apay-amber);border-style:solid}
+.frame .a{left:0;top:0;border-width:4px 0 0 4px;border-radius:16px 0 0 0}
+.frame .b{right:0;top:0;border-width:4px 4px 0 0;border-radius:0 16px 0 0}
+.frame .c{left:0;bottom:0;border-width:0 0 4px 4px;border-radius:0 0 0 16px}
+.frame .d{right:0;bottom:0;border-width:0 4px 4px 0;border-radius:0 0 16px 0}
+.shot{position:absolute;inset:8px;border-radius:10px;background:var(--skel);display:grid;place-items:center;color:var(--body);font-size:12px;font-weight:700;text-align:center}
+.tipr{display:flex;justify-content:center;gap:18px;font-size:12px;font-weight:700;color:var(--on-dark-2)}
+.tipr span{display:flex;align-items:center;gap:6px}
+.cam .icon-btn{color:var(--white)}.cam .icon-btn:hover{background:var(--ink-2);color:var(--white)}
+</style>
+</helmet>
+<div class="scr cam" style="height: 844px">
+  <div class="safe"></div>
+  <div class="appbar">
+    <a href="ApplyDocuments.dc.html" class="icon-btn" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+    <span class="t" style="color: var(--white); text-align: center">CNIC front</span>
+    <span class="badge" style="background: var(--ink-2); color: var(--white); margin-right: 8px">1 of 2</span>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 0 30px">
+    <p style="text-align: center; font-size: 17px; font-weight: 800">{{prompt}}</p>
+    <div class="frame"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i>
+      <sc-if value="{{taken}}" hint-placeholder-val="{{ false }}"><span class="shot">Your photo<br>is shown here to check</span></sc-if>
+    </div>
+    <div class="tipr"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>Good light</span><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M3 3l18 18"/><circle cx="12" cy="12" r="8"/></svg>No glare</span><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>All 4 corners</span></div>
+  </div>
+  <div style="padding: 18px 24px 40px; display: flex; align-items: center; justify-content: center; gap: 28px; flex: none">
+    <sc-if value="{{live}}" hint-placeholder-val="{{ true }}">
+      <button class="icon-btn" aria-label="Flash off" style="color: var(--white)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></button>
+      <button class="shutter" aria-label="Take photo" onClick="{{take}}"><i></i></button>
+      <span style="width: 44px"></span>
+    </sc-if>
+    <sc-if value="{{taken}}" hint-placeholder-val="{{ false }}">
+      <button class="btn" style="background: var(--ink-2); color: var(--white); flex: 1" onClick="{{retake}}">Retake</button>
+      <a href="CaptureSelfie.dc.html" class="btn btn-p u-grow">Use photo</a>
+    </sc-if>
+  </div>
+  <p class="tiny" style="text-align: center; color: var(--on-dark-2); padding-bottom: 18px">Camera only · screenshots are blocked on this screen</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Camera only: no gallery button. Google Play's personal-loan policy and
+  // SECP's digital lending standards bar photo-gallery access. FLAG_SECURE on.
+  constructor(props) { super(props); this.state = { taken: false }; }
+  renderVals() {
+    const t = this.state.taken;
+    return {
+      taken: t, live: !t,
+      prompt: t ? 'Can you read every line clearly?' : 'Fit the front of your CNIC inside the frame',
+      take: () => this.setState({ taken: true }), retake: () => this.setState({ taken: false }),
+    };
+  }
+}
+</script>
+</body>
+</html>

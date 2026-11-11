@@ -1,0 +1,847 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-10T09:00:00Z"
+ },
+ "title": "AtomPay App v2",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1360,
+   "h": 900,
+   "title": "AtomPay App v2"
+  },
+  "StyleGuide.dc.html": {
+   "x": 1440,
+   "y": 0,
+   "w": 1360,
+   "h": 900,
+   "title": "Style guide"
+  },
+  "Compliance.dc.html": {
+   "x": 2880,
+   "y": 0,
+   "w": 1360,
+   "h": 900,
+   "title": "Store and regulatory compliance"
+  },
+  "Architecture.dc.html": {
+   "x": 4320,
+   "y": 0,
+   "w": 1360,
+   "h": 900,
+   "title": "Architecture map"
+  },
+  "States.dc.html": {
+   "x": 5760,
+   "y": 0,
+   "w": 1360,
+   "h": 900,
+   "title": "Loading, empty, error and offline"
+  },
+  "Splash.dc.html": {
+   "x": 0,
+   "y": 1400,
+   "w": 390,
+   "h": 844,
+   "title": "Splash",
+   "is_interactive": true
+  },
+  "SignIn.dc.html": {
+   "x": 470,
+   "y": 1400,
+   "w": 390,
+   "h": 844,
+   "title": "Sign in",
+   "is_interactive": true
+  },
+  "SignUp.dc.html": {
+   "x": 940,
+   "y": 1400,
+   "w": 390,
+   "h": 844,
+   "title": "Sign up",
+   "is_interactive": true
+  },
+  "VerifyCode.dc.html": {
+   "x": 1410,
+   "y": 1400,
+   "w": 390,
+   "h": 844,
+   "title": "Verify code",
+   "is_interactive": true
+  },
+  "HomeNoLimit.dc.html": {
+   "x": 0,
+   "y": 2744,
+   "w": 390,
+   "h": 844,
+   "title": "Home · no limit yet",
+   "is_interactive": true
+  },
+  "HomeApproved.dc.html": {
+   "x": 470,
+   "y": 2744,
+   "w": 390,
+   "h": 1180,
+   "title": "Home · limit approved",
+   "is_interactive": true
+  },
+  "HomeRepaying.dc.html": {
+   "x": 940,
+   "y": 2744,
+   "w": 390,
+   "h": 1180,
+   "title": "Home · repaying",
+   "is_interactive": true
+  },
+  "Notifications.dc.html": {
+   "x": 1410,
+   "y": 2744,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications",
+   "is_interactive": true
+  },
+  "ApplyPersonal.dc.html": {
+   "x": 0,
+   "y": 4424,
+   "w": 390,
+   "h": 1010,
+   "title": "Apply 1 · Personal details",
+   "is_interactive": true
+  },
+  "AreaPicker.dc.html": {
+   "x": 470,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "Area picker",
+   "is_interactive": true
+  },
+  "ApplyDocuments.dc.html": {
+   "x": 940,
+   "y": 4424,
+   "w": 390,
+   "h": 900,
+   "title": "Apply 2 · Documents",
+   "is_interactive": true
+  },
+  "ApplyIncome.dc.html": {
+   "x": 1410,
+   "y": 4424,
+   "w": 390,
+   "h": 1120,
+   "title": "Apply 3 · Income",
+   "is_interactive": true
+  },
+  "ApplyReview.dc.html": {
+   "x": 1880,
+   "y": 4424,
+   "w": 390,
+   "h": 1160,
+   "title": "Apply 4 · Review & submit",
+   "is_interactive": true
+  },
+  "Verification.dc.html": {
+   "x": 2350,
+   "y": 4424,
+   "w": 390,
+   "h": 1120,
+   "title": "KYC & verification",
+   "is_interactive": true
+  },
+  "Products.dc.html": {
+   "x": 0,
+   "y": 6084,
+   "w": 390,
+   "h": 1120,
+   "title": "Eligible products",
+   "is_interactive": true
+  },
+  "ProductPlan.dc.html": {
+   "x": 470,
+   "y": 6084,
+   "w": 390,
+   "h": 1100,
+   "title": "Product · your plan",
+   "is_interactive": true
+  },
+  "Calculator.dc.html": {
+   "x": 940,
+   "y": 6084,
+   "w": 390,
+   "h": 980,
+   "title": "Plan calculator",
+   "is_interactive": true
+  },
+  "Plans.dc.html": {
+   "x": 1410,
+   "y": 6084,
+   "w": 390,
+   "h": 844,
+   "title": "My orders",
+   "is_interactive": true
+  },
+  "PlanDetail.dc.html": {
+   "x": 1880,
+   "y": 6084,
+   "w": 390,
+   "h": 1110,
+   "title": "Order · schedule",
+   "is_interactive": true
+  },
+  "AskAtom.dc.html": {
+   "x": 0,
+   "y": 7704,
+   "w": 390,
+   "h": 844,
+   "title": "Ask Atom",
+   "is_interactive": true
+  },
+  "AskAtomConvo.dc.html": {
+   "x": 470,
+   "y": 7704,
+   "w": 390,
+   "h": 844,
+   "title": "Ask Atom · answer",
+   "is_interactive": true
+  },
+  "HelpCentre.dc.html": {
+   "x": 940,
+   "y": 7704,
+   "w": 390,
+   "h": 1250,
+   "title": "Help",
+   "is_interactive": true
+  },
+  "Account.dc.html": {
+   "x": 1410,
+   "y": 7704,
+   "w": 390,
+   "h": 1180,
+   "title": "Account",
+   "is_interactive": true
+  },
+  "UpdateRequired.dc.html": {
+   "x": 0,
+   "y": 9384,
+   "w": 390,
+   "h": 844,
+   "title": "Update required",
+   "is_interactive": true
+  },
+  "FirstRun.dc.html": {
+   "x": 470,
+   "y": 9384,
+   "w": 390,
+   "h": 1060,
+   "title": "Before you start (disclosures)",
+   "is_interactive": true
+  },
+  "NotifPermission.dc.html": {
+   "x": 940,
+   "y": 9384,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications permission",
+   "is_interactive": true
+  },
+  "CameraPermission.dc.html": {
+   "x": 1410,
+   "y": 9384,
+   "w": 390,
+   "h": 844,
+   "title": "Camera permission",
+   "is_interactive": true
+  },
+  "ForgotPassword.dc.html": {
+   "x": 0,
+   "y": 10944,
+   "w": 390,
+   "h": 844,
+   "title": "Forgot password 1 · contact",
+   "is_interactive": true
+  },
+  "ForgotCode.dc.html": {
+   "x": 470,
+   "y": 10944,
+   "w": 390,
+   "h": 844,
+   "title": "Forgot password 2 · code",
+   "is_interactive": true
+  },
+  "NewPassword.dc.html": {
+   "x": 940,
+   "y": 10944,
+   "w": 390,
+   "h": 844,
+   "title": "Forgot password 3 · new password",
+   "is_interactive": true
+  },
+  "CaptureCnic.dc.html": {
+   "x": 0,
+   "y": 12288,
+   "w": 390,
+   "h": 844,
+   "title": "Capture CNIC (camera only)",
+   "is_interactive": true
+  },
+  "CaptureSelfie.dc.html": {
+   "x": 470,
+   "y": 12288,
+   "w": 390,
+   "h": 844,
+   "title": "Capture selfie",
+   "is_interactive": true
+  },
+  "DocumentViewer.dc.html": {
+   "x": 940,
+   "y": 12288,
+   "w": 390,
+   "h": 844,
+   "title": "Document viewer",
+   "is_interactive": true
+  },
+  "AppReview.dc.html": {
+   "x": 1410,
+   "y": 12288,
+   "w": 390,
+   "h": 1000,
+   "title": "Limit review pending",
+   "is_interactive": true
+  },
+  "AppRejected.dc.html": {
+   "x": 1880,
+   "y": 12288,
+   "w": 390,
+   "h": 1000,
+   "title": "Application not approved",
+   "is_interactive": true
+  },
+  "AppHistory.dc.html": {
+   "x": 2350,
+   "y": 12288,
+   "w": 390,
+   "h": 900,
+   "title": "My applications",
+   "is_interactive": true
+  },
+  "KeyFactStatement.dc.html": {
+   "x": 0,
+   "y": 13788,
+   "w": 390,
+   "h": 1240,
+   "title": "Key Fact Statement",
+   "is_interactive": true
+  },
+  "PlanLate.dc.html": {
+   "x": 470,
+   "y": 13788,
+   "w": 390,
+   "h": 1040,
+   "title": "Order · payment late",
+   "is_interactive": true
+  },
+  "OrderStates.dc.html": {
+   "x": 940,
+   "y": 13788,
+   "w": 390,
+   "h": 1240,
+   "title": "Orders · every status",
+   "is_interactive": true
+  },
+  "Devices.dc.html": {
+   "x": 0,
+   "y": 15588,
+   "w": 390,
+   "h": 844,
+   "title": "Signed-in devices",
+   "is_interactive": true
+  },
+  "NotifSettings.dc.html": {
+   "x": 470,
+   "y": 15588,
+   "w": 390,
+   "h": 900,
+   "title": "Notifications",
+   "is_interactive": true
+  },
+  "DeleteAccount.dc.html": {
+   "x": 940,
+   "y": 15588,
+   "w": 390,
+   "h": 1120,
+   "title": "Delete account",
+   "is_interactive": true
+  },
+  "DeleteBlocked.dc.html": {
+   "x": 1410,
+   "y": 15588,
+   "w": 390,
+   "h": 844,
+   "title": "Delete · still owed",
+   "is_interactive": true
+  },
+  "Complaints.dc.html": {
+   "x": 1880,
+   "y": 15588,
+   "w": 390,
+   "h": 1060,
+   "title": "Complaints",
+   "is_interactive": true
+  },
+  "AboutLegal.dc.html": {
+   "x": 2350,
+   "y": 15588,
+   "w": 390,
+   "h": 1000,
+   "title": "About and legal",
+   "is_interactive": true
+  },
+  "TabletHome.dc.html": {
+   "x": 1880,
+   "y": 2744,
+   "w": 834,
+   "h": 1194,
+   "title": "Home · tablet (medium width)"
+  },
+  "Navigation.dc.html": {
+   "x": 7200,
+   "y": 0,
+   "w": 1360,
+   "h": 900,
+   "title": "Navigation rules"
+  },
+  "ChangePassword.dc.html": {
+   "x": 2820,
+   "y": 15588,
+   "w": 390,
+   "h": 844,
+   "title": "Change password · discard changes"
+  },
+  "Ecosystem.dc.html": {
+   "x": 3290,
+   "y": 15588,
+   "w": 390,
+   "h": 1290,
+   "title": "Our ecosystem"
+  },
+  "Maintenance.dc.html": {
+   "x": 1880,
+   "y": 9384,
+   "w": 390,
+   "h": 844,
+   "title": "Maintenance"
+  },
+  "HelpTopic.dc.html": {
+   "x": 1880,
+   "y": 7704,
+   "w": 390,
+   "h": 900,
+   "title": "Help topic"
+  },
+  "RateUs.dc.html": {
+   "x": 3760,
+   "y": 15588,
+   "w": 390,
+   "h": 844,
+   "title": "Rate AtomPay"
+  },
+  "PickerSheet.dc.html": {
+   "x": 3240,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "Picker sheet · every dropdown searches"
+  },
+  "CityPicker.dc.html": {
+   "x": 3710,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "City picker"
+  },
+  "EmploymentPicker.dc.html": {
+   "x": 4180,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "Employment status picker"
+  },
+  "IncomePicker.dc.html": {
+   "x": 4650,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "Income source picker"
+  },
+  "TopicPicker.dc.html": {
+   "x": 5120,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "Complaint topic picker"
+  },
+  "OrderPicker.dc.html": {
+   "x": 5590,
+   "y": 4424,
+   "w": 390,
+   "h": 844,
+   "title": "Complaint order picker"
+  },
+  "Settings.dc.html": {
+   "x": 4230,
+   "y": 15588,
+   "w": 390,
+   "h": 1330,
+   "title": "Settings"
+  },
+  "SettingsSignOut.dc.html": {
+   "x": 4700,
+   "y": 15588,
+   "w": 390,
+   "h": 1330,
+   "title": "Settings · confirm sign out"
+  },
+  "SecuritySettings.dc.html": {
+   "x": 5170,
+   "y": 15588,
+   "w": 390,
+   "h": 1000,
+   "title": "Account security"
+  },
+  "Permissions.dc.html": {
+   "x": 5640,
+   "y": 15588,
+   "w": 390,
+   "h": 960,
+   "title": "Permissions"
+  },
+  "HomeLoading.dc.html": {
+   "x": 0,
+   "y": 17318,
+   "w": 390,
+   "h": 1180,
+   "title": "Home · loading"
+  },
+  "HomeOffline.dc.html": {
+   "x": 470,
+   "y": 17318,
+   "w": 390,
+   "h": 1180,
+   "title": "Home · offline, saved data"
+  },
+  "HomeError.dc.html": {
+   "x": 940,
+   "y": 17318,
+   "w": 390,
+   "h": 1180,
+   "title": "Home · no connection"
+  },
+  "OrdersLoading.dc.html": {
+   "x": 1410,
+   "y": 17318,
+   "w": 390,
+   "h": 844,
+   "title": "Orders · loading"
+  },
+  "OrdersEmpty.dc.html": {
+   "x": 1880,
+   "y": 17318,
+   "w": 390,
+   "h": 844,
+   "title": "Orders · empty"
+  },
+  "OrdersError.dc.html": {
+   "x": 2350,
+   "y": 17318,
+   "w": 390,
+   "h": 844,
+   "title": "Orders · server error"
+  },
+  "ProductsLoading.dc.html": {
+   "x": 2820,
+   "y": 17318,
+   "w": 390,
+   "h": 1120,
+   "title": "Shop · loading"
+  },
+  "ProductsEmpty.dc.html": {
+   "x": 3290,
+   "y": 17318,
+   "w": 390,
+   "h": 1120,
+   "title": "Shop · empty"
+  },
+  "ProductsError.dc.html": {
+   "x": 3760,
+   "y": 17318,
+   "w": 390,
+   "h": 1120,
+   "title": "Shop · timed out"
+  },
+  "NotificationsLoading.dc.html": {
+   "x": 4230,
+   "y": 17318,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications · loading"
+  },
+  "NotificationsEmpty.dc.html": {
+   "x": 4700,
+   "y": 17318,
+   "w": 390,
+   "h": 844,
+   "title": "Notifications · all caught up"
+  },
+  "PlanDetailLoading.dc.html": {
+   "x": 5170,
+   "y": 17318,
+   "w": 390,
+   "h": 1110,
+   "title": "Order · loading"
+  },
+  "PlanDetailError.dc.html": {
+   "x": 5640,
+   "y": 17318,
+   "w": 390,
+   "h": 1110,
+   "title": "Order · not found"
+  },
+  "ComplaintSent.dc.html": {
+   "x": 6110,
+   "y": 17318,
+   "w": 390,
+   "h": 844,
+   "title": "Success · complaint sent"
+  },
+  "AskAtomVoice.dc.html": {
+   "x": 2350,
+   "y": 7704,
+   "w": 390,
+   "h": 844,
+   "title": "Ask Atom · voice, listening"
+  },
+  "AskAtomMic.dc.html": {
+   "x": 2820,
+   "y": 7704,
+   "w": 390,
+   "h": 844,
+   "title": "Ask Atom · microphone permission"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "StyleGuide.dc.html",
+  "Compliance.dc.html",
+  "Architecture.dc.html",
+  "States.dc.html",
+  "Navigation.dc.html",
+  "Splash.dc.html",
+  "SignIn.dc.html",
+  "SignUp.dc.html",
+  "VerifyCode.dc.html",
+  "HomeNoLimit.dc.html",
+  "HomeApproved.dc.html",
+  "HomeRepaying.dc.html",
+  "Notifications.dc.html",
+  "TabletHome.dc.html",
+  "ApplyPersonal.dc.html",
+  "AreaPicker.dc.html",
+  "PickerSheet.dc.html",
+  "CityPicker.dc.html",
+  "EmploymentPicker.dc.html",
+  "IncomePicker.dc.html",
+  "TopicPicker.dc.html",
+  "OrderPicker.dc.html",
+  "ApplyDocuments.dc.html",
+  "ApplyIncome.dc.html",
+  "ApplyReview.dc.html",
+  "Verification.dc.html",
+  "Products.dc.html",
+  "ProductPlan.dc.html",
+  "Calculator.dc.html",
+  "Plans.dc.html",
+  "PlanDetail.dc.html",
+  "AskAtom.dc.html",
+  "AskAtomConvo.dc.html",
+  "AskAtomMic.dc.html",
+  "AskAtomVoice.dc.html",
+  "HelpCentre.dc.html",
+  "HelpTopic.dc.html",
+  "Account.dc.html",
+  "UpdateRequired.dc.html",
+  "Maintenance.dc.html",
+  "FirstRun.dc.html",
+  "NotifPermission.dc.html",
+  "CameraPermission.dc.html",
+  "ForgotPassword.dc.html",
+  "ForgotCode.dc.html",
+  "NewPassword.dc.html",
+  "CaptureCnic.dc.html",
+  "CaptureSelfie.dc.html",
+  "DocumentViewer.dc.html",
+  "AppReview.dc.html",
+  "AppRejected.dc.html",
+  "AppHistory.dc.html",
+  "KeyFactStatement.dc.html",
+  "PlanLate.dc.html",
+  "OrderStates.dc.html",
+  "Devices.dc.html",
+  "NotifSettings.dc.html",
+  "DeleteAccount.dc.html",
+  "DeleteBlocked.dc.html",
+  "Complaints.dc.html",
+  "AboutLegal.dc.html",
+  "ChangePassword.dc.html",
+  "Ecosystem.dc.html",
+  "RateUs.dc.html",
+  "Settings.dc.html",
+  "SettingsSignOut.dc.html",
+  "SecuritySettings.dc.html",
+  "Permissions.dc.html",
+  "HomeLoading.dc.html",
+  "HomeOffline.dc.html",
+  "HomeError.dc.html",
+  "OrdersLoading.dc.html",
+  "OrdersEmpty.dc.html",
+  "OrdersError.dc.html",
+  "ProductsLoading.dc.html",
+  "ProductsEmpty.dc.html",
+  "ProductsError.dc.html",
+  "NotificationsLoading.dc.html",
+  "NotificationsEmpty.dc.html",
+  "PlanDetailLoading.dc.html",
+  "PlanDetailError.dc.html",
+  "ComplaintSent.dc.html"
+ ],
+ "notes": {
+  "rowStart": {
+   "x": 0,
+   "y": 1120,
+   "text": "Start and sign in",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowHome": {
+   "x": 0,
+   "y": 2464,
+   "text": "Home and your limit",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowApply": {
+   "x": 0,
+   "y": 4144,
+   "text": "Apply for your limit",
+   "kind": "title1",
+   "maxW": 2740
+  },
+  "rowShop": {
+   "x": 0,
+   "y": 5804,
+   "text": "Shop and repay",
+   "kind": "title1",
+   "maxW": 2270
+  },
+  "rowHelp": {
+   "x": 0,
+   "y": 7424,
+   "text": "Ask Atom and help",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowLaunch": {
+   "x": 0,
+   "y": 9104,
+   "text": "Launch, disclosures and permissions",
+   "kind": "title1",
+   "maxW": 1800
+  },
+  "rowRecover": {
+   "x": 0,
+   "y": 10664,
+   "text": "Forgot password",
+   "kind": "title1",
+   "maxW": 1330
+  },
+  "rowKyc": {
+   "x": 0,
+   "y": 12008,
+   "text": "KYC capture and application status",
+   "kind": "title1",
+   "maxW": 2740
+  },
+  "rowKfs": {
+   "x": 0,
+   "y": 13508,
+   "text": "Disclosures and order states",
+   "kind": "title1",
+   "maxW": 1330
+  },
+  "rowAccount": {
+   "x": 0,
+   "y": 15308,
+   "text": "Account, privacy and complaints",
+   "kind": "title1",
+   "maxW": 2740
+  },
+  "stickyArea": {
+   "x": 2820,
+   "y": 4424,
+   "w": 340,
+   "fill": "orange",
+   "text": "Server first: AtomPay's API has no areas endpoint and /api/v1/profile has no area_id yet. Atomshop's customer API already serves GET /api/areas/{city_id} - mirror it."
+  },
+  "stickyQuote": {
+   "x": 2350,
+   "y": 6084,
+   "w": 340,
+   "fill": "red",
+   "text": "Server first: /api/v1/calculator and /api/v1/quote still return seller financing (down payment, tenures, markup). Do not ship the calculator, and do not compute the plan in the app, until they return the AtomPay plan: 3 months, no advance, 0% markup."
+  },
+  "stickyProducts": {
+   "x": 2350,
+   "y": 6600,
+   "w": 340,
+   "fill": "blue",
+   "text": "Product photos are labelled slots here: every product row's picture lives on atomshop.pk, none on this machine. Real names and prices are from the shared database."
+  },
+  "stickyKfs": {
+   "x": 1410,
+   "y": 13788,
+   "w": 360,
+   "fill": "red",
+   "text": "Decision needed: is the 3% processing fee actually charged? If yes, the APR to disclose is 18.5% (effective 20.1%), and '0% markup' alone is not a full disclosure under Apple 3.2.2(ix). If no, APR is 0% and the fee line should go."
+  },
+  "stickyGallery": {
+   "x": 2820,
+   "y": 12288,
+   "w": 360,
+   "fill": "orange",
+   "text": "Changed from the handbook (F7): CNIC photos are camera-only. Google Play's personal-loan policy and SECP's digital lending standards both bar photo-gallery access for lending apps, even with consent."
+  },
+  "stickyTablet": {
+   "x": 2760,
+   "y": 2744,
+   "w": 340,
+   "fill": "blue",
+   "text": "Adaptive layout. Under 600 dp: bottom bar, one column. 600 to 839 dp: navigation rail, two columns (this board). 840 dp and up: rail, two columns, 3-up products, content capped at 1040. Same tokens and components at every size; landscape follows the same widths."
+  },
+  "rowStates": {
+   "x": 0,
+   "y": 17038,
+   "text": "States on real screens: loading, error, empty, offline, success",
+   "kind": "title1",
+   "maxW": 2740
+  }
+ },
+ "designSystems": []
+}
