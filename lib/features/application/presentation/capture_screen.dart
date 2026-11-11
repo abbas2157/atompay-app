@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
@@ -10,6 +9,7 @@ import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/application/data/camera_service.dart';
 import 'package:atompay_mobile/features/application/data/capture_doc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -361,149 +361,153 @@ class _CameraView extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: c.cam,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                Space.s4,
-                Space.s4,
-                Space.gutter,
-                Space.s8,
-              ),
-              child: Row(
-                children: [
-                  AppIconButton(
-                    icon: Icons.close,
-                    label: 'Close',
-                    color: c.white,
-                    onPressed: () => context.pop(),
-                  ),
-                  Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(doc.title, style: t.h4.merge(onDark)),
-                    ),
-                  ),
-                  if (doc.isCnic)
-                    AppBadge.grey(
-                      doc == CaptureDoc.cnicFront ? '1 of 2' : '2 of 2',
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
-              child: Text(
-                reviewing
-                    ? 'Check it is sharp and every corner shows'
-                    : _prompt,
-                textAlign: TextAlign.center,
-                style: t.base.merge(onDark),
-              ),
-            ),
-            Gap.s12,
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(Radii.card),
-                  child: ColoredBox(color: c.ink, child: viewfinder),
-                ),
-              ),
-            ),
-            Gap.s12,
-            if (problem != null && stage != _Stage.failed)
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Dark screen: light status-bar icons.
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: c.cam,
+        body: SafeArea(
+          child: Column(
+            children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(
-                  Space.gutter,
-                  0,
+                  Space.s4,
+                  Space.s4,
                   Space.gutter,
                   Space.s8,
                 ),
-                child: Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    problem!,
-                    textAlign: TextAlign.center,
-                    style: t.small.copyWith(color: c.white),
+                child: Row(
+                  children: [
+                    AppIconButton(
+                      icon: Icons.close,
+                      label: 'Close',
+                      color: c.white,
+                      onPressed: () => context.pop(),
+                    ),
+                    Expanded(
+                      child: Semantics(
+                        header: true,
+                        child: Text(doc.title, style: t.h4.merge(onDark)),
+                      ),
+                    ),
+                    if (doc.isCnic)
+                      AppBadge.grey(
+                        doc == CaptureDoc.cnicFront ? '1 of 2' : '2 of 2',
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
+                child: Text(
+                  reviewing
+                      ? 'Check it is sharp and every corner shows'
+                      : _prompt,
+                  textAlign: TextAlign.center,
+                  style: t.base.merge(onDark),
+                ),
+              ),
+              Gap.s12,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(Radii.card),
+                    child: ColoredBox(color: c.ink, child: viewfinder),
                   ),
                 ),
               ),
-            if (!reviewing)
-              Text(
-                doc.isCnic
-                    ? 'Good light · No glare · All 4 corners'
-                    : 'Front camera · face and card in view · no hat or dark '
-                          'glasses',
-                textAlign: TextAlign.center,
-                style: t.small.copyWith(color: c.onDark2),
-              ),
-            Gap.s12,
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
-              child: reviewing
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: AppButton.ghost(
-                            'Retake',
-                            large: true,
-                            block: true,
-                            onPressed: onRetake,
-                          ),
-                        ),
-                        const SizedBox(width: Space.s12),
-                        Expanded(
-                          child: AppButton.primary(
-                            'Use photo',
-                            large: true,
-                            block: true,
-                            onPressed: onUse,
-                          ),
-                        ),
-                      ],
-                    )
-                  : SizedBox(
-                      height: 76,
-                      child: Row(
+              Gap.s12,
+              if (problem != null && stage != _Stage.failed)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Space.gutter,
+                    0,
+                    Space.gutter,
+                    Space.s8,
+                  ),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      problem!,
+                      textAlign: TextAlign.center,
+                      style: t.small.copyWith(color: c.white),
+                    ),
+                  ),
+                ),
+              if (!reviewing)
+                Text(
+                  doc.isCnic
+                      ? 'Good light · No glare · All 4 corners'
+                      : 'Front camera · face and card in view · no hat or dark '
+                            'glasses',
+                  textAlign: TextAlign.center,
+                  style: t.small.copyWith(color: c.onDark2),
+                ),
+              Gap.s12,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
+                child: reviewing
+                    ? Row(
                         children: [
                           Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: session?.hasFlash ?? false
-                                  ? AppIconButton(
-                                      icon: flash
-                                          ? Icons.flash_on
-                                          : Icons.flash_off,
-                                      label: flash ? 'Flash on' : 'Flash off',
-                                      color: c.white,
-                                      onPressed: onFlash,
-                                    )
-                                  : const SizedBox.shrink(),
+                            child: AppButton.ghost(
+                              'Retake',
+                              large: true,
+                              block: true,
+                              onPressed: onRetake,
                             ),
                           ),
-                          _Shutter(
-                            label: doc == CaptureDoc.selfie
-                                ? 'Take selfie'
-                                : 'Take photo',
-                            busy: taking,
-                            onTap: stage == _Stage.live ? onTake : null,
+                          const SizedBox(width: Space.s12),
+                          Expanded(
+                            child: AppButton.primary(
+                              'Use photo',
+                              large: true,
+                              block: true,
+                              onPressed: onUse,
+                            ),
                           ),
-                          const Spacer(),
                         ],
+                      )
+                    : SizedBox(
+                        height: 76,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: session?.hasFlash ?? false
+                                    ? AppIconButton(
+                                        icon: flash
+                                            ? Icons.flash_on
+                                            : Icons.flash_off,
+                                        label: flash ? 'Flash on' : 'Flash off',
+                                        color: c.white,
+                                        onPressed: onFlash,
+                                      )
+                                    : const SizedBox.shrink(),
+                              ),
+                            ),
+                            _Shutter(
+                              label: doc == CaptureDoc.selfie
+                                  ? 'Take selfie'
+                                  : 'Take photo',
+                              busy: taking,
+                              onTap: stage == _Stage.live ? onTake : null,
+                            ),
+                            const Spacer(),
+                          ],
+                        ),
                       ),
-                    ),
-            ),
-            Gap.s12,
-            Text(
-              'Camera only · screenshots are blocked on this screen',
-              style: t.xs.copyWith(color: c.onDark2),
-            ),
-            Gap.s8,
-          ],
+              ),
+              Gap.s12,
+              Text(
+                'Camera only · screenshots are blocked on this screen',
+                style: t.xs.copyWith(color: c.onDark2),
+              ),
+              Gap.s8,
+            ],
+          ),
         ),
       ),
     );

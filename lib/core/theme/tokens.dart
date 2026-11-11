@@ -162,6 +162,12 @@ class AppColors extends ThemeExtension<AppColors> {
 }
 
 /// The type scale: these eleven sizes and nothing else (brief §4).
+/// The launch screens (native and in-app splash): the "nucleus" behind
+/// the mark. Matches `@color/nucleus` on Android and the iOS LaunchScreen.
+abstract final class LaunchBrand {
+  static const nucleus = Color(0xFF050708);
+}
+
 abstract final class FontSizes {
   static const double xs = 11;
   static const double sm = 12;

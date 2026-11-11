@@ -26,6 +26,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     ..listen(sessionProvider, (_, _) => refresh.value++)
     ..listen(launchProvider, (_, _) => refresh.value++)
     ..listen(consentProvider, (_, _) => refresh.value++)
+    ..listen(onboardedProvider, (_, _) => refresh.value++)
     ..listen(hasLimitProvider, (_, _) => refresh.value++)
     ..onDispose(refresh.dispose);
 
@@ -36,6 +37,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       updateRequired: launch.updateRequired,
       maintenance: launch.maintenance,
       consented: ref.read(consentProvider),
+      onboarded: ref.read(onboardedProvider),
       signedIn: ref.read(sessionProvider) is SignedIn,
       hasLimit: ref.read(hasLimitProvider),
     );
@@ -69,6 +71,10 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> root) {
     GoRoute(
       path: Routes.maintenance,
       builder: (_, _) => const MaintenanceScreen(),
+    ),
+    GoRoute(
+      path: Routes.onboarding,
+      builder: (_, _) => const OnboardingScreen(),
     ),
     GoRoute(path: Routes.firstRun, builder: (_, _) => const FirstRunScreen()),
     GoRoute(path: Routes.welcome, builder: (_, _) => const WelcomeScreen()),

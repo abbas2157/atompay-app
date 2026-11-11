@@ -219,7 +219,13 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
     _clock?.cancel();
     final heard = _heard;
     setState(() => _listening = false);
-    if (send && heard.trim().isNotEmpty) unawaited(_send(heard));
+    if (!send) return;
+    if (heard.trim().isEmpty) {
+      // A pause with nothing heard: say so rather than just closing.
+      showToast("I didn't catch that. Try again, or type your question.");
+      return;
+    }
+    unawaited(_send(heard));
   }
 
   void _done() {
@@ -265,52 +271,57 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
     final voiceOn = ref.watch(appConfigProvider).features.voice;
     final c = context.colors;
 
-    return Scaffold(
-      backgroundColor: c.surface,
-      body: Column(
-        children: [
-          const _Header(),
-          Expanded(
-            child: ListView(
-              controller: _scroll,
-              padding: const EdgeInsets.all(Space.gutter),
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              children: [
-                if (turns.isEmpty)
-                  _Start(onAsk: _send, onOpen: _open)
-                else
-                  for (var i = 0; i < turns.length; i++)
-                    _Turn(
-                      turn: turns[i],
-                      last: i == turns.length - 1,
-                      speaking: _speakingId == turns[i].id,
-                      onSpeak: _toggleSpeak,
-                      onAsk: _send,
-                      onOpen: _open,
-                      onRetry: () => unawaited(
-                        ref.read(askAtomProvider.notifier).retry(turns[i].id),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      // Dark screen: light status-bar icons.
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: c.surface,
+        body: Column(
+          children: [
+            const _Header(),
+            Expanded(
+              child: ListView(
+                controller: _scroll,
+                padding: const EdgeInsets.all(Space.gutter),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                children: [
+                  if (turns.isEmpty)
+                    _Start(onAsk: _send, onOpen: _open)
+                  else
+                    for (var i = 0; i < turns.length; i++)
+                      _Turn(
+                        turn: turns[i],
+                        last: i == turns.length - 1,
+                        speaking: _speakingId == turns[i].id,
+                        onSpeak: _toggleSpeak,
+                        onAsk: _send,
+                        onOpen: _open,
+                        onRetry: () => unawaited(
+                          ref.read(askAtomProvider.notifier).retry(turns[i].id),
+                        ),
                       ),
-                    ),
-              ],
+                ],
+              ),
             ),
-          ),
-          if (_listening)
-            _ListeningPanel(
-              heard: _heard,
-              seconds: _seconds,
-              onCancel: _cancel,
-              onDone: _done,
-            )
-          else
-            _InputBar(
-              controller: _input,
-              focusNode: _inputFocus,
-              busy: busy,
-              showMic: voiceOn,
-              onMic: () => unawaited(_micTap()),
-              onSend: () => unawaited(_send(_input.text)),
-            ),
-        ],
+            if (_listening)
+              _ListeningPanel(
+                heard: _heard,
+                seconds: _seconds,
+                onCancel: _cancel,
+                onDone: _done,
+              )
+            else
+              _InputBar(
+                controller: _input,
+                focusNode: _inputFocus,
+                busy: busy,
+                showMic: voiceOn,
+                onMic: () => unawaited(_micTap()),
+                onSend: () => unawaited(_send(_input.text)),
+              ),
+          ],
+        ),
       ),
     );
   }

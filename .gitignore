@@ -62,3 +62,6 @@ ios/Runner/GoogleService-Info.plist
 ios/config/*/GoogleService-Info.plist
 .env
 .env.*
+
+# Golden diff output from failed runs.
+test/goldens/failures/

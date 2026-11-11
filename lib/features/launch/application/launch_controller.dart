@@ -135,5 +135,17 @@ class Consent extends _$Consent {
   }
 }
 
+/// The intro slides were seen. Shown once, before First run.
+@Riverpod(keepAlive: true)
+class Onboarded extends _$Onboarded {
+  @override
+  bool build() => ref.watch(appPrefsProvider).onboarded;
+
+  Future<void> finish() async {
+    await ref.read(appPrefsProvider).setOnboarded();
+    state = true;
+  }
+}
+
 /// Which store this build is installed from.
 String get platformKey => !kIsWeb && Platform.isIOS ? 'ios' : 'android';

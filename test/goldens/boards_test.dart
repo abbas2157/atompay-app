@@ -9,6 +9,7 @@ import 'package:atompay_mobile/features/account/data/device_permissions.dart';
 import 'package:atompay_mobile/features/application/data/camera_service.dart';
 import 'package:atompay_mobile/features/ask_atom/data/voice_service.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
+import 'package:atompay_mobile/features/launch/presentation/onboarding_screen.dart';
 import 'package:atompay_mobile/features/notifications/application/inbox_controller.dart';
 import 'package:atompay_mobile/features/notifications/presentation/notif_permission_screen.dart';
 import 'package:flutter/material.dart';
@@ -108,6 +109,7 @@ class Board {
     this.scenario = FakeScenario.repaying,
     this.signedIn = true,
     this.consented = true,
+    this.onboarded = true,
     this.size = _phone,
     this.before,
     this.prepare,
@@ -124,6 +126,9 @@ class Board {
   final FakeScenario scenario;
   final bool signedIn;
   final bool consented;
+
+  /// False: a fresh install, on the intro slides.
+  final bool onboarded;
   final Size size;
 
   /// Before launch (app-config knobs).
@@ -188,6 +193,30 @@ final boards = <Board>[
   Board('Splash', before: (s) => s.hang.add('/app-config')),
   Board('UpdateRequired', before: (s) => s.minVersion = '9.0.0'),
   Board('Maintenance', before: (s) => s.maintenance = true),
+  // Intro slides: not on the canvas (added on request), kept here so a
+  // change shows up in review.
+  for (var i = 1; i <= onboardingSlides.length; i++)
+    Board(
+      'Onboarding-$i',
+      consented: false,
+      onboarded: false,
+      signedIn: false,
+      act: (t, _, _) async {
+        // Decode the photos before the image is taken (async in tests).
+        final context = t.element(find.byType(Scaffold).first);
+        await t.runAsync(() async {
+          for (final s in onboardingSlides) {
+            if (s.photo != null) {
+              await precacheImage(AssetImage(s.photo!), context);
+            }
+          }
+        });
+        await settle(t, frames: 3);
+        for (var n = 1; n < i; n++) {
+          await _tapText(t, 'Next');
+        }
+      },
+    ),
   const Board('FirstRun', consented: false, signedIn: false),
 
   // Auth
@@ -567,6 +596,7 @@ void main() {
       final h = await Harness.create(
         scenario: b.scenario,
         consented: b.consented,
+        onboarded: b.onboarded,
         token: b.signedIn ? 'token' : null,
         now: _now,
         setup: b.before,

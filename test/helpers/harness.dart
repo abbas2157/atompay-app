@@ -25,6 +25,9 @@ class Harness {
   static Future<Harness> create({
     FakeScenario scenario = FakeScenario.repaying,
     bool consented = true,
+
+    /// The intro slides were seen (a fresh install hasn't).
+    bool onboarded = true,
     String? token,
     List<dynamic> overrides = const [],
 
@@ -40,6 +43,7 @@ class Harness {
     SharedPreferences.setMockInitialValues({
       'app.installed': true,
       'consent.accepted_v1': consented,
+      'onboarding.done_v1': onboarded,
     });
     FlutterSecureStorage.setMockInitialValues({'auth.token': ?token});
     final prefs = await SharedPreferences.getInstance();

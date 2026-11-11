@@ -13,6 +13,7 @@ class AppPrefs {
   final SharedPreferences _prefs;
 
   static const _consent = 'consent.accepted_v1';
+  static const _onboarded = 'onboarding.done_v1';
   static const _voiceExplained = 'askatom.voice_explained';
   static const _notifAsked = 'perm.notifications_explained';
   static const _cameraAsked = 'perm.camera_explained';
@@ -20,6 +21,11 @@ class AppPrefs {
   /// First run (disclosures) accepted. Shown once, before sign in.
   bool get consented => _prefs.getBool(_consent) ?? false;
   Future<void> setConsented() => _prefs.setBool(_consent, true);
+
+  /// The intro slides were seen (or skipped). Anyone who already accepted
+  /// the disclosures, such as an existing install, never sees them.
+  bool get onboarded => _prefs.getBool(_onboarded) ?? consented;
+  Future<void> setOnboarded() => _prefs.setBool(_onboarded, true);
 
   /// The Ask Atom voice explainer was shown, so the next mic tap goes
   /// straight to the system prompt.

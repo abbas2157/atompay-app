@@ -12,6 +12,7 @@ class GuardInput {
     required this.consented,
     required this.signedIn,
     this.hasLimit,
+    this.onboarded = true,
   });
 
   /// Config fetched and session restored.
@@ -20,6 +21,9 @@ class GuardInput {
   final bool maintenance;
   final bool consented;
   final bool signedIn;
+
+  /// The intro slides were seen or skipped.
+  final bool onboarded;
 
   /// Null while unknown (the dashboard hasn't loaded): don't redirect.
   final bool? hasLimit;
@@ -55,6 +59,13 @@ String? guardRedirect(
     return path == Routes.maintenance
         ? null
         : _with(Routes.maintenance, _target(location, from));
+  }
+
+  // 3a. A new install: the intro slides, once, before First run.
+  if (!s.onboarded && !s.consented) {
+    return path == Routes.onboarding
+        ? null
+        : _with(Routes.onboarding, _target(location, from));
   }
 
   // 3. No consent: First run, once, before sign-in.

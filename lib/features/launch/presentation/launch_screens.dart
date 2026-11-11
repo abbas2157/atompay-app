@@ -10,21 +10,38 @@ import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
 import 'package:atompay_mobile/features/launch/data/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Shown while app-config and `/me` load.
+/// Shown while app-config and `/me` load. Continues the native launch
+/// screen exactly (the mark on a white disc, on nucleus), so there is no
+/// jump between them. Disc sizes match tool/brand/generate_icons.py.
 class SplashScreen extends StatelessWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: context.colors.white,
-    body: Center(
-      child: Semantics(
-        label: 'AtomPay is starting',
-        liveRegion: true,
-        child: const AtomPayLogo(height: 120),
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    // Light status-bar icons on the dark splash.
+    value: SystemUiOverlayStyle.light,
+    child: Scaffold(
+      backgroundColor: LaunchBrand.nucleus,
+      body: Center(
+        child: Semantics(
+          label: 'AtomPay is starting',
+          liveRegion: true,
+          excludeSemantics: true,
+          child: Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              color: context.colors.white,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Image.asset(BrandAssets.markClear, width: 100),
+          ),
+        ),
       ),
     ),
   );

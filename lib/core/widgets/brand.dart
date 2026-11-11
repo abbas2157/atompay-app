@@ -5,6 +5,9 @@ abstract final class BrandAssets {
   static const logo = 'assets/images/atompay_logo.png';
   static const mark = 'assets/images/atompay_mark.png';
 
+  /// The mark alone, transparent (tool/brand/generate_icons.py).
+  static const markClear = 'assets/images/atompay_mark_clear.png';
+
   /// Ask Atom's face in every Atom app: the Atomshop app icon.
   static const atomshop = 'assets/images/atomshop_mark.png';
   static const atomseller = 'assets/images/atomseller_mark.png';

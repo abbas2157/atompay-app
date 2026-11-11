@@ -5,6 +5,7 @@ abstract final class Routes {
   static const splash = '/splash';
   static const update = '/update';
   static const maintenance = '/maintenance';
+  static const onboarding = '/onboarding';
   static const firstRun = '/first-run';
   static const welcome = '/welcome';
 
@@ -83,6 +84,7 @@ abstract final class Routes {
     splash,
     update,
     maintenance,
+    onboarding,
     firstRun,
     welcome,
     login,
@@ -94,7 +96,7 @@ abstract final class Routes {
   };
 
   /// Screens that block everything behind them.
-  static const gates = {update, maintenance, firstRun};
+  static const gates = {update, maintenance, onboarding, firstRun};
 
   /// Paths that only make sense once a limit is approved; without one they
   /// go Home (brief §5.3, guard 6). None of the routes in the brief's table

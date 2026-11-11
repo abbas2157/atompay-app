@@ -2,4 +2,6 @@
 <resources>
     <!-- Brand "nucleus" (handbook §4.1): icon background and launch screen. -->
     <color name="nucleus">#050708</color>
+    <!-- Behind the mark on the adaptive launcher icon. -->
+    <color name="icon_background">#FFFFFF</color>
 </resources>

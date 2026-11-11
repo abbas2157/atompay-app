@@ -15,6 +15,7 @@ export 'package:atompay_mobile/features/dev/gallery_screen.dart';
 export 'package:atompay_mobile/features/help/presentation/help_screens.dart';
 export 'package:atompay_mobile/features/home/presentation/home_screen.dart';
 export 'package:atompay_mobile/features/launch/presentation/launch_screens.dart';
+export 'package:atompay_mobile/features/launch/presentation/onboarding_screen.dart';
 export 'package:atompay_mobile/features/notifications/presentation/notifications_screen.dart';
 export 'package:atompay_mobile/features/plans/presentation/kfs_screen.dart';
 export 'package:atompay_mobile/features/plans/presentation/orders_screens.dart';

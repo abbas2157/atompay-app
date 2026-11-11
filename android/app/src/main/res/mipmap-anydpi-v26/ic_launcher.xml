@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Adaptive icon: nucleus background, orbits + "A" in the safe zone.
-     PNGs come from tool/brand/generate_icons_test.dart. -->
+<!-- Adaptive icon: white background, the AtomPay mark in the safe zone.
+     PNGs come from tool/brand/generate_icons.py. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/nucleus" />
+    <background android:drawable="@color/icon_background" />
     <foreground android:drawable="@mipmap/ic_launcher_foreground" />
 </adaptive-icon>

@@ -10,6 +10,7 @@ GuardInput state({
   bool consented = true,
   bool signedIn = true,
   bool? hasLimit,
+  bool onboarded = true,
 }) => GuardInput(
   launched: launched,
   updateRequired: update,
@@ -17,6 +18,7 @@ GuardInput state({
   consented: consented,
   signedIn: signedIn,
   hasLimit: hasLimit,
+  onboarded: onboarded,
 );
 
 String? go(GuardInput s, String location, {Set<String>? limitOnly}) =>
@@ -50,6 +52,28 @@ void main() {
       final s = state(update: true, maintenance: true, consented: false);
       expect(go(s, Routes.home), Routes.update);
       expect(go(s, Routes.update), isNull);
+    });
+
+    test('3a. a new install sees the intro slides before First run', () {
+      final s = state(onboarded: false, consented: false, signedIn: false);
+      expect(go(s, Routes.splash), Routes.onboarding);
+      expect(go(s, Routes.onboarding), isNull);
+      expect(go(s, Routes.login), '/onboarding?from=%2Flogin');
+      // Done: on to First run.
+      expect(
+        go(state(consented: false, signedIn: false), Routes.onboarding),
+        Routes.firstRun,
+      );
+    });
+
+    test('3a. maintenance beats the intro slides', () {
+      final s = state(maintenance: true, onboarded: false, consented: false);
+      expect(go(s, Routes.onboarding), Routes.maintenance);
+    });
+
+    test('3a. never shown again once the disclosures are accepted', () {
+      final s = state(onboarded: false, signedIn: false);
+      expect(go(s, Routes.onboarding), Routes.welcome);
     });
 
     test('2. maintenance beats consent and sign-in', () {

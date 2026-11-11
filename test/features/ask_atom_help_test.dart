@@ -216,6 +216,21 @@ void main() {
       expect(find.textContaining('0% markup'), findsOneWidget);
     });
 
+    testWidgets('voice: nothing heard says so and sends nothing', (
+      tester,
+    ) async {
+      final voice = FakeVoice();
+      final h = await at(tester, Routes.atom, voice: voice);
+      await tapLabel(tester, 'Ask by voice');
+      voice.hear('', done: true);
+      await settle(tester);
+      expect(
+        find.text("I didn't catch that. Try again, or type your question."),
+        findsOneWidget,
+      );
+      expect(h.server.log.where((r) => r.path.endsWith('/ask-atom')), isEmpty);
+    });
+
     testWidgets('voice: Cancel sends nothing', (tester) async {
       final voice = FakeVoice();
       await at(tester, Routes.atom, voice: voice);
