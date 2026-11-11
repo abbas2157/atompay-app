@@ -393,11 +393,16 @@ class WithinLimitSection extends StatelessWidget {
     this.columns = 2,
     this.max = 2,
     this.linkLabel = 'See all',
+    this.lowestPrice,
     super.key,
   });
 
   final AsyncValue<List<Product>> products;
   final int available;
+
+  /// The lowest-priced eligible product, from `/dashboard`; null until the
+  /// server sends it.
+  final int? lowestPrice;
   final int columns;
   final int max;
   final String linkLabel;
@@ -436,8 +441,6 @@ class WithinLimitSection extends StatelessWidget {
             ),
           )
         else if (list.isEmpty)
-          // The canvas starts with "The lowest-priced eligible product is
-          // Rs. …": that needs a figure from the API (brief §2).
           AppCard(
             padding: const EdgeInsets.all(Space.s22),
             child: Column(
@@ -463,8 +466,10 @@ class WithinLimitSection extends StatelessWidget {
                 ),
                 Gap.s8,
                 Text(
-                  'Your limit has to cover the whole price, because nothing '
-                  'is paid up front.',
+                  [
+                    if (lowestPrice case final p?) _lowest(p),
+                    _wholePrice,
+                  ].join(' '),
                   style: t.small,
                   textAlign: TextAlign.center,
                 ),
@@ -713,3 +718,10 @@ class HomeSkeleton extends StatelessWidget {
     );
   }
 }
+
+String _lowest(int price) =>
+    'The lowest-priced eligible product is ${rs(price)}.';
+
+const _wholePrice =
+    'Your limit has to cover the whole price, because nothing is paid up '
+    'front.';

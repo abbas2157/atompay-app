@@ -9,6 +9,7 @@ import 'package:atompay_mobile/core/widgets/form_parts.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
 import 'package:atompay_mobile/features/launch/data/app_config.dart';
+import 'package:atompay_mobile/features/plans/presentation/kfs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +40,13 @@ class SplashScreen extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Image.asset(BrandAssets.markClear, width: 100),
+            child: Image.asset(
+              BrandAssets.markClear,
+              width: 100,
+              // The asset is 1024 px wide; decode only what is shown.
+              cacheWidth: (100 * MediaQuery.devicePixelRatioOf(context))
+                  .round(),
+            ),
           ),
         ),
       ),
@@ -216,7 +223,7 @@ class WelcomeScreen extends StatelessWidget {
 }
 
 /// Disclosures, shown once before sign-in (canvas "Before you start"):
-/// Google Play's prominent disclosure and SECP's minimum disclosures.
+/// Google Play's prominent disclosure, and who offers the instalments.
 class FirstRunScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -232,6 +239,7 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
     final c = context.colors;
     final t = context.text;
     final config = ref.watch(appConfigProvider);
+    final business = config.business;
     final bold = TextStyle(color: c.ink, fontWeight: FontWeight.w700);
     const gap = SizedBox(height: Space.s18);
     return PopScope(
@@ -267,7 +275,7 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
                     Semantics(
                       header: true,
                       child: Text(
-                        'WHO PROVIDES YOUR CREDIT',
+                        'WHO OFFERS YOUR INSTALMENTS',
                         style: t.tiny.copyWith(
                           color: c.rose,
                           fontWeight: FontWeight.w800,
@@ -276,18 +284,19 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
                       ),
                     ),
                     Gap.s10,
-                    TbdText('[LICENSED ENTITY NAME]', style: t.body),
+                    // From Atomshop's admin panel; rose until it is set.
+                    if (business.companyName case final name?)
+                      Text(
+                        name,
+                        style: t.body.copyWith(fontWeight: FontWeight.w800),
+                      )
+                    else
+                      TbdText(KfsPlaceholders.company, style: t.body),
                     Gap.s4,
-                    Text.rich(
-                      TextSpan(
-                        style: t.small,
-                        children: [
-                          const TextSpan(
-                            text: 'Licensed by the SECP · licence ',
-                          ),
-                          placeholderSpan(context, '[LICENCE NO.]'),
-                        ],
-                      ),
+                    Text(
+                      'Atomshop.pk sells to you on instalments itself. There '
+                      'is no bank or lender, and no interest.',
+                      style: t.small,
                     ),
                   ],
                 ),
@@ -364,8 +373,12 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
                 tone: NoteTone.blue,
                 icon: Icons.language,
                 spans: [
-                  const TextSpan(text: 'Your data is stored in Pakistan '),
-                  placeholderSpan(context, '[CONFIRM HOSTING]'),
+                  if (business.dataHosting case final where?)
+                    TextSpan(text: 'Your data is stored in $where')
+                  else ...[
+                    const TextSpan(text: 'Your data is stored in Pakistan '),
+                    placeholderSpan(context, '[CONFIRM HOSTING]'),
+                  ],
                   TextSpan(
                     text: config.termsUrl == null
                         ? '. Read the privacy policy.'

@@ -22,6 +22,10 @@ abstract class Dashboard with _$Dashboard {
     Instalment? nextDue,
     @Default(PlansSummary()) PlansSummary plans,
     @Default(0) int unreadNotifications,
+
+    /// The lowest-priced eligible product ("Nothing fits" card). Proposed
+    /// API field; null until the server sends it.
+    int? lowestEligiblePrice,
   }) = _Dashboard;
 
   factory Dashboard.fromJson(Map<String, dynamic> json) =>
@@ -56,6 +60,10 @@ abstract class Limit with _$Limit {
     @Default(0) int usedPercent,
     @Default(0) int maxInstalment,
     int? tenure,
+
+    /// What `available` becomes once `next_due` is paid. Proposed API
+    /// field, computed by the server (the app never derives money).
+    int? availableAfterNext,
   }) = _Limit;
 
   factory Limit.fromJson(Map<String, dynamic> json) => _$LimitFromJson(json);

@@ -155,13 +155,8 @@ void main() {
 
     testWidgets('KFS: placeholders stay visible; email a copy', (tester) async {
       await at(tester, Routes.kfs(1279));
-      expect(
-        find.text(
-          '[LICENSED ENTITY NAME] · SECP licence [NO.]',
-          findRichText: true,
-        ),
-        findsOneWidget,
-      );
+      expect(find.text('[COMPANY NAME]'), findsOneWidget);
+      expect(find.textContaining('SECP'), findsNothing);
       expect(find.text('3% · Rs. 1,410'), findsOneWidget);
       expect(find.text('[confirm it is charged]'), findsOneWidget);
       expect(find.text('18.5% including the fee'), findsOneWidget);
@@ -227,7 +222,8 @@ void main() {
         ],
       ),
     );
-    expect(text, contains('[LICENSED ENTITY NAME]'));
+    expect(text, contains('Sold by: [COMPANY NAME]'));
+    expect(text, isNot(contains('SECP')));
     expect(text, contains('[CHARGES, IF ANY]'));
     expect(text, contains('Instalment 1: 10 Dec 2026 · Rs. 15,666'));
   });

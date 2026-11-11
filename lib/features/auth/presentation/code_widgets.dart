@@ -138,8 +138,31 @@ class _ResendRowState extends State<ResendRow> {
   @override
   void initState() {
     super.initState();
+    _startTicking();
+  }
+
+  @override
+  void didUpdateWidget(ResendRow old) {
+    super.didUpdateWidget(old);
+    // A new code was sent: count down again.
+    if (old.sentAt != widget.sentAt || old.resendIn != widget.resendIn) {
+      _startTicking();
+    }
+  }
+
+  /// Ticks once a second only while there is time left, so a finished
+  /// countdown doesn't keep waking the phone.
+  void _startTicking() {
+    _tick?.cancel();
+    _tick = null;
+    if (_left == Duration.zero) return;
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      if (_left == Duration.zero) {
+        _tick?.cancel();
+        _tick = null;
+      }
+      setState(() {});
     });
   }
 

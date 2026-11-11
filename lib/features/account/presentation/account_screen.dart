@@ -134,7 +134,7 @@ class AccountScreen extends ConsumerWidget {
               ),
               ListRow(
                 title: 'About, privacy and legal',
-                summary: 'Licence, policies, Key Fact Statements',
+                summary: 'Company, policies, Key Fact Statements',
                 icon: Icons.info_outline,
                 tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.about),

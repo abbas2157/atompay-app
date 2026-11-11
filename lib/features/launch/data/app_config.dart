@@ -24,10 +24,39 @@ abstract class AppConfig with _$AppConfig {
     @Default(Features()) Features features,
     @Default(Maintenance()) Maintenance maintenance,
     @Default(EcosystemApps()) EcosystemApps apps,
+    @Default(Business()) Business business,
   }) = _AppConfig;
 
   factory AppConfig.fromJson(Map<String, dynamic> json) =>
       _$AppConfigFromJson(json);
+}
+
+/// The company behind the instalments, set in Atomshop's admin panel and
+/// served in `/app-config.business`. Atomshop sells on instalments itself
+/// (no lender, no SECP licence), so nothing here claims one. A null field
+/// shows its rose placeholder, so a missing fact is visible.
+@freezed
+abstract class Business with _$Business {
+  const factory Business({
+    /// Atomshop's registered company, which offers the instalments.
+    String? companyName,
+    String? registeredAddress,
+
+    /// Where customer data is stored ("Pakistan").
+    String? dataHosting,
+
+    /// Late-payment charges, as customers should read them.
+    String? latePayment,
+
+    /// Early-settlement terms.
+    String? earlySettlement,
+
+    /// When a complaint gets a reply ("2 working days").
+    String? complaintResponseTime,
+  }) = _Business;
+
+  factory Business.fromJson(Map<String, dynamic> json) =>
+      _$BusinessFromJson(json);
 }
 
 @freezed

@@ -1,6 +1,7 @@
 import 'package:atompay_mobile/core/storage/prefs.dart';
 import 'package:atompay_mobile/features/application/data/camera_service.dart';
 import 'package:atompay_mobile/features/ask_atom/data/voice_service.dart';
+import 'package:atompay_mobile/features/notifications/data/push_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,12 +43,12 @@ abstract class NotificationPermission {
   Future<void> dismiss();
 }
 
-/// Push needs FCM registration (`POST /devices` with a token), which isn't
-/// built yet. Until it is, the explainer never shows, even when the server
-/// sends `features.push: true`: asking for a permission the app can't use
-/// would break both stores' rules.
+/// Push needs a Firebase app in this build (see [FirebaseConfig]). Without
+/// one, the explainer never shows, even when the server sends
+/// `features.push: true`: asking for a permission the app can't use would
+/// break both stores' rules.
 abstract final class PushSupport {
-  static const ready = false;
+  static bool get ready => FirebaseConfig.options != null;
 }
 
 final notificationPermissionProvider = Provider<NotificationPermission>(

@@ -5,7 +5,7 @@ consoles. Package / bundle id: `com.ecommerce.atompay` (prod flavour).
 
 ## 1. Blockers: server work before submitting
 
-See [backend/STORE_COMPLIANCE_PROMPT.md](backend/STORE_COMPLIANCE_PROMPT.md). None of the following can
+See [backend/SERVER_RELEASE_PROMPT.md](backend/SERVER_RELEASE_PROMPT.md). None of the following can
 be skipped:
 
 - [ ] `POST /me/delete` live (the app's **Account → Delete account** calls it).
@@ -14,6 +14,37 @@ be skipped:
       `/app-config.account_deletion_url`).
 - [ ] Password-reset → login bug fixed (reviewers can't sign in otherwise).
 - [ ] Two review accounts seeded (one with a plan, one empty for testing deletion).
+
+### Switching push on
+
+The app's push code is built. It stays off until all three of these are done:
+
+- [ ] Register AtomPay in the **same Firebase project the server sends from** (`atomshop-a726c` holds
+      Atomshop and Atom Seller): an Android app `com.ecommerce.atompay` (plus `.dev`/`.staging` if those
+      builds should get pushes) and an iOS app `com.ecommerce.atompay`.
+- [ ] Copy the values into `env/<flavor>.json`: `FIREBASE_PROJECT_ID`, `FIREBASE_SENDER_ID`,
+      `FIREBASE_ANDROID_API_KEY`, `FIREBASE_ANDROID_APP_ID`, `FIREBASE_IOS_API_KEY`, `FIREBASE_IOS_APP_ID`,
+      `FIREBASE_IOS_BUNDLE_ID` (Firebase console → Project settings → Your apps). No
+      `google-services.json` or `GoogleService-Info.plist` is needed.
+- [ ] iOS: upload an APNs key to that Firebase project, and turn on **Push Notifications** for the App ID
+      (the app already has `Runner.entitlements` and the `remote-notification` background mode).
+- [ ] Server: FCM credentials set, so `/app-config` sends `features.push: true`.
+
+Then the app shows the notifications explainer after sign-in, registers with `POST /devices`, removes the
+token with `DELETE /devices` on sign-out, opens the right screen from a tapped push and shows a toast for
+one that arrives while it is open.
+
+### Fields the app is ready for (server work)
+
+The app shows these as soon as the API sends them, and leaves the line out until then (it never computes
+money itself):
+
+- [ ] `GET /dashboard` → `limit.available_after_next`: Home "After 10 Jan you will have Rs. 44,332" and
+      Ask Atom "Rs. 44,332 once January is paid".
+- [ ] `GET /dashboard` → `lowest_eligible_price`: Home "The lowest-priced eligible product is Rs. 47,000".
+- [ ] `GET /plans`, `GET /plans/{id}` → `order.delivered_at`: "delivered 9 Nov" on the order card and the
+      status chain.
+- [ ] Instalments → `paid_via` (e.g. `"JazzCash"`): "paid 9 Nov by JazzCash".
 
 ## 2. Business / legal: confirm before submitting
 
@@ -25,19 +56,30 @@ AtomPay finances AtomShop purchases in instalments, which both stores treat as *
       equivalent **APR** and due dates. They may **not exceed 36% APR** (including fees) and may not require
       full repayment within 60 days. Work out the equivalent APR of the instalment markup. If it's above
       36%, Apple will reject the app.
-- [ ] **Google Play Financial features declaration** (Policy → App content): declare
-      "Buy now, pay later / point-of-sale financing" or "Personal loans", whichever applies. For **Pakistan**,
-      Google requires personal-loan apps to be run by an entity licensed by the **SECP** (NBFC lending
-      licence) and to upload proof. Check with legal which category AtomPay falls into, and have the
-      licence document ready.
+- [ ] **AtomPay is not SECP-registered.** Atomshop sells on instalments itself (merchant credit, no
+      lender), and the app claims no licence anywhere. **This is the biggest store risk:**
+      - For Pakistan, Google Play requires **personal-loan** apps to be run by an SECP-licensed NBFC, with
+        proof uploaded. An unlicensed app declared as a personal loan will be rejected.
+      - Declare AtomPay in the **Financial features declaration** (Policy → App content) as
+        **"Buy now, pay later / point-of-sale financing"** offered by the merchant, not as a personal loan.
+      - Get legal confirmation, in writing, that 0% markup instalments sold by Atomshop itself need no SECP
+        licence. Google may ask for it.
+      - Apple 3.2.2(ix) is written for loan apps. The KFS and the APR must still be shown, and the review
+        notes should explain the merchant-instalment model.
 - [ ] Play listing description must show: minimum and maximum repayment period, maximum APR, a
-      representative example of the total cost, and the licensed entity's name. Apple wants the same in
-      the app/listing.
-- [ ] **Placeholders still in the app** (shown in rose until supplied, brief §0): licensed entity name,
-      SECP licence no., registered address, data location confirmation (About; KFS), complaint response
-      time and SECP complaint link (Complaints), APR/fee decision (KFS), late-payment and early-settlement
-      terms (KFS), Help answers for Getting started, Applying & KYC and Account, support WhatsApp/phone/email
-      (`/app-config.support`; rows hidden while null).
+      representative example of the total cost, and the company offering the instalments (Atomshop's
+      registered company). Apple wants the same in the app/listing.
+- [ ] **Company details from the Atomshop admin panel** (`/app-config.business`, server prompt item 7),
+      shown in rose until set:
+      - company name and registered address;
+      - data location;
+      - late-payment and early-settlement terms;
+      - complaint response time.
+
+      Still open in the app itself:
+      - the APR/fee decision (KFS);
+      - Help answers for Getting started, Applying & KYC and Account;
+      - the support WhatsApp/phone/email in `/app-config.support` (those rows stay hidden while null).
 - [ ] **Google Play personal accounts** created after Nov 2023 must run a **closed test with at least 12
       testers for 14 days** before production. Organization accounts are exempt.
 
@@ -59,7 +101,7 @@ AtomPay finances AtomShop purchases in instalments, which both stores treat as *
 | HTTPS only | `network_security_config.xml` (Android), ATS default (iOS) |
 | No backups of the session | `allowBackup=false` + `data_extraction_rules.xml` |
 | Screenshot protection | `FLAG_SECURE` / iOS snapshot cover on capture, document and KFS screens |
-| In-app grievance route (SECP 15/2022) | Help › Raise a complaint → reference number |
+| In-app grievance route | Help › Raise a complaint → reference number |
 | Store review prompt | Rate AtomPay opens the listing only; no rating gate, no `requestReview()` from a button |
 | Accessibility | `test/a11y`: Android/iOS tap targets, labels and text contrast on every screen; 200% text without overflow |
 | Design fidelity | `test/goldens`: one image per canvas board (`flutter test --tags golden`, generated on Windows) |

@@ -15,17 +15,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// Placeholders until the business supplies the facts (brief §0, §11).
+/// Placeholders until the business supplies the facts in Atomshop's admin
+/// panel (brief §0, §11).
 abstract final class KfsPlaceholders {
-  static const lender = '[LICENSED ENTITY NAME]';
-  static const licence = '[NO.]';
+  /// Atomshop's registered company. It sells on instalments itself: there
+  /// is no lender and no SECP licence to show.
+  static const company = '[COMPANY NAME]';
   static const feeCharged = '[confirm it is charged]';
   static const aprIfNoFee = '[0% if no fee is charged]';
   static const late = '[CHARGES, IF ANY]';
   static const early = '[EARLY SETTLEMENT TERMS]';
 }
 
-/// The Key Fact Statement (SECP Circular 15/2022; Apple 3.2.2(ix)).
+/// The Key Fact Statement: every term of the instalment plan up front
+/// (Apple 3.2.2(ix), Google Play financial features).
 /// Screenshots are blocked; a copy goes by email or SMS, or through the
 /// system share sheet as text. Nothing is saved to the phone.
 class KfsScreen extends ConsumerStatefulWidget {
@@ -112,7 +115,7 @@ class _KfsScreenState extends ConsumerState<KfsScreen> {
             children: [
               KfsCard(kfs: k),
               Gap.s14,
-              const _CheckoutNote(),
+              _CheckoutNote(acceptedAt: k.acceptedAt),
               Gap.s14,
               AppButton.primary(
                 'Email or SMS me a copy',
@@ -144,11 +147,23 @@ class _KfsScreenState extends ConsumerState<KfsScreen> {
 
 /// "These terms must be shown and accepted at Atomshop checkout…".
 class _CheckoutNote extends StatelessWidget {
-  const new();
+  const new({this.acceptedAt});
+
+  /// From the server, once checkout records the acceptance.
+  final DateTime? acceptedAt;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    if (acceptedAt case final at?) {
+      return Note(
+        tone: NoteTone.green,
+        icon: Icons.verified_outlined,
+        text:
+            'You accepted these terms at Atomshop checkout on '
+            '${dayMonthYear(at)}. This copy stays here for you.',
+      );
+    }
     return Note(
       tone: NoteTone.blue,
       spans: [
@@ -196,23 +211,12 @@ class KfsCard extends StatelessWidget {
     );
 
     final rows = <_KfsRow>[
+      // Atomshop sells on instalments itself: the seller, no lender.
       _KfsRow(
-        'Lender',
-        Text.rich(
-          TextSpan(
-            style: value,
-            children: [
-              TextSpan(
-                text: lender.name ?? KfsPlaceholders.lender,
-                style: lender.name == null ? tbd : null,
-              ),
-              const TextSpan(text: ' · SECP licence '),
-              TextSpan(
-                text: lender.licence ?? KfsPlaceholders.licence,
-                style: lender.licence == null ? tbd : null,
-              ),
-            ],
-          ),
+        'Sold by',
+        text(
+          lender.name ?? KfsPlaceholders.company,
+          placeholder: lender.name == null,
         ),
       ),
       if (lender.address != null) _KfsRow('Address', text(lender.address!)),
@@ -285,7 +289,7 @@ class KfsCard extends StatelessWidget {
       ),
       _KfsRow(
         'Complaints',
-        text(k.complaints ?? 'In the app: Help › Complaints. Then the SECP.'),
+        text(k.complaints ?? _complaints),
       ),
     ];
 
@@ -383,20 +387,17 @@ class _KfsRowView extends StatelessWidget {
 // The statement as plain text for the share sheet, placeholders kept.
 String kfsText(Kfs k) {
   final l = k.lender;
-  const complaints = 'In the app: Help › Complaints. Then the SECP.';
   final fee =
       'Processing fee: ${k.processingFeePercent}% · ${rs(k.processingFee)} '
       '${KfsPlaceholders.feeCharged}';
   final apr =
       'APR: ${k.aprPercent == null ? '[APR]' : '${k.aprPercent}%'} '
       'including the fee ${KfsPlaceholders.aprIfNoFee}';
-  final lender =
-      'Lender: ${l.name ?? KfsPlaceholders.lender} · SECP licence '
-      '${l.licence ?? KfsPlaceholders.licence}';
+  final seller = 'Sold by: ${l.name ?? KfsPlaceholders.company}';
   return [
     'AtomPay Key Fact Statement',
     'Order ${k.orderNumber}${k.product == null ? '' : ' · ${k.product}'}',
-    lender,
+    seller,
     'Amount financed: ${rs(k.amountFinanced)} (cash price)',
     'Advance: ${rs(k.advance)}',
     'Markup: ${k.markupPercent}%',
@@ -409,6 +410,8 @@ String kfsText(Kfs k) {
     'Delivery: charges apply, shown at checkout',
     'Late payment: ${k.latePayment ?? KfsPlaceholders.late}',
     'Paying early: ${k.earlySettlement ?? KfsPlaceholders.early}',
-    'Complaints: ${k.complaints ?? complaints}',
+    'Complaints: ${k.complaints ?? _complaints}',
   ].join('\n');
 }
+
+const _complaints = 'In the app: Help › Complaints.';

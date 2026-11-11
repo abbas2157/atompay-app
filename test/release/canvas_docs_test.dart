@@ -150,32 +150,41 @@ void main() {
       return h;
     }
 
-    const lender = '[LICENSED ENTITY NAME]';
+    // Atomshop sells on instalments itself: the company is named, and no
+    // SECP licence is claimed anywhere.
+    const company = '[COMPANY NAME]';
 
-    testWidgets('licence shown on First run (SECP 15/2022)', (tester) async {
+    testWidgets('company shown on First run, no licence claimed', (
+      tester,
+    ) async {
       await at(tester, Routes.firstRun, signedIn: false, consented: false);
-      expect(find.textContaining(lender), findsWidgets);
+      expect(find.textContaining(company), findsWidgets);
+      expect(find.textContaining('SECP'), findsNothing);
     });
 
-    testWidgets('licence shown on About', (tester) async {
+    testWidgets('company shown on About, no licence claimed', (tester) async {
       await at(tester, Routes.about);
-      expect(find.textContaining(lender), findsWidgets);
+      expect(find.textContaining(company), findsWidgets);
+      expect(find.textContaining('SECP'), findsNothing);
     });
 
-    testWidgets('KFS: lender, APR, every instalment date (Apple 3.2.2)', (
+    testWidgets('KFS: seller, APR, every instalment date (Apple 3.2.2)', (
       tester,
     ) async {
       await at(tester, Routes.kfs(1279));
-      expect(find.textContaining(lender), findsWidgets);
+      expect(find.textContaining(company), findsWidgets);
       expect(find.text('Annual percentage rate (APR)'), findsOneWidget);
       // "10 Dec 2026 · Rs. 15,666": one row per instalment.
       expect(find.textContaining(RegExp(r'\d{4} · Rs\. ')), findsNWidgets(3));
     });
 
-    testWidgets('grievance route with SECP escalation', (tester) async {
+    testWidgets('in-app grievance route', (tester) async {
       await at(tester, Routes.complaint);
       expect(find.text('Raise a complaint'), findsWidgets);
-      expect(find.textContaining('SECP'), findsOneWidget);
+      expect(
+        find.textContaining('A person reads every complaint'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('in-app account deletion (Apple 5.1.1(v))', (tester) async {

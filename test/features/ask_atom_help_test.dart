@@ -374,7 +374,7 @@ void main() {
       expect(location(h), Routes.complaint);
       expect(find.text('[RESPONSE TIME]'), findsNothing); // inside rich text
       expect(find.textContaining('[RESPONSE TIME]'), findsOneWidget);
-      expect(find.textContaining('[SECP complaint link'), findsOneWidget);
+      expect(find.textContaining('SECP'), findsNothing);
 
       await tapText(tester, 'Send complaint');
       expect(find.text('Choose what it is about.'), findsOneWidget);

@@ -20,6 +20,9 @@ abstract class Instalment with _$Instalment {
     int? paidAmount,
     DateTime? paidOn,
 
+    /// How it was paid ("JazzCash"). Proposed API field.
+    String? paidVia,
+
     /// Only on `next_due` objects.
     String? orderReference,
     String? productTitle,
@@ -38,6 +41,9 @@ abstract class PlanOrder with _$PlanOrder {
     String? status,
     String? statusLabel,
     DateTime? orderedAt,
+
+    /// When AtomShop marked it delivered. Proposed API field.
+    DateTime? deliveredAt,
     @Default(0) int advance,
     @Default(0) int financed,
     int? tenure,
@@ -114,6 +120,10 @@ abstract class Kfs with _$Kfs {
     String? earlySettlement,
     String? complaints,
     DateTime? issuedAt,
+
+    /// When the customer accepted these terms at Atomshop checkout. Null
+    /// until checkout records it (docs/backend/SERVER_RELEASE_PROMPT.md §8).
+    DateTime? acceptedAt,
   }) = _Kfs;
 
   factory Kfs.fromJson(Map<String, dynamic> json) => _$KfsFromJson(json);

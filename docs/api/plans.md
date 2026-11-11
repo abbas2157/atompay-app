@@ -85,3 +85,12 @@ Instalment `state` and colour:
 | `upcoming` | Due later | muted |
 
 Payments are made through AtomShop's existing channels. The app only shows status.
+
+## Proposed fields (not live yet)
+
+The app reads these when present and leaves them out otherwise:
+
+| Field | Where | Notes |
+|---|---|---|
+| `order.delivered_at` | `GET /plans`, `GET /plans/{order_id}` | ISO 8601, set when AtomShop marks the order delivered; `null` before. Shown as "delivered 9 Nov". |
+| `paid_via` | each instalment (and `next_due`) | How a paid instalment was paid, as a display label: `"JazzCash"`, `"EasyPaisa"`, `"Bank transfer"`, `"Cash"`. `null` while unpaid. Shown as "paid 9 Nov by JazzCash". |

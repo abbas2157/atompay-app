@@ -14,6 +14,9 @@ import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:go_router/go_router.dart';
 
 /// One shimmering block. Shimmer stops under reduced motion.
+///
+/// Inside a [LoadingShape] every block follows that shape's single clock
+/// and only repaints (no rebuilds); on its own it runs its own clock.
 class Skeleton extends StatefulWidget {
   const new({
     this.width,
@@ -32,49 +35,109 @@ class Skeleton extends StatefulWidget {
 
 class _SkeletonState extends State<Skeleton>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _shimmer = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  );
+  /// Only when there is no [LoadingShape] above.
+  AnimationController? _own;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_ShimmerScope.of(context) != null) {
+      _own?.dispose();
+      _own = null;
+      return;
+    }
+    final own = _own ??= AnimationController(
+      vsync: this,
+      duration: _ShimmerScope.period,
+    );
     if (context.reduceMotion) {
-      _shimmer.stop();
-    } else if (!_shimmer.isAnimating) {
-      _shimmer.repeat();
+      own.stop();
+    } else if (!own.isAnimating) {
+      own.repeat();
     }
   }
 
   @override
   void dispose() {
-    _shimmer.dispose();
+    _own?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return AnimatedBuilder(
-      animation: _shimmer,
-      builder: (context, _) {
-        final x = -1 + 3 * _shimmer.value;
-        return Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.radius),
-            gradient: LinearGradient(
-              begin: Alignment(x - 1, 0),
-              end: Alignment(x, 0),
-              colors: [c.skel, c.greySoft, c.skel],
-            ),
-          ),
-        );
-      },
+    final clock = _ShimmerScope.of(context) ?? _own!;
+    final block = SizedBox(
+      width: widget.width ?? double.infinity,
+      height: widget.height,
+      child: CustomPaint(
+        painter: _SkeletonPainter(
+          clock: clock,
+          radius: widget.radius,
+          base: c.skel,
+          shine: c.greySoft,
+        ),
+      ),
+    );
+    // Without a width it fills the row, or is 0 wide where the width is
+    // unbounded (as an empty Container was).
+    return widget.width == null
+        ? LimitedBox(maxWidth: 0, child: block)
+        : block;
+  }
+}
+
+class _SkeletonPainter extends CustomPainter {
+  new({
+    required this.clock,
+    required this.radius,
+    required this.base,
+    required this.shine,
+  }) : super(repaint: clock);
+
+  final Animation<double> clock;
+  final double radius;
+  final Color base;
+  final Color shine;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final x = -1 + 3 * clock.value;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment(x - 1, 0),
+        end: Alignment(x, 0),
+        colors: [base, shine, base],
+      ).createShader(rect);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(radius)),
+      paint,
     );
   }
+
+  @override
+  bool shouldRepaint(_SkeletonPainter old) =>
+      old.clock != clock ||
+      old.radius != radius ||
+      old.base != base ||
+      old.shine != shine;
+}
+
+/// The one shimmer clock a [LoadingShape] shares with its [Skeleton]s.
+class _ShimmerScope extends InheritedWidget {
+  const new({required this.clock, required super.child});
+
+  static const period = Duration(milliseconds: 1400);
+
+  final Animation<double> clock;
+
+  static Animation<double>? of(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<_ShimmerScope>()
+      ?.clock;
+
+  @override
+  bool updateShouldNotify(_ShimmerScope old) => old.clock != clock;
 }
 
 /// A white card full of skeleton lines.
@@ -135,7 +198,7 @@ class SkeletonRow extends StatelessWidget {
 }
 
 /// Wraps a screen-shaped skeleton with the label screen readers announce.
-class LoadingShape extends StatelessWidget {
+class LoadingShape extends StatefulWidget {
   const new({required this.label, required this.child, super.key});
 
   /// "Loading your orders".
@@ -143,10 +206,43 @@ class LoadingShape extends StatelessWidget {
   final Widget child;
 
   @override
+  State<LoadingShape> createState() => _LoadingShapeState();
+}
+
+/// One shimmer clock for every block inside, and a repaint boundary so the
+/// shimmer never repaints the rest of the screen.
+class _LoadingShapeState extends State<LoadingShape>
+    with SingleTickerProviderStateMixin {
+  late final _clock = AnimationController(
+    vsync: this,
+    duration: _ShimmerScope.period,
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (context.reduceMotion) {
+      _clock.stop();
+    } else if (!_clock.isAnimating) {
+      _clock.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _clock.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => Semantics(
-    label: label,
+    label: widget.label,
     liveRegion: true,
-    child: ExcludeSemantics(child: child),
+    child: ExcludeSemantics(
+      child: RepaintBoundary(
+        child: _ShimmerScope(clock: _clock, child: widget.child),
+      ),
+    ),
   );
 }
 

@@ -1,5 +1,6 @@
 import 'package:atompay_mobile/core/format/money.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
+import 'package:atompay_mobile/core/widgets/net_image.dart';
 import 'package:atompay_mobile/core/widgets/pressable.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
@@ -61,11 +62,9 @@ class ProductCard extends StatelessWidget {
                     color: c.surface,
                     child: imageUrl == null
                         ? _Placeholder(color: c.glyph)
-                        : Image.network(
+                        : NetImage(
                             imageUrl!,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) =>
-                                _Placeholder(color: c.glyph),
+                            fallback: _Placeholder(color: c.glyph),
                           ),
                   ),
                   const Positioned(

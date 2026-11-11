@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:atompay_mobile/core/format/dates.dart';
 import 'package:atompay_mobile/core/format/money.dart';
 import 'package:atompay_mobile/core/router/app_shell.dart';
 import 'package:atompay_mobile/core/storage/response_cache.dart';
@@ -174,6 +175,7 @@ class _HomeBody extends ConsumerWidget {
             WithinLimitSection(
               products: products,
               available: d.limit.available,
+              lowestPrice: d.lowestEligiblePrice,
             ),
           ],
           HowToBuyCard(onShop: () => Links.open(shopUrl)),
@@ -184,15 +186,28 @@ class _HomeBody extends ConsumerWidget {
           limit,
           NextPaymentCard(due: d.nextDue!, plan: plan, withButton: wide),
           if (!wide) ...[
-            // The canvas goes on "After 10 Jan you will have Rs. 44,332 to
-            // spend.": that figure needs an API field (brief §2).
-            const Note(
+            // The "after" figure comes from the server, never computed here.
+            Note(
               tone: NoteTone.blue,
-              text: 'Your limit frees up as you pay.',
+              spans: [
+                const TextSpan(text: 'Your limit frees up as you pay.'),
+                if (d.limit.availableAfterNext case final after?) ...[
+                  TextSpan(
+                    text:
+                        ' After ${dayMonth(d.nextDue!.dueDate)} you will have ',
+                  ),
+                  TextSpan(
+                    text: rs(after),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  const TextSpan(text: ' to spend.'),
+                ],
+              ],
             ),
             WithinLimitSection(
               products: products,
               available: d.limit.available,
+              lowestPrice: d.lowestEligiblePrice,
               linkLabel: 'All products',
             ),
           ],
@@ -208,6 +223,7 @@ class _HomeBody extends ConsumerWidget {
           WithinLimitSection(
             products: products,
             available: d.limit.available,
+            lowestPrice: d.lowestEligiblePrice,
             columns: MediaQuery.sizeOf(context).width >= 840 ? 3 : 2,
             max: 6,
           ),

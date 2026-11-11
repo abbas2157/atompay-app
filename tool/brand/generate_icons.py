@@ -118,6 +118,17 @@ def main() -> None:
         place(icon, mark, size * IOS_MARK)
         save(icon, os.path.join(icons, name), opaque=True)
 
+    # Push notification small icon: Android draws it as a white silhouette,
+    # 24 dp with the mark inside 20 dp.
+    for name, d in DENSITIES.items():
+        size = round(24 * d)
+        stat = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        place(stat, mark, 20 * d)
+        alpha = stat.getchannel("A")
+        white = Image.new("RGBA", stat.size, WHITE)
+        white.putalpha(alpha)
+        save(white, os.path.join(RES, f"drawable-{name}", "ic_stat_atompay.png"))
+
     # The mark alone, for the in-app splash and anywhere it sits on its own
     # background.
     clear = Image.new("RGBA", (1024, round(1024 * mark.height / mark.width)), (0, 0, 0, 0))

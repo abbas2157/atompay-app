@@ -24,10 +24,13 @@ import 'package:atompay_mobile/features/auth/data/auth_models.dart';
 import 'package:atompay_mobile/features/auth/data/auth_repository.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
 import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
+import 'package:atompay_mobile/features/notifications/application/push_controller.dart';
 import 'package:atompay_mobile/features/plans/data/plan_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart'
+    show openAppSettings;
 
 /// Settings (canvas "Settings"), opened from Account.
 class SettingsScreen extends ConsumerWidget {
@@ -543,7 +546,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
           Gap.s8,
           Text(
             'Lending apps in Pakistan may not read these, even with your '
-            'consent (Google Play and SECP rules).',
+            'consent (Google Play rules).',
             style: t.tiny.copyWith(height: 1.5),
           ),
         ],
@@ -564,6 +567,24 @@ class NotificationSettingsScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final email = ref.watch(emailAlertsProvider);
     final hasEmail = user?.email != null;
+    // Push shows once this build has Firebase and the server sends pushes.
+    final pushLive =
+        PushSupport.ready && ref.watch(appConfigProvider).features.push;
+    final push = pushLive
+        ? ref.watch(permissionsProvider).value?.notifications
+        : null;
+
+    Future<void> setPush() async {
+      final permission = ref.read(notificationPermissionProvider);
+      if (push == PermissionView.notAsked) {
+        await permission.request();
+        unawaited(ref.read(pushControllerProvider).syncRegistration());
+      } else {
+        // Android and iOS only let the phone's settings turn it on or off.
+        await openAppSettings();
+      }
+      ref.invalidate(permissionsProvider);
+    }
 
     Future<void> setEmail({required bool on}) async {
       try {
@@ -578,37 +599,53 @@ class NotificationSettingsScreen extends ConsumerWidget {
       appBar: const AppTopBar(title: 'Notifications'),
       body: FormPage(
         children: [
-          if (hasEmail)
+          if (hasEmail || pushLive)
             ListGroup(
               title: 'Notifications',
               children: [
-                ListRow(
-                  title: 'Email alerts',
-                  summary: 'To the email on your account',
-                  trailing: switch (email) {
-                    AsyncData(:final value) => Semantics(
-                      label: 'Email alerts',
+                if (pushLive)
+                  ListRow(
+                    title: 'Push notifications',
+                    summary: 'On this phone',
+                    trailing: Semantics(
+                      label: 'Push notifications',
                       child: Switch.adaptive(
-                        value: value,
-                        onChanged: (v) => unawaited(setEmail(on: v)),
+                        value: push == PermissionView.allowed,
+                        onChanged: push == null
+                            ? null
+                            : (_) => unawaited(setPush()),
                       ),
                     ),
-                    AsyncError() => TextLink(
-                      'Retry',
-                      onPressed: () => ref.invalidate(emailAlertsProvider),
-                    ),
-                    _ => SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: c.muted,
+                    onTap: push == null ? null : () => unawaited(setPush()),
+                  ),
+                if (hasEmail)
+                  ListRow(
+                    title: 'Email alerts',
+                    summary: 'To the email on your account',
+                    trailing: switch (email) {
+                      AsyncData(:final value) => Semantics(
+                        label: 'Email alerts',
+                        child: Switch.adaptive(
+                          value: value,
+                          onChanged: (v) => unawaited(setEmail(on: v)),
+                        ),
                       ),
-                    ),
-                  },
-                  onTap: email.hasValue
-                      ? () => unawaited(setEmail(on: !email.requireValue))
-                      : null,
-                ),
+                      AsyncError() => TextLink(
+                        'Retry',
+                        onPressed: () => ref.invalidate(emailAlertsProvider),
+                      ),
+                      _ => SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: c.muted,
+                        ),
+                      ),
+                    },
+                    onTap: email.hasValue
+                        ? () => unawaited(setEmail(on: !email.requireValue))
+                        : null,
+                  ),
               ],
             ),
           Gap.s8,

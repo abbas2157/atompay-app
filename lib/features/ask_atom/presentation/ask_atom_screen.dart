@@ -51,17 +51,26 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
   // Kept from initState: `ref` can't be used in dispose().
   late final VoiceInput _voice;
   late final Speaker _speaker;
+  late final AppLifecycleListener _lifecycle;
 
   @override
   void initState() {
     super.initState();
-    _input.addListener(() => setState(() {}));
     _voice = ref.read(voiceInputProvider);
     _speaker = ref.read(speakerProvider);
+    // Leaving the app: the mic stops (nothing is heard in the background)
+    // and reading aloud stops, so neither keeps the phone awake.
+    _lifecycle = AppLifecycleListener(onHide: _pauseVoice);
+  }
+
+  void _pauseVoice() {
+    if (_listening) _cancel();
+    unawaited(_stopSpeaking());
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _clock?.cancel();
     if (_listening) unawaited(_voice.cancel());
     if (_speakingId != null) unawaited(_speaker.stop());
@@ -333,13 +342,18 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
                 onDone: _done,
               )
             else
-              _InputBar(
-                controller: _input,
-                focusNode: _inputFocus,
-                busy: busy,
-                showMic: voiceOn,
-                onMic: () => unawaited(_micTap()),
-                onSend: () => unawaited(_send(_input.text)),
+              // Typing rebuilds only the bar (send on/off), not the whole
+              // conversation above it.
+              ListenableBuilder(
+                listenable: _input,
+                builder: (context, _) => _InputBar(
+                  controller: _input,
+                  focusNode: _inputFocus,
+                  busy: busy,
+                  showMic: voiceOn,
+                  onMic: () => unawaited(_micTap()),
+                  onSend: () => unawaited(_send(_input.text)),
+                ),
               ),
           ],
         ),
@@ -496,6 +510,17 @@ class _Start extends ConsumerWidget {
         tone: TileTone.wash,
         title: '${rs(d.limit.available)} left to spend',
         spokenTitle: '${rsSpoken(d.limit.available)} left to spend',
+        // The server's figure for after the next payment, when it sends one.
+        body: switch ((d.limit.availableAfterNext, d.nextDue)) {
+          (final int after, final due?) =>
+            '${rs(after)} once ${monthName(due.dueDate)} is paid',
+          _ => null,
+        },
+        spokenBody: switch ((d.limit.availableAfterNext, d.nextDue)) {
+          (final int after, final due?) =>
+            '${rsSpoken(after)} once ${monthName(due.dueDate)} is paid',
+          _ => null,
+        },
       ),
   ];
 }

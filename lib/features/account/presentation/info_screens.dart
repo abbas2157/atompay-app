@@ -21,9 +21,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_review/in_app_review.dart';
 
-/// Facts for About the business hasn't supplied (SECP Circular 15/2022).
+/// Shown in rose while `/app-config.business` lacks a fact. The facts are
+/// set in Atomshop's admin panel.
 abstract final class AboutPlaceholders {
-  static const licence = '[LICENCE NO.]';
   static const address = '[REGISTERED ADDRESS]';
   static const dataLocation = '[CONFIRM]';
 }
@@ -75,25 +75,31 @@ class AboutScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: Space.s18),
-          const SectionLabel('Who provides your credit'),
-          const AppCard(
-            padding: EdgeInsets.symmetric(
+          const SectionLabel('Who offers your instalments'),
+          AppCard(
+            padding: const EdgeInsets.symmetric(
               horizontal: Space.s18,
               vertical: Space.s16,
             ),
             child: _FactList([
-              _Fact('Company', tbd: KfsPlaceholders.lender),
               _Fact(
-                'Licence',
-                value: 'SECP · ',
-                tbd: AboutPlaceholders.licence,
+                'Company',
+                known: config.business.companyName,
+                tbd: KfsPlaceholders.company,
               ),
-              _Fact('Address', tbd: AboutPlaceholders.address),
               _Fact(
-                'Your data',
-                value: 'Stored in Pakistan ',
-                tbd: AboutPlaceholders.dataLocation,
+                'Address',
+                known: config.business.registeredAddress,
+                tbd: AboutPlaceholders.address,
               ),
+              switch (config.business.dataHosting) {
+                final where? => _Fact('Your data', known: 'Stored in $where'),
+                null => const _Fact(
+                  'Your data',
+                  value: 'Stored in Pakistan ',
+                  tbd: AboutPlaceholders.dataLocation,
+                ),
+              },
             ]),
           ),
           const SizedBox(height: Space.s18),
@@ -152,14 +158,16 @@ class AboutScreen extends ConsumerWidget {
   }
 }
 
-/// One About fact: an optional value in ink, then the part the business
-/// hasn't supplied, in rose, on the same line ("SECP · [LICENCE NO.]").
+/// One About fact: an optional lead-in ([value]) in ink, then the fact
+/// from the server ([known]) in ink, or its placeholder ([tbd]) in rose
+/// while the server doesn't send it ("Stored in Pakistan [CONFIRM]").
 @immutable
 class _Fact {
-  const new(this.label, {required this.tbd, this.value});
+  const new(this.label, {this.tbd = '', this.value, this.known});
 
   final String label;
   final String? value;
+  final String? known;
   final String tbd;
 }
 
@@ -207,7 +215,10 @@ class _FactList extends StatelessWidget {
                         ),
                         children: [
                           if (facts[i].value case final v?) TextSpan(text: v),
-                          placeholderSpan(context, facts[i].tbd),
+                          if (facts[i].known case final k?)
+                            TextSpan(text: k)
+                          else
+                            placeholderSpan(context, facts[i].tbd),
                         ],
                       ),
                       textAlign: TextAlign.right,

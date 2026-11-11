@@ -1,3 +1,6 @@
+> **Replaced by [SERVER_RELEASE_PROMPT.md](SERVER_RELEASE_PROMPT.md)**, which also fixes the
+> deletion page URL (`/delete-account`, as the app expects) and adds the new fields. Use that one.
+
 # Prompt for the AtomPay server (Laravel): store-compliance changes
 
 > Paste everything below the line into the backend agent / hand it to the backend developer.

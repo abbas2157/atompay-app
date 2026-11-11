@@ -7,6 +7,7 @@ import 'package:atompay_mobile/core/widgets/form_parts.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/account/data/device_permissions.dart';
 import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
+import 'package:atompay_mobile/features/notifications/application/push_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -29,6 +30,8 @@ class _NotifPermissionScreenState extends ConsumerState<NotifPermissionScreen> {
     final navigator = Navigator.of(context);
     try {
       await ref.read(notificationPermissionProvider).request();
+      // Allowed: register this phone for push straight away.
+      unawaited(ref.read(pushControllerProvider).syncRegistration());
     } finally {
       if (mounted) navigator.pop();
     }

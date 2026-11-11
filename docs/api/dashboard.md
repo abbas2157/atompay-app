@@ -56,3 +56,5 @@ The whole home screen in one call. Refresh it on pull-to-refresh and when the ap
 | `limit.used` | Unpaid AtomShop instalments. `available = max(0, approved − used)`. |
 | `stages[].state` | `done` · `current` · `upcoming` · `blocked`. There are always six stages in this order. |
 | `next_due` | The earliest unpaid monthly instalment across all orders, or `null`. `state` is `paid`, `late`, `due` (within 14 days) or `upcoming`. |
+| `limit.available_after_next` | **Proposed, not live yet.** What `available` becomes once `next_due` is paid, or `null` when nothing is due. The app shows it as given; it never adds it up itself. |
+| `lowest_eligible_price` | **Proposed, not live yet.** The price of the cheapest AtomPay-eligible product, or `null` with no limit. Shown when nothing fits the limit. |

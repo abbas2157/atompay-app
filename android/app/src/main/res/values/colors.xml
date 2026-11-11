@@ -4,4 +4,6 @@
     <color name="nucleus">#050708</color>
     <!-- Behind the mark on the adaptive launcher icon. -->
     <color name="icon_background">#FFFFFF</color>
+    <!-- Tints the push notification icon (AtomPay coral). -->
+    <color name="notification_accent">#F05465</color>
 </resources>

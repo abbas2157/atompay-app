@@ -90,8 +90,14 @@ abstract final class Env {
   }
 
   /// Whether a request to [path] should be answered by the fake server.
+  ///
+  /// Never in a production build: a customer must not see made-up
+  /// products, terms or answers, or a complaint that goes nowhere. There an
+  /// endpoint the server hasn't shipped fails like any other (404), and its
+  /// screen shows the error state.
   static bool useFakeFor(String path) {
     if (fakeEverything) return true;
+    if (isProd) return false;
     final api = newApiFor(path);
     return api != null && !isLive(api);
   }

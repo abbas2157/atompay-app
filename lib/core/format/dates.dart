@@ -7,6 +7,9 @@ String dayMonthYear(DateTime d) => DateFormat('d MMM yyyy').format(d);
 /// `10 Dec`.
 String dayMonth(DateTime d) => DateFormat('d MMM').format(d);
 
+/// `January`.
+String monthName(DateTime d) => DateFormat('MMMM').format(d);
+
 /// `10:42 am`.
 String clock(DateTime d) => DateFormat('h:mm a').format(d).toLowerCase();
 

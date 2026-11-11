@@ -6,6 +6,7 @@ import 'package:atompay_mobile/core/storage/response_cache.dart';
 import 'package:atompay_mobile/core/storage/token_storage.dart';
 import 'package:atompay_mobile/features/auth/data/auth_models.dart';
 import 'package:atompay_mobile/features/auth/data/auth_repository.dart';
+import 'package:atompay_mobile/features/notifications/data/push_service.dart';
 import 'package:flutter/painting.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -102,6 +103,8 @@ class Session extends _$Session {
 
   /// Sign out of this phone. The server call is best effort.
   Future<void> signOut() async {
+    // Stop pushes to this phone while the token still works.
+    await unregisterPush(ref);
     try {
       await _repo.logout();
     } on ApiException {

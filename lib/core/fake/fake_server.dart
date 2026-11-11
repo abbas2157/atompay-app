@@ -82,6 +82,20 @@ class FakeServer implements HttpClientAdapter {
   /// `app-config.maintenance.active`.
   bool maintenance = false;
 
+  /// `app-config.business`: the company's facts from Atomshop's admin
+  /// panel. All null, as on the live server today.
+  Map<String, String?> business = {
+    'company_name': null,
+    'registered_address': null,
+    'data_hosting': null,
+    'late_payment': null,
+    'early_settlement': null,
+    'complaint_response_time': null,
+  };
+
+  /// `app-config.features.push`: the server has FCM credentials.
+  bool pushEnabled = false;
+
   // ---- state ---------------------------------------------------------------
 
   static const validPassword = 'password12';
@@ -360,6 +374,7 @@ class FakeServer implements HttpClientAdapter {
           'due_date': apiDate(_day(firstDue + 30 * i)),
           'amount': amounts[i],
           'paid_amount': i < paidCount ? amounts[i] : null,
+          'paid_via': i < paidCount ? 'JazzCash' : null,
           'paid_on': i < paidCount
               ? apiDate(_day(firstDue + 30 * i - 1))
               : null,
@@ -373,6 +388,10 @@ class FakeServer implements HttpClientAdapter {
         'status': status,
         'status_label': status,
         'ordered_at': _day(firstDue - 31).toIso8601String(),
+        // Proposed (docs/api/plans.md): set once AtomShop delivers.
+        'delivered_at': status == 'Instalments' || status == 'Delivered'
+            ? _day(firstDue - 29).toIso8601String()
+            : null,
         'total_price': price,
         'advance': 0,
         'financed': price,
@@ -551,6 +570,11 @@ class FakeServer implements HttpClientAdapter {
         'used_percent': approved == 0 ? 0 : used * 100 ~/ approved,
         'max_instalment': active?['max_instalment'] ?? 0,
         'tenure': active == null ? null : 3,
+        // Proposed fields (docs/api/dashboard.md).
+        'available_after_next': switch (nextDue?['amount']) {
+          final int amount => available + amount,
+          _ => null,
+        },
       },
       'stages': [
         {
@@ -610,6 +634,9 @@ class FakeServer implements HttpClientAdapter {
       'unread_notifications': notifications
           .where((n) => n['read'] != true)
           .length,
+      'lowest_eligible_price': active == null
+          ? null
+          : _products.map((p) => p.$4).reduce((a, b) => a < b ? a : b),
     };
   }
 
@@ -842,8 +869,10 @@ class FakeServer implements HttpClientAdapter {
           'terms_url': null,
           'account_deletion_url': 'https://atompay.shop/delete-account',
           'support': support,
+          // Set in Atomshop's admin panel; null until supplied there.
+          'business': business,
           'features': {
-            'push': false,
+            'push': pushEnabled,
             'password_reset_channels': ['email', 'whatsapp'],
             'signup_channels': ['email', 'whatsapp'],
             'voice': true,
@@ -1355,7 +1384,7 @@ class FakeServer implements HttpClientAdapter {
       'total_repayable': price,
       'late_payment': null,
       'early_settlement': null,
-      'complaints': 'In the app: Help › Complaints. Then the SECP.',
+      'complaints': 'In the app: Help › Complaints.',
       'issued_at': order['ordered_at'],
     };
   }

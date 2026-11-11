@@ -7,6 +7,7 @@ import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/app_theme.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
+import 'package:atompay_mobile/features/notifications/application/push_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -30,6 +31,8 @@ class _AtomPayAppState extends ConsumerState<AtomPayApp> {
     super.initState();
     unawaited(ref.read(launchProvider.notifier).start());
     if (widget.listenForLinks) _listenForLinks();
+    // A tapped push opens its screen through the same guards as a link.
+    ref.read(pushControllerProvider).start(open: ref.read(routerProvider).go);
   }
 
   /// `https://atompay.shop/app/...`: each passes every guard; signed out it

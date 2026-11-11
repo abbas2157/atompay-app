@@ -14,8 +14,10 @@ import 'package:atompay_mobile/core/widgets/pressable.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
+import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
 import 'package:atompay_mobile/features/plans/application/plans_controller.dart';
 import 'package:atompay_mobile/features/plans/data/plan_models.dart';
+import 'package:atompay_mobile/features/plans/presentation/kfs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -325,10 +327,13 @@ class _FullOrderCard extends StatelessWidget {
     final t = context.text;
     final c = context.colors;
     final bar = planBar(plan.progress);
-    // The delivery date isn't in the API: the order date stands in.
-    final ordered = plan.order.orderedAt == null
-        ? ''
-        : ' · ordered ${dayMonth(plan.order.orderedAt!)}';
+    // Canvas "delivered 9 Nov"; before delivery (or while the server
+    // doesn't send it) the order date stands in.
+    final ordered = switch ((plan.order.deliveredAt, plan.order.orderedAt)) {
+      (final DateTime d, _) => ' · delivered ${dayMonth(d)}',
+      (null, final DateTime o) => ' · ordered ${dayMonth(o)}',
+      _ => '',
+    };
     return AppCard(
       onTap: onTap,
       semanticLabel: semanticLabel,
@@ -870,8 +875,15 @@ class _SummaryCard extends StatelessWidget {
           ],
           if (b == OrderBadge.repaying) ...[
             Gap.s14,
-            const _Chain(
-              done: ['Placed', 'Approved', 'Delivered'],
+            _Chain(
+              done: [
+                'Placed',
+                'Approved',
+                if (o.deliveredAt case final d?)
+                  'Delivered ${dayMonth(d)}'
+                else
+                  'Delivered',
+              ],
               now: 'Repaying',
             ),
           ],
@@ -971,10 +983,14 @@ class _InstalmentRow extends StatelessWidget {
         TileTone.grey,
       ),
     };
-    // The payment method isn't in the API, so "paid 9 Nov" stands alone.
+    // "paid 9 Nov by JazzCash" once the server says how it was paid.
     final when = [
       'Due ${dayMonthYear(i.dueDate)}',
-      if (i.paidOn != null) 'paid ${dayMonth(i.paidOn!)}',
+      if (i.paidOn != null)
+        [
+          'paid ${dayMonth(i.paidOn!)}',
+          if (i.paidVia case final via?) 'by $via',
+        ].join(' '),
       if (rounding) 'takes the rounding',
     ].join(' · ');
     final row = ListRow(
@@ -1061,14 +1077,16 @@ class _LateView extends StatelessWidget {
   }
 }
 
-class _LateCard extends StatelessWidget {
+class _LateCard extends ConsumerWidget {
   const new({required this.i, this.next});
 
   final Instalment i;
   final Instalment? next;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Set in Atomshop's admin panel; rose until then.
+    final lateCharge = ref.watch(appConfigProvider).business.latePayment;
     final t = context.text;
     final c = context.colors;
     final days = DateUtils.dateOnly(AppClock.now())
@@ -1095,10 +1113,10 @@ class _LateCard extends StatelessWidget {
           ),
           Gap.s14,
           KeyValueList([
-            const KeyValue(
+            KeyValue(
               'Late charge',
-              '[CHARGES, IF ANY]',
-              placeholder: true,
+              lateCharge ?? KfsPlaceholders.late,
+              placeholder: lateCharge == null,
             ),
             if (next != null)
               KeyValue(

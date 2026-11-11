@@ -13,7 +13,7 @@ class ConfigRepository {
 
   Future<AppConfig> appConfig() => guard(() async {
     final r = await _dio.get<dynamic>('/app-config');
-    return AppConfig.fromJson(dataOf(r));
+    return AppConfig.fromJson(blankToNull(dataOf(r)));
   });
 
   Future<FormOptions> options() => guard(() async {
@@ -53,3 +53,17 @@ Future<List<Place>> cities(Ref ref) =>
 @riverpod
 Future<List<Place>> areas(Ref ref, int cityId) =>
     ref.watch(configRepositoryProvider).areas(cityId);
+
+/// The live config sends unset settings as `""` (support contacts, company
+/// details). The app hides a row or shows a placeholder for a missing value,
+/// so an empty string must count as missing, at any depth.
+Map<String, dynamic> blankToNull(Map<String, dynamic> json) => {
+  for (final e in json.entries) e.key: _blank(e.value),
+};
+
+Object? _blank(Object? v) => switch (v) {
+  final String s when s.trim().isEmpty => null,
+  final Map<String, dynamic> m => blankToNull(m),
+  final List<Object?> l => [for (final x in l) _blank(x)],
+  _ => v,
+};

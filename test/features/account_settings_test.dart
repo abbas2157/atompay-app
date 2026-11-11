@@ -361,10 +361,12 @@ void main() {
   });
 
   group('About, ecosystem, rate', () {
-    testWidgets('About keeps the licence placeholders', (tester) async {
+    testWidgets('About keeps the company placeholders, and no licence', (
+      tester,
+    ) async {
       final h = await at(tester, Routes.about);
-      expect(find.text('[LICENSED ENTITY NAME]'), findsOneWidget);
-      expect(find.text('SECP · [LICENCE NO.]'), findsOneWidget);
+      expect(find.text('[COMPANY NAME]'), findsOneWidget);
+      expect(find.textContaining('SECP'), findsNothing);
       expect(find.text('[REGISTERED ADDRESS]'), findsOneWidget);
       expect(find.text('Terms'), findsNothing);
       await tapText(tester, 'Key Fact Statements');

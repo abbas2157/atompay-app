@@ -20,7 +20,7 @@ void main() {
     await h.pumpApp(tester);
 
     expect(location(h), startsWith(Routes.firstRun));
-    expect(find.text('[LICENSED ENTITY NAME]'), findsOneWidget);
+    expect(find.text('[COMPANY NAME]'), findsOneWidget);
 
     // Continue stays disabled until the declaration is ticked.
     await tester.tap(find.text('Continue'));

@@ -8,6 +8,7 @@ import 'package:atompay_mobile/core/router/navigation.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/utils/links.dart';
+import 'package:atompay_mobile/core/widgets/net_image.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/fields.dart';
 import 'package:atompay_mobile/core/widgets/form_parts.dart';
@@ -323,18 +324,23 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       final more = ref.read(productListProvider(filter).notifier).hasMore;
       return SliverPadding(
         padding: gridPadding,
-        sliver: SliverList.list(
-          children: [
-            for (var i = 0; i < page.items.length; i += columns) ...[
-              if (i > 0) Gap.s12,
-              row(i, page.items.length, (k) => _card(page.items[k])),
-            ],
-            if (more)
-              const Padding(
+        // Built lazily: only the rows on screen exist, however many pages
+        // have loaded.
+        sliver: SliverList.builder(
+          itemCount: (page.items.length / columns).ceil() + (more ? 1 : 0),
+          itemBuilder: (context, r) {
+            final i = r * columns;
+            if (i >= page.items.length) {
+              return const Padding(
                 padding: EdgeInsets.all(Space.s16),
                 child: Center(child: CircularProgressIndicator()),
-              ),
-          ],
+              );
+            }
+            return Padding(
+              padding: EdgeInsets.only(top: r == 0 ? 0 : Space.s12),
+              child: row(i, page.items.length, (k) => _card(page.items[k])),
+            );
+          },
         ),
       );
     }
@@ -486,12 +492,10 @@ class _ProductBody extends ConsumerWidget {
     final limit = ref.watch(dashboardProvider).value?.data.limit;
     final image = product.imageUrl == null
         ? Icon(Icons.image_outlined, size: 56, color: c.glyph)
-        : Image.network(
+        : NetImage(
             product.imageUrl!,
-            fit: BoxFit.contain,
             semanticLabel: product.title,
-            errorBuilder: (_, _, _) =>
-                Icon(Icons.image_outlined, size: 56, color: c.glyph),
+            fallback: Icon(Icons.image_outlined, size: 56, color: c.glyph),
           );
     return FormPage(
       padding: EdgeInsets.zero,

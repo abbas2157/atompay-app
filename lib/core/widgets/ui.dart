@@ -1091,6 +1091,11 @@ TextSpan placeholderSpan(BuildContext context, String text) => TextSpan(
   style: TextStyle(color: context.colors.rose, fontWeight: FontWeight.w700),
 );
 
+/// A business fact from the server ([known]) as plain text, or its rose
+/// placeholder ([tbd]) while the server doesn't send it.
+TextSpan factSpan(BuildContext context, String? known, String tbd) =>
+    known == null ? placeholderSpan(context, tbd) : TextSpan(text: known);
+
 /// A bulleted list with an icon per item.
 class TickList extends StatelessWidget {
   const new(

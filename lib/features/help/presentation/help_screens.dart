@@ -27,10 +27,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-/// Placeholders the business hasn't supplied (brief §0).
+/// Shown in rose while `/app-config.business` lacks the fact (set in
+/// Atomshop's admin panel).
 abstract final class HelpPlaceholders {
   static const responseTime = '[RESPONSE TIME]';
-  static const secpLink = '[SECP complaint link — verify]';
 }
 
 /// Help centre (canvas "Help"): Ask Atom, topics, common questions, and
@@ -621,7 +621,7 @@ class _QuestionRow extends StatelessWidget {
   }
 }
 
-/// "Raise a complaint" (SECP Circular 15/2022 grievance route).
+/// "Raise a complaint": the in-app grievance route.
 class ComplaintScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -683,6 +683,7 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
     final c = context.colors;
     final status = ref.watch(complaintFormProvider);
     final offline = ref.watch(isOfflineProvider);
+    final business = ref.watch(appConfigProvider).business;
     final topics =
         ref.watch(formOptionsProvider).value?.complaintTopics ??
         defaultComplaintTopics;
@@ -788,22 +789,20 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
                       TextSpan(
                         children: [
                           const TextSpan(text: 'We reply within '),
-                          placeholderSpan(
+                          factSpan(
                             context,
+                            business.complaintResponseTime,
                             HelpPlaceholders.responseTime,
                           ),
                           const TextSpan(text: ', in the app and by email.'),
                         ],
                       ),
-                      TextSpan(
-                        children: [
-                          const TextSpan(
-                            text:
-                                'Not happy with our answer? You can take it '
-                                'to the SECP: ',
-                          ),
-                          placeholderSpan(context, HelpPlaceholders.secpLink),
-                        ],
+                      // Atomshop isn't SECP-licensed, so there's no SECP
+                      // escalation to offer.
+                      const TextSpan(
+                        text:
+                            'A person reads every complaint, and your '
+                            'reference number tracks it.',
                       ),
                     ],
                     icons: const [Icons.check, Icons.shield_outlined],
@@ -826,7 +825,7 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
 }
 
 /// "Complaint sent": the reference to quote, and where to go next.
-class ComplaintSentScreen extends StatelessWidget {
+class ComplaintSentScreen extends ConsumerWidget {
   const new({required this.reference, super.key});
 
   final String reference;
@@ -837,7 +836,7 @@ class ComplaintSentScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = context.colors;
     final t = context.text;
     // Canvas: a white outcome screen with no bar; back still goes to Help.
@@ -881,7 +880,14 @@ class ComplaintSentScreen extends StatelessWidget {
                             'A person will read it and reply in the app and '
                             'by email within ',
                       ),
-                      placeholderSpan(context, HelpPlaceholders.responseTime),
+                      factSpan(
+                        context,
+                        ref
+                            .watch(appConfigProvider)
+                            .business
+                            .complaintResponseTime,
+                        HelpPlaceholders.responseTime,
+                      ),
                       const TextSpan(text: '.'),
                     ],
                   ),
