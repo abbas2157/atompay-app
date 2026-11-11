@@ -2,7 +2,16 @@ import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/pressable.dart';
 import 'package:flutter/material.dart';
 
-enum ButtonVariant { primary, dark, ghost, amber, danger }
+enum ButtonVariant {
+  primary,
+  dark,
+  ghost,
+  amber,
+  danger,
+
+  /// Canvas `btn-g` with rose text: Sign out, Discard.
+  ghostDanger,
+}
 
 /// Pill button, 48 high (54 when [large]). While [busy] the label becomes a
 /// spinner in the label's colour and the width is kept; it is not dimmed.
@@ -13,6 +22,7 @@ class AppButton extends StatelessWidget {
     this.variant = ButtonVariant.primary,
     this.large = false,
     this.block = false,
+    this.compact = false,
     this.busy = false,
     this.icon,
     this.trailingIcon,
@@ -25,6 +35,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.large = false,
     this.block = false,
+    this.compact = false,
     this.busy = false,
     this.icon,
     this.trailingIcon,
@@ -37,6 +48,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.large = false,
     this.block = false,
+    this.compact = false,
     this.busy = false,
     this.icon,
     this.trailingIcon,
@@ -49,6 +61,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.large = false,
     this.block = false,
+    this.compact = false,
     this.busy = false,
     this.icon,
     this.trailingIcon,
@@ -61,6 +74,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.large = false,
     this.block = false,
+    this.compact = false,
     this.busy = false,
     this.icon,
     this.trailingIcon,
@@ -68,11 +82,25 @@ class AppButton extends StatelessWidget {
     super.key,
   }) : variant = ButtonVariant.danger;
 
+  const new ghostDanger(
+    this.label, {
+    required this.onPressed,
+    this.large = false,
+    this.block = false,
+    this.compact = false,
+    this.busy = false,
+    this.icon,
+    this.trailingIcon,
+    this.semanticLabel,
+    super.key,
+  }) : variant = ButtonVariant.ghostDanger;
+
   const new amber(
     this.label, {
     required this.onPressed,
     this.large = false,
     this.block = false,
+    this.compact = false,
     this.busy = false,
     this.icon,
     this.trailingIcon,
@@ -87,6 +115,9 @@ class AppButton extends StatelessWidget {
   final ButtonVariant variant;
   final bool large;
   final bool block;
+
+  /// Canvas `.mini`: 13 px label, 14 px side padding, still 48 high.
+  final bool compact;
   final bool busy;
   final IconData? icon;
 
@@ -108,15 +139,18 @@ class AppButton extends StatelessWidget {
             ButtonVariant.ghost => (c.white, c.ink, c.line2),
             ButtonVariant.amber => (c.amber, c.ink, null),
             ButtonVariant.danger => (c.rose, c.white, null),
+            ButtonVariant.ghostDanger => (c.white, c.rose, c.line2),
           };
-    final style = (large ? t.buttonLarge : t.button).copyWith(color: fg);
+    final style = compact
+        ? t.small.copyWith(color: fg, fontWeight: FontWeight.w700, height: 1.2)
+        : (large ? t.buttonLarge : t.button).copyWith(color: fg);
 
     final labelRow = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 20, color: fg),
-          const SizedBox(width: Space.s8),
+          Icon(icon, size: compact ? 16 : 20, color: fg),
+          SizedBox(width: compact ? Space.s6 : Space.s8),
         ],
         Flexible(
           child: Text(
@@ -155,12 +189,14 @@ class AppButton extends StatelessWidget {
         onTap: busy ? null : onPressed,
         child: _Fill(
           bg: bg,
+          compact: compact,
           pressedBg: switch (variant) {
             ButtonVariant.primary => c.primaryDark,
             ButtonVariant.dark => c.ink3,
             ButtonVariant.ghost => c.surface2,
             ButtonVariant.amber => c.apayAmber,
             ButtonVariant.danger => c.danger,
+            ButtonVariant.ghostDanger => c.roseSoft,
           },
           border: border,
           minHeight: large ? Sizes.buttonLarge : Sizes.target,
@@ -180,7 +216,10 @@ class _Fill extends StatefulWidget {
     required this.minHeight,
     required this.block,
     required this.child,
+    this.compact = false,
   });
+
+  final bool compact;
 
   final Color bg;
   final Color pressedBg;
@@ -207,8 +246,8 @@ class _FillState extends State<_Fill> {
           minHeight: widget.minHeight,
           minWidth: widget.block ? double.infinity : 0,
         ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: Space.s22,
+        padding: EdgeInsets.symmetric(
+          horizontal: widget.compact ? Space.s14 : Space.s22,
           vertical: Space.s8,
         ),
         alignment: widget.block ? Alignment.center : null,
@@ -219,7 +258,9 @@ class _FillState extends State<_Fill> {
               ? null
               : Border.all(color: widget.border!),
         ),
-        child: widget.child,
+        // Centred also when a parent stretches a non-block button; sized
+        // to the label otherwise.
+        child: Center(widthFactor: 1, heightFactor: 1, child: widget.child),
       ),
     );
   }

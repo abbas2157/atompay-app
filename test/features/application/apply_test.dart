@@ -150,7 +150,8 @@ void main() {
 
     await tapText(tester, 'Apply for your limit');
     expect(location(h), Routes.applicationStep(1));
-    expect(find.text('STEP 1 OF 4 · PERSONAL DETAILS'), findsOneWidget);
+    expect(find.text('Step 1 of 4'), findsOneWidget);
+    expect(find.text('Personal details'), findsWidgets);
 
     // Step 1. The name and mobile come pre-filled from AtomShop.
     await tapText(tester, 'Continue');
@@ -189,7 +190,7 @@ void main() {
     expect(find.text('200,000'), findsOneWidget);
     await settle(tester, frames: 10);
     expect(find.text('Rs. 60,000'), findsOneWidget);
-    expect(find.text('ESTIMATED PURCHASE LIMIT'), findsOneWidget);
+    expect(find.text('PROVISIONAL PURCHASE LIMIT'), findsOneWidget);
     await fill(tester, 'Household expenses', '80000');
     await tapText(tester, 'Continue');
     expect(location(h), Routes.applicationStep(4));

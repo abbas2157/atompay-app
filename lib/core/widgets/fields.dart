@@ -29,9 +29,13 @@ class AppTextField extends StatelessWidget {
     this.prefixText,
     this.textCapitalization = TextCapitalization.none,
     this.autofocus = false,
+    this.large = false,
     super.key,
   });
 
+  /// Canvas `.field.big`: 60 high, the value at 24/800, the prefix at
+  /// 17/800 (the Calculator's price).
+  final bool large;
   final String label;
   final TextEditingController? controller;
   final FocusNode? focusNode;
@@ -64,43 +68,60 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: t.label),
-        const SizedBox(height: Space.s6),
-        TextField(
-          controller: controller,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          enabled: enabled,
-          readOnly: readOnly,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          autofillHints: autofillHints,
-          inputFormatters: inputFormatters,
-          maxLines: obscureText ? 1 : maxLines,
-          minLines: minLines,
-          maxLength: maxLength,
-          textCapitalization: textCapitalization,
-          onChanged: onChanged,
-          onSubmitted: onSubmitted,
-          style: t.body,
-          decoration: InputDecoration(
-            hintText: placeholder,
-            prefixText: prefixText,
-            prefixStyle: t.body.copyWith(color: c.muted),
-            // Read by screen readers as the field's name.
-            semanticCounterText: '',
-            counterText: maxLength == null ? null : '',
-            fillColor: hasError
-                ? c.dangerWash
-                : (enabled && !readOnly ? c.field : c.surface),
-            enabledBorder: hasError
-                ? OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(Radii.input),
-                    borderSide: BorderSide(color: c.danger),
-                  )
-                : null,
-            suffixIcon: suffix,
-          ).applyDefaults(Theme.of(context).inputDecorationTheme),
+        const SizedBox(height: 7),
+        FocusRing(
+          builder: ({required focused}) => TextField(
+            controller: controller,
+            focusNode: focusNode,
+            autofocus: autofocus,
+            enabled: enabled,
+            readOnly: readOnly,
+            obscureText: obscureText,
+            keyboardType: keyboardType,
+            textInputAction: textInputAction,
+            autofillHints: autofillHints,
+            inputFormatters: inputFormatters,
+            maxLines: obscureText ? 1 : maxLines,
+            minLines: minLines,
+            maxLength: maxLength,
+            textCapitalization: textCapitalization,
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            style: large ? t.h1b.copyWith(letterSpacing: -0.5) : t.body,
+            decoration: InputDecoration(
+              constraints: large ? const BoxConstraints(minHeight: 60) : null,
+              hintText: placeholder,
+              // Always shown (prefixText only appears once focused).
+              prefixIcon: prefixText == null
+                  ? null
+                  : Padding(
+                      padding: const EdgeInsets.only(left: 14, right: 8),
+                      child: Text(
+                        prefixText!,
+                        style: (large ? t.h4 : t.body).copyWith(
+                          color: c.muted,
+                          fontWeight: large ? FontWeight.w800 : FontWeight.w700,
+                        ),
+                      ),
+                    ),
+              prefixIconConstraints: const BoxConstraints(),
+              // Read by screen readers as the field's name.
+              semanticCounterText: '',
+              counterText: maxLength == null ? null : '',
+              fillColor: hasError
+                  ? c.dangerWash
+                  : (focused
+                        ? c.white
+                        : (enabled && !readOnly ? c.field : c.surface)),
+              enabledBorder: hasError
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(Radii.input),
+                      borderSide: BorderSide(color: c.danger),
+                    )
+                  : null,
+              suffixIcon: suffix,
+            ).applyDefaults(Theme.of(context).inputDecorationTheme),
+          ),
         ),
         if (hasError)
           Padding(
@@ -336,4 +357,38 @@ class _OtpFieldState extends State<OtpField> {
 
   bool _isActive(int i, String code) =>
       _focus.hasFocus && i == code.length.clamp(0, 5);
+}
+
+/// Canvas `.input:focus-within`: a 3 dp primary-soft ring outside the
+/// border while anything inside has focus.
+class FocusRing extends StatefulWidget {
+  const new({required this.builder, super.key});
+
+  final Widget Function({required bool focused}) builder;
+
+  @override
+  State<FocusRing> createState() => _FocusRingState();
+}
+
+class _FocusRingState extends State<FocusRing> {
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onFocusChange: (f) => setState(() => _focused = f),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(Radii.input),
+          boxShadow: _focused
+              ? [BoxShadow(color: c.primarySoft, spreadRadius: 3)]
+              : const [],
+        ),
+        child: widget.builder(focused: _focused),
+      ),
+    );
+  }
 }

@@ -64,31 +64,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final unread = value.value?.data.unreadNotifications ?? 0;
     return Scaffold(
       backgroundColor: context.colors.surface,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            HomeHeader(unread: unread, initials: initialsOf(user?.name ?? '')),
-            Expanded(
-              child: AsyncBody(
-                value: value,
-                loading: const HomeSkeleton(),
-                onRetry: () => ref.invalidate(dashboardProvider),
-                data: (cached) => ScrollToTopOnReselect(
-                  controller: _scroll,
-                  child: RefreshIndicator(
-                    onRefresh: _refresh,
-                    child: _HomeBody(
-                      cached: cached,
-                      firstName: _first(user?.name),
-                      scroll: _scroll,
+      // The white header runs behind the status bar and takes the top
+      // inset itself.
+      body: Column(
+        children: [
+          HomeHeader(unread: unread, initials: initialsOf(user?.name ?? '')),
+          Expanded(
+            child: MediaQuery.removePadding(
+              context: context,
+              removeTop: true,
+              child: SafeArea(
+                top: false,
+                bottom: false,
+                child: AsyncBody(
+                  value: value,
+                  loading: const HomeSkeleton(),
+                  onRetry: () => ref.invalidate(dashboardProvider),
+                  offlineBody:
+                      "Connect to Wi-Fi or mobile data and we'll load your "
+                      'limit and payments.',
+                  data: (cached) => ScrollToTopOnReselect(
+                    controller: _scroll,
+                    child: RefreshIndicator(
+                      onRefresh: _refresh,
+                      child: _HomeBody(
+                        cached: cached,
+                        firstName: _first(user?.name),
+                        scroll: _scroll,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -174,6 +184,8 @@ class _HomeBody extends ConsumerWidget {
           limit,
           NextPaymentCard(due: d.nextDue!, plan: plan, withButton: wide),
           if (!wide) ...[
+            // The canvas goes on "After 10 Jan you will have Rs. 44,332 to
+            // spend.": that figure needs an API field (brief §2).
             const Note(
               tone: NoteTone.blue,
               text: 'Your limit frees up as you pay.',
@@ -250,7 +262,7 @@ class _HomeBody extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 Space.gutter,
-                Space.s8,
+                Space.s16,
                 Space.gutter,
                 Space.s32,
               ),

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:atompay_mobile/core/format/dates.dart';
 import 'package:atompay_mobile/core/format/money.dart';
@@ -9,15 +8,18 @@ import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/form_parts.dart';
+import 'package:atompay_mobile/core/widgets/pressable.dart';
 import 'package:atompay_mobile/core/widgets/secure_screen.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
 import 'package:atompay_mobile/features/application/data/capture_doc.dart';
+import 'package:atompay_mobile/features/application/presentation/application_widgets.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
 import 'package:atompay_mobile/features/home/presentation/home_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -25,6 +27,23 @@ import 'package:go_router/go_router.dart';
 /// (after "Application sent" the wizard is gone from the stack).
 void backOrHome(BuildContext context) =>
     context.canPop() ? context.pop() : context.go(Routes.home);
+
+/// A status badge at the end of the app bar (canvas `badge u-mr8`).
+Widget? _barBadge(Widget? badge) => badge == null
+    ? null
+    : Padding(
+        padding: const EdgeInsets.only(right: Space.s8),
+        child: Center(child: badge),
+      );
+
+/// Canvas `.card.u-pad`.
+const _uPad = EdgeInsets.all(Space.s18);
+
+/// Canvas `.card.u-pad-row`.
+const _uPadRow = EdgeInsets.symmetric(
+  horizontal: Space.s18,
+  vertical: Space.s16,
+);
 
 class _BackToHome extends StatelessWidget {
   const new({required this.child});
@@ -83,13 +102,23 @@ class VerificationScreen extends ConsumerWidget {
       Assessment(status: 'rejected') when active == null => 'Your application',
       _ => 'KYC & verification',
     };
+    // Canvas: the review and rejection boards carry their status in the bar.
+    final barBadge = switch (latest) {
+      Assessment(status: 'pending') when active != null => const AppBadge.amber(
+        'Under review',
+      ),
+      Assessment(status: 'rejected') when active == null => const AppBadge.rose(
+        'Not approved',
+      ),
+      _ => null,
+    };
     return _BackToHome(
       child: Scaffold(
         backgroundColor: context.colors.surface,
         appBar: AppTopBar(
           title: title,
-          bottomBorder: true,
           onLeading: () => backOrHome(context),
+          actions: [?_barBadge(barBadge)],
         ),
         body: AsyncBody(
           value: both,
@@ -185,6 +214,7 @@ class _KycView extends ConsumerWidget {
       children: [
         if (note != null) ...[note, Gap.s14],
         AppCard(
+          padding: _uPad,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -204,15 +234,16 @@ class _KycView extends ConsumerWidget {
         ),
         Gap.s14,
         AppCard(
+          padding: _uPad,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // The 48 dp link row already gives the canvas's 12 below.
               SectionHeader(
                 'Your details',
                 action: 'Update',
                 onAction: () => context.pushOnce(Routes.applicationStep(1)),
               ),
-              Gap.s8,
               KeyValueList([
                 KeyValue('Name', profile.fullName ?? ''),
                 KeyValue('CNIC', cnic()),
@@ -223,39 +254,39 @@ class _KycView extends ConsumerWidget {
                 ),
                 KeyValue('Address', profile.residentialAddress ?? ''),
               ]),
-              Gap.s8,
+              Gap.s10,
               Text(
                 'Your CNIC and mobile are masked once verified.',
-                style: t.small,
+                style: t.tiny.copyWith(height: 1.5),
               ),
             ],
           ),
         ),
         Gap.s14,
-        ListGroup(
-          title: 'Documents · private to you and our team',
-          children: [
-            for (final doc in CaptureDoc.values)
-              ListRow(
-                title: doc.title,
-                icon: doc == CaptureDoc.selfie
-                    ? Icons.face_outlined
-                    : Icons.badge_outlined,
-                tileTone: profile.uploaded(doc.key)
-                    ? TileTone.green
-                    : TileTone.grey,
-                summary: profile.uploaded(doc.key)
-                    ? (profile.submittedAt == null
-                          ? 'Uploaded'
-                          : 'Uploaded ${dayMonth(profile.submittedAt!)}')
-                    : 'Not uploaded yet',
-                onTap: profile.uploaded(doc.key)
-                    ? () => context.pushOnce(Routes.document(doc.key))
-                    : null,
+        AppCard(
+          padding: _uPad,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: Space.s12,
+                runSpacing: Space.s4,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text('Documents', style: t.h4),
+                  ),
+                  Text('Private to you and our team', style: t.tiny),
+                ],
               ),
-          ],
+              Gap.s12,
+              _DocGrid(profile: profile),
+            ],
+          ),
         ),
-        Gap.s20,
+        Gap.s14,
         AppButton.ghost(
           'Back to home',
           block: true,
@@ -266,39 +297,168 @@ class _KycView extends ConsumerWidget {
   }
 }
 
+/// Canvas `.dg`: the three documents as tiles, three across (stacked when
+/// text is large).
+class _DocGrid extends StatelessWidget {
+  const new({required this.profile});
+
+  final Profile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final tiles = [
+      for (final doc in CaptureDoc.values) _DocTile(doc: doc, profile: profile),
+    ];
+    if (TwoUp.stacked(context)) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < tiles.length; i++) ...[
+            if (i > 0) Gap.s8,
+            tiles[i],
+          ],
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (var i = 0; i < tiles.length; i++) ...[
+          if (i > 0) const SizedBox(width: Space.s8),
+          Expanded(child: tiles[i]),
+        ],
+      ],
+    );
+  }
+}
+
+class _DocTile extends StatelessWidget {
+  const new({required this.doc, required this.profile});
+
+  final CaptureDoc doc;
+  final Profile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.text;
+    final uploaded = profile.uploaded(doc.key);
+    final name = doc == CaptureDoc.selfie ? 'Selfie' : doc.title;
+    final status = !uploaded
+        ? 'Not uploaded yet'
+        : (profile.submittedAt == null
+              ? 'Uploaded'
+              : 'Uploaded ${dayMonth(profile.submittedAt!)}');
+    final radius = BorderRadius.circular(Radii.note);
+    return Pressable(
+      onTap: uploaded ? () => context.pushOnce(Routes.document(doc.key)) : null,
+      scaleOnPress: false,
+      borderRadius: radius,
+      pressedColor: c.primarySoft,
+      semanticLabel: '$name, $status',
+      excludeChildSemantics: true,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 96),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(
+          horizontal: Space.s6,
+          vertical: Space.s12,
+        ),
+        decoration: BoxDecoration(
+          color: c.surface2,
+          borderRadius: radius,
+          border: Border.all(color: c.line),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              switch (doc) {
+                CaptureDoc.cnicFront => Icons.badge_outlined,
+                CaptureDoc.cnicBack => Icons.credit_card_outlined,
+                CaptureDoc.selfie => Icons.person_outline,
+              },
+              size: 22,
+              color: c.body,
+            ),
+            Gap.s6,
+            Text(
+              name,
+              textAlign: TextAlign.center,
+              style: t.small.copyWith(
+                color: c.ink,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Gap.s6,
+            Text(
+              status,
+              textAlign: TextAlign.center,
+              style: t.xs.copyWith(
+                color: uploaded ? c.green : c.muted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// A limit review in progress (canvas "Limit review pending").
-class _ReviewPendingView extends StatelessWidget {
+class _ReviewPendingView extends ConsumerWidget {
   const new({required this.a, required this.active});
 
   final Assessment a;
   final Assessment active;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = context.text;
+    // The server's estimate from the declared income (never derived here).
+    final estimate = a.monthlyIncome >= 1000
+        ? ref.watch(estimateProvider(a.monthlyIncome)).value
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: AppBadge.amber('Under review'),
-        ),
-        Gap.s12,
         if (active.approvedLimit != null) ...[
           Note(
             tone: NoteTone.green,
-            text:
-                'Your ${rs(active.approvedLimit!)} limit stays active while '
-                'we review. You can keep shopping with it.',
+            spans: [
+              const TextSpan(text: 'Your '),
+              TextSpan(
+                text: rs(active.approvedLimit!),
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const TextSpan(
+                text:
+                    ' limit stays active while we review — you can keep '
+                    'shopping with it.',
+              ),
+            ],
           ),
           Gap.s14,
         ],
         AppCard(
+          padding: _uPad,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Where it is', style: t.h4),
-              Text('Application #${a.id}', style: t.small),
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: Space.s12,
+                runSpacing: Space.s4,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text('Where it is', style: t.h4),
+                  ),
+                  Text('Application #${a.id}', style: t.tiny),
+                ],
+              ),
               Gap.s14,
               Track([
                 TrackStep(
@@ -324,6 +484,14 @@ class _ReviewPendingView extends StatelessWidget {
         ),
         Gap.s14,
         _ToldUs(a: a, canChange: true),
+        if (estimate != null) ...[
+          Gap.s14,
+          ProvisionalLimitCard(
+            label: 'Provisional limit',
+            limit: estimate.estimatedLimit,
+            monthlyCap: estimate.estimatedMaxInstalment,
+          ),
+        ],
       ],
     );
   }
@@ -339,6 +507,7 @@ class _ToldUs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppCard(
+    padding: _uPad,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -349,7 +518,8 @@ class _ToldUs extends StatelessWidget {
               ? () => context.pushOnce(Routes.applicationStep(3))
               : null,
         ),
-        Gap.s8,
+        // The 48 dp link row already leaves the canvas's 12 below it.
+        if (!canChange) Gap.s12,
         KeyValueList([
           KeyValue(
             'Work',
@@ -394,73 +564,115 @@ class _RejectedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.text;
+    final c = context.colors;
     final note = a.notes?.trim();
+    TextSpan lead(String bold, String rest) => TextSpan(
+      children: [
+        TextSpan(
+          text: bold,
+          style: TextStyle(color: c.ink, fontWeight: FontWeight.w800),
+        ),
+        TextSpan(text: rest),
+      ],
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: AppBadge.rose('Not approved'),
-        ),
-        Gap.s12,
         Semantics(
           header: true,
           child: Text("We couldn't approve a limit this time", style: t.h2),
         ),
-        Gap.s8,
+        Gap.s6,
         Text(
           "This doesn't affect your Atomshop.pk account. You can still shop "
           'there with its other payment options.',
-          style: t.lead,
+          style: t.small,
         ),
         Gap.s16,
         AppCard(
+          padding: _uPad,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('What our team noted', style: t.h4),
-              if (a.decidedAt != null)
-                Text('Decided ${dayMonthYear(a.decidedAt!)}', style: t.small),
-              Gap.s12,
-              Text(
-                note == null || note.isEmpty
-                    ? 'Our team did not add a note.'
-                    : note,
-                style: t.body,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: Space.s12,
+                runSpacing: Space.s4,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text('What our team noted', style: t.h4),
+                  ),
+                  if (a.decidedAt != null)
+                    Text(
+                      'Decided ${dayMonthYear(a.decidedAt!)}',
+                      style: t.tiny,
+                    ),
+                ],
+              ),
+              Gap.s10,
+              // Canvas `.quote`: the reviewer's words, set apart.
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.s16,
+                  vertical: Space.s14,
+                ),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  borderRadius: BorderRadius.circular(Radii.note),
+                ),
+                child: Text(
+                  note == null || note.isEmpty
+                      ? 'Our team did not add a note.'
+                      : note,
+                  style: t.base.copyWith(color: c.ink, height: 1.55),
+                ),
               ),
             ],
           ),
         ),
-        Gap.s14,
+        Gap.s16,
         AppCard(
+          padding: _uPad,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('What you can do', style: t.h4),
+              Semantics(
+                header: true,
+                child: Text('What you can do', style: t.h4),
+              ),
               Gap.s12,
-              const TickList([
-                TextSpan(
-                  text:
-                      'Update your details if something has changed, such as '
-                      'your income or your address.',
-                ),
-                TextSpan(text: "Ask us why if the note doesn't explain it."),
-                TextSpan(
-                  text:
-                      'Disagree with the decision? Raise a complaint and we '
-                      'will look at it again.',
-                ),
-              ], icon: Icons.arrow_forward),
+              TickList(
+                [
+                  lead(
+                    'Update your details',
+                    ' if something has changed, such as your income or your '
+                        'address.',
+                  ),
+                  lead('Ask us why', " if the note doesn't explain it."),
+                  lead(
+                    'Disagree with the decision?',
+                    ' Raise a complaint and we will look at it again.',
+                  ),
+                ],
+                icons: const [
+                  Icons.edit_outlined,
+                  Icons.chat_bubble_outline,
+                  Icons.shield_outlined,
+                ],
+                color: c.primary,
+              ),
             ],
           ),
         ),
-        Gap.s20,
+        Gap.s16,
         AppButton.primary(
           'Update my details',
           block: true,
           onPressed: () => context.pushOnce(Routes.applicationStep(1)),
         ),
-        Gap.s8,
+        Gap.s16,
         AppButton.ghost(
           'Raise a complaint',
           block: true,
@@ -504,7 +716,7 @@ class ApplicationHistoryScreen extends ConsumerWidget {
     final activeId = ref.watch(applicationInfoProvider).value?.active?.id;
     return Scaffold(
       backgroundColor: context.colors.surface,
-      appBar: const AppTopBar(title: 'My applications', bottomBorder: true),
+      appBar: const AppTopBar(title: 'My applications'),
       body: AsyncBody(
         value: history,
         loading: const _StatusSkeleton(),
@@ -551,12 +763,18 @@ class ApplicationHistoryScreen extends ConsumerWidget {
                         kind: kindOf(list, i),
                         inForce: list[i].id == activeId,
                       ),
-                      Gap.s12,
+                      Gap.s16,
                     ],
-                    Text(
-                      'Every application you have made, newest first.',
-                      style: context.text.small,
-                      textAlign: TextAlign.center,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Space.s16,
+                        vertical: Space.s4,
+                      ),
+                      child: Text(
+                        'Every application you have made, newest first.',
+                        style: context.text.tiny.copyWith(height: 1.5),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ],
                 ),
@@ -594,6 +812,7 @@ class _HistoryCard extends StatelessWidget {
     final t = context.text;
     final decided = a.decidedAt != null;
     return AppCard(
+      padding: _uPadRow,
       onTap: () => context.pushOnce(Routes.applicationDetail(a.id)),
       semanticLabel:
           '$kind, ${switch (a.status) {
@@ -606,11 +825,17 @@ class _HistoryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Text(kind, style: t.h4)),
+              Expanded(
+                child: Text(
+                  kind,
+                  style: t.body.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: Space.s10),
               statusBadge(a),
             ],
           ),
-          Gap.s12,
+          Gap.s10,
           KeyValueList([
             if (decided)
               KeyValue('Decided', dayMonthYear(a.decidedAt!))
@@ -635,10 +860,10 @@ class _HistoryCard extends StatelessWidget {
                 spoken: rsSpoken(a.monthlyIncome),
               ),
           ]),
-          Gap.s8,
+          Gap.s10,
           Text(
             'Application #${a.id}${inForce ? ' · in force' : ''}',
-            style: t.small,
+            style: t.tiny,
           ),
         ],
       ),
@@ -664,7 +889,8 @@ class ApplicationDetailScreen extends ConsumerWidget {
         title: a == null
             ? 'Application'
             : kindOf(history.value!, history.value!.indexOf(a)),
-        bottomBorder: true,
+        // The status sits in the bar, as on the canvas status boards.
+        actions: [?_barBadge(a == null ? null : statusBadge(a))],
       ),
       body: AsyncBody(
         value: history,
@@ -688,9 +914,8 @@ class ApplicationDetailScreen extends ConsumerWidget {
             body = Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Align(alignment: Alignment.centerLeft, child: statusBadge(a)),
-                Gap.s12,
                 AppCard(
+                  padding: _uPad,
                   child: KeyValueList([
                     KeyValue('Application', '#${a.id}'),
                     if (a.submittedAt != null)
@@ -789,69 +1014,158 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
     final t = context.text;
     final image = ref.watch(documentProvider(widget.doc));
     final profile = ref.watch(profileProvider).value;
+    final onDark = TextStyle(color: c.white);
+    // Canvas: a dark viewer, like the camera, so the photo stands out.
     return SecureScreen(
-      child: Scaffold(
-        backgroundColor: c.surface,
-        appBar: AppTopBar(
-          title: widget.doc.title,
-          leading: TopBarLeading.close,
-          bottomBorder: true,
-        ),
-        body: FormPage(
-          footer: AppButton.ghost(
-            'Replace this photo',
-            block: true,
-            busy: _busy,
-            onPressed: _busy ? null : _replace,
-          ),
-          children: [
-            AspectRatio(
-              aspectRatio: widget.doc == CaptureDoc.selfie ? 3 / 4 : 1.586,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(Radii.card),
-                child: ColoredBox(
-                  color: c.ink,
-                  child: switch (image) {
-                    AsyncData(value: final bytes?) => Semantics(
-                      image: true,
-                      label: 'Your uploaded ${widget.doc.title}',
-                      child: Image.memory(bytes, fit: BoxFit.contain),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: Scaffold(
+          backgroundColor: c.cam,
+          body: SafeArea(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: Sizes.appBar,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Space.s8),
+                    child: Row(
+                      children: [
+                        AppIconButton(
+                          icon: Icons.close,
+                          size: 22,
+                          label: 'Close',
+                          color: c.white,
+                          onPressed: () => Navigator.of(context).maybePop(),
+                        ),
+                        const SizedBox(width: Space.s6),
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              widget.doc.title,
+                              style: t.h4.merge(onDark),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    AsyncData() => Center(
-                      child: Text(
-                        'Not uploaded yet',
-                        style: t.body.copyWith(color: c.white),
-                      ),
-                    ),
-                    AsyncError(:final error) => ErrorStateView(
-                      error: error,
-                      onRetry: () =>
-                          ref.invalidate(documentProvider(widget.doc)),
-                    ),
-                    _ => Center(
-                      child: Semantics(
-                        label: 'Loading your photo',
-                        child: CircularProgressIndicator(color: c.white),
-                      ),
-                    ),
-                  },
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Space.gutter,
+                      ),
+                      child: AspectRatio(
+                        aspectRatio: widget.doc == CaptureDoc.selfie
+                            ? 3 / 4
+                            : 1.58,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(Radii.note),
+                          child: ColoredBox(
+                            color: c.ink2,
+                            child: switch (image) {
+                              AsyncData(value: final bytes?) => Semantics(
+                                image: true,
+                                label: 'Your uploaded ${widget.doc.title}',
+                                child: Image.memory(bytes, fit: BoxFit.contain),
+                              ),
+                              AsyncData() => Center(
+                                child: Text(
+                                  'Not uploaded yet',
+                                  textAlign: TextAlign.center,
+                                  style: t.small.copyWith(
+                                    color: c.onDark2,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              AsyncError(:final error) => ErrorStateView(
+                                error: error,
+                                onRetry: () => ref.invalidate(
+                                  documentProvider(widget.doc),
+                                ),
+                              ),
+                              _ => Center(
+                                child: Semantics(
+                                  label: 'Loading your photo',
+                                  child: CircularProgressIndicator(
+                                    color: c.white,
+                                  ),
+                                ),
+                              ),
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    Space.gutter,
+                    Space.s16,
+                    Space.gutter,
+                    Space.s24,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Space.s14,
+                          vertical: Space.s12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: c.ink2,
+                          borderRadius: BorderRadius.circular(Radii.note),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: Space.s2),
+                              child: Icon(
+                                Icons.shield_outlined,
+                                size: 18,
+                                color: c.greenOnDark,
+                              ),
+                            ),
+                            const SizedBox(width: Space.s10),
+                            Expanded(
+                              child: Text(
+                                '${_uploaded(profile)}Shown from the server '
+                                'and never saved to this phone. Screenshots '
+                                'are blocked here.',
+                                style: t.small.copyWith(color: c.onDark),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Gap.s12,
+                      AppButton.ghost(
+                        'Replace this photo',
+                        block: true,
+                        busy: _busy,
+                        onPressed: _busy ? null : _replace,
+                      ),
+                      Gap.s12,
+                      Text(
+                        'Replacing a document sends your identity for '
+                        'verification again.',
+                        textAlign: TextAlign.center,
+                        style: t.tiny.copyWith(color: c.onDark2),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Gap.s16,
-            Text(
-              '${_uploaded(profile)}Shown from the server and never saved '
-              'to this phone. '
-              'Screenshots are blocked here.',
-              style: t.small,
-            ),
-            Gap.s8,
-            Text(
-              'Replacing a document sends your identity for verification '
-              'again.',
-              style: t.small,
-            ),
-          ],
+          ),
         ),
       ),
     );

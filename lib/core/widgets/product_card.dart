@@ -1,6 +1,7 @@
 import 'package:atompay_mobile/core/format/money.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/pressable.dart';
+import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:flutter/material.dart';
 
@@ -95,12 +96,18 @@ class ProductCard extends StatelessWidget {
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: t.label.copyWith(fontWeight: FontWeight.w700),
+                    style: t.label.copyWith(
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
                   ),
                   const SizedBox(height: Space.s8),
                   Text(rs(monthly), style: t.h3),
-                  Text('per month · 3 · no advance', style: t.tiny),
-                  Text('Cash price ${rs(price)}', style: t.tiny),
+                  Text('per month × 3 · no advance', style: t.tiny),
+                  Text(
+                    'Cash price ${rs(price)}',
+                    style: t.tiny.copyWith(fontWeight: FontWeight.w500),
+                  ),
                 ],
               ),
             ),
@@ -119,4 +126,57 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Center(child: Icon(Icons.image_outlined, size: 40, color: color));
+}
+
+/// A [ProductCard] while it loads: the image block, then brand, title,
+/// monthly amount and term lines (canvas product skeleton).
+class ProductCardSkeleton extends StatelessWidget {
+  const new({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    Widget line(double widthFactor, double height, {double? radius}) =>
+        FractionallySizedBox(
+          alignment: Alignment.centerLeft,
+          widthFactor: widthFactor,
+          child: Skeleton(height: height, radius: radius ?? Radii.pill),
+        );
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: c.white,
+        border: Border.all(color: c.line),
+        borderRadius: BorderRadius.circular(Radii.card),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Skeleton(height: 140, radius: 0),
+          const SizedBox(height: Space.s10),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              Space.s12,
+              0,
+              Space.s12,
+              Space.s14,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                line(0.4, 10),
+                const SizedBox(height: Space.s8),
+                line(0.85, 12),
+                const SizedBox(height: Space.s8),
+                line(0.6, 16, radius: Space.s8),
+                const SizedBox(height: Space.s8),
+                line(0.7, 10),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

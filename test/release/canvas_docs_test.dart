@@ -167,7 +167,7 @@ void main() {
     ) async {
       await at(tester, Routes.kfs(1279));
       expect(find.textContaining(lender), findsWidgets);
-      expect(find.text('ANNUAL PERCENTAGE RATE (APR)'), findsOneWidget);
+      expect(find.text('Annual percentage rate (APR)'), findsOneWidget);
       // "10 Dec 2026 · Rs. 15,666": one row per instalment.
       expect(find.textContaining(RegExp(r'\d{4} · Rs\. ')), findsNWidgets(3));
     });

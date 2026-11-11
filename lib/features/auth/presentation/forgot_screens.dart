@@ -80,7 +80,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen> {
       child: Scaffold(
         backgroundColor: context.colors.white,
         appBar: const AppTopBar(white: true),
-        body: FormPage(
+        body: AuthPage(
           children: [
             PageIntro(
               eyebrow: 'Forgot password',
@@ -90,7 +90,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen> {
                   : 'Enter the email or mobile number on your AtomShop '
                         'account.',
             ),
-            Gap.s24,
+            AuthGap.form,
             AppTextField(
               label: emailOnly ? 'Email address' : 'Email or mobile number',
               controller: _login,
@@ -107,7 +107,7 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen> {
                   ref.read(forgotFormProvider.notifier).clearField('login'),
               onSubmitted: (_) => _submit(),
             ),
-            Gap.s20,
+            AuthGap.form,
             SubmitSection(
               label: 'Send code',
               status: status,
@@ -116,11 +116,11 @@ class _ForgotScreenState extends ConsumerState<ForgotScreen> {
               onSubmit: _submit,
               onRetryReady: () => setState(() {}),
             ),
-            Gap.s16,
+            AuthGap.form,
             const Note(
               tone: NoteTone.blue,
               text:
-                  'This changes your AtomShop.pk password too: it is one '
+                  'This changes your AtomShop.pk password too — it is one '
                   'account.',
             ),
           ],
@@ -178,7 +178,7 @@ class _ForgotCodeScreenState extends ConsumerState<ForgotCodeScreen> {
       child: Scaffold(
         backgroundColor: context.colors.white,
         appBar: const AppTopBar(white: true),
-        body: FormPage(
+        body: AuthPage(
           children: [
             PageIntro(
               eyebrow: 'Forgot password',
@@ -199,16 +199,18 @@ class _ForgotCodeScreenState extends ConsumerState<ForgotCodeScreen> {
                 const TextSpan(text: '.'),
               ],
             ),
-            Gap.s24,
+            AuthGap.code,
             OtpField(
               controller: _code,
               label: 'Reset code',
+              // The canvas shows no hint under the reset code.
+              hint: null,
               error: status.field('code'),
               onChanged: (_) =>
                   ref.read(forgotCodeFormProvider.notifier).clearField('code'),
               onCompleted: (_) => _submit(),
             ),
-            Gap.s20,
+            AuthGap.code,
             SubmitSection(
               label: 'Continue',
               status: status,
@@ -217,7 +219,7 @@ class _ForgotCodeScreenState extends ConsumerState<ForgotCodeScreen> {
               onSubmit: _submit,
               onRetryReady: () => setState(() {}),
             ),
-            Gap.s16,
+            AuthGap.code,
             ResendRow(
               sentAt: draft.sentAt,
               resendIn: sent.resendIn,
@@ -296,14 +298,14 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
       child: Scaffold(
         backgroundColor: context.colors.white,
         appBar: const AppTopBar(white: true),
-        body: FormPage(
+        body: AuthPage(
           children: [
             const PageIntro(
               eyebrow: 'Forgot password',
               title: 'Choose a new password',
               lead: 'At least 8 characters.',
             ),
-            Gap.s24,
+            AuthGap.form,
             PasswordField(
               label: 'New password',
               controller: _password,
@@ -316,18 +318,20 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
                 setState(() {});
               },
             ),
-            Gap.s14,
-            PasswordField(
+            AuthGap.field,
+            AppTextField(
               label: 'Confirm new password',
               controller: _confirm,
               focusNode: _focus['password_confirmation'],
+              obscureText: true,
+              keyboardType: TextInputType.visiblePassword,
               textInputAction: TextInputAction.done,
               autofillHints: const [AutofillHints.newPassword],
               error: status.field('password_confirmation'),
               onChanged: (_) => form.clearField('password_confirmation'),
               onSubmitted: (_) => _submit(),
             ),
-            Gap.s20,
+            AuthGap.form,
             SubmitSection(
               label: 'Set new password',
               status: status,
@@ -336,9 +340,10 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> {
               onSubmit: _submit,
               onRetryReady: () => setState(() {}),
             ),
-            Gap.s16,
+            AuthGap.form,
             const Note(
               tone: NoteTone.blue,
+              icon: Icons.smartphone_outlined,
               text:
                   "You'll stay signed in here and be signed out on every "
                   'other device, on AtomPay and AtomShop.pk.',

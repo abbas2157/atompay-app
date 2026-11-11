@@ -87,7 +87,7 @@ class AtomAvatar extends StatelessWidget {
   }
 }
 
-/// Home's header brand: mark, "AtomPay", "PAY IN STEPS".
+/// Home's header brand: mark, "ATOMPAY", "PAY IN STEPS" (canvas `.brand`).
 class BrandHeader extends StatelessWidget {
   const new({super.key});
 
@@ -106,7 +106,10 @@ class BrandHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('AtomPay', style: t.h4.copyWith(height: 1.1)),
+              Text(
+                'ATOMPAY',
+                style: t.h4.copyWith(height: 1.1, letterSpacing: -0.4),
+              ),
               Text('PAY IN STEPS', style: t.xs.copyWith(letterSpacing: 2.2)),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:atompay_mobile/core/router/navigation.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
@@ -29,7 +30,7 @@ import 'package:go_router/go_router.dart';
 /// Placeholders the business hasn't supplied (brief §0).
 abstract final class HelpPlaceholders {
   static const responseTime = '[RESPONSE TIME]';
-  static const secpLink = '[SECP complaint link · verify]';
+  static const secpLink = '[SECP complaint link — verify]';
 }
 
 /// Help centre (canvas "Help"): Ask Atom, topics, common questions, and
@@ -42,116 +43,86 @@ class HelpScreen extends ConsumerWidget {
     final t = context.text;
     final c = context.colors;
     final support = ref.watch(appConfigProvider).support;
-    final width = MediaQuery.sizeOf(context).width;
 
-    return Scaffold(
-      backgroundColor: c.surface,
-      appBar: const AppTopBar(),
-      body: FormPage(
-        children: [
-          Semantics(header: true, child: Text('How can we help?', style: t.h1)),
-          Gap.s16,
-          Pressable(
-            onTap: () =>
-                context.pushOnce(Routes.helpTopicSearch(HelpContent.all)),
-            scaleOnPress: false,
-            borderRadius: BorderRadius.circular(Radii.pill),
-            semanticLabel: 'Search help',
-            excludeChildSemantics: true,
-            child: Container(
-              height: Sizes.target,
-              padding: const EdgeInsets.symmetric(horizontal: Space.s16),
-              decoration: BoxDecoration(
-                color: c.white,
-                borderRadius: BorderRadius.circular(Radii.pill),
-                border: Border.all(color: c.line2),
-              ),
-              child: Row(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: c.surface,
+        body: Column(
+          children: [
+            const _HelpHeader(),
+            Expanded(
+              // Canvas `.content{gap:20px}`.
+              child: FormPage(
                 children: [
-                  Icon(Icons.search, size: 20, color: c.muted),
-                  const SizedBox(width: Space.s10),
-                  Expanded(
-                    child: Text(
-                      'Search: "limit", "late payment"…',
-                      style: t.base.copyWith(color: c.muted),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  const AskAtomCard(
+                    subtitle: 'Fastest: it knows your limit and your orders',
+                    avatarSize: 46,
+                    chevronRose: true,
+                  ),
+                  Gap.s20,
+                  const SectionLabel('Topics'),
+                  const _TopicGrid(),
+                  Gap.s20,
+                  ListGroup(
+                    title: 'Common questions',
+                    children: [
+                      for (final (key, q) in HelpContent.common)
+                        ListRow(
+                          title: q.question,
+                          summary: HelpContent.topic(key)!.title,
+                          onTap: () =>
+                              context.pushOnce(Routes.helpQuestion(key, q.id)),
+                        ),
+                      Pressable(
+                        onTap: () =>
+                            context.pushOnce(Routes.helpTopic(HelpContent.all)),
+                        scaleOnPress: false,
+                        borderRadius: BorderRadius.zero,
+                        pressedColor: c.primarySoft,
+                        semanticLabel: 'All questions',
+                        excludeChildSemantics: true,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 60),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: Space.s16,
+                              vertical: Space.s12,
+                            ),
+                            child: Center(
+                              child: Text(
+                                'All questions',
+                                textAlign: TextAlign.center,
+                                style: t.body.copyWith(
+                                  color: c.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Gap.s20,
+                  ListGroup(
+                    title: 'Talk to us',
+                    children: [
+                      ListRow(
+                        title: 'Raise a complaint',
+                        summary: 'A person reads every one',
+                        icon: Icons.gpp_maybe_outlined,
+                        tileTone: TileTone.rose,
+                        onTap: () => context.pushOnce(Routes.complaint),
+                      ),
+                      ..._contactRows(support),
+                    ],
                   ),
                 ],
               ),
             ),
-          ),
-          Gap.s16,
-          const AskAtomCard(
-            subtitle: 'Fastest: it knows your limit and your orders',
-          ),
-          Gap.s24,
-          const SectionLabel('Topics'),
-          GridView.count(
-            crossAxisCount: width >= 600 ? 3 : 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: Space.s10,
-            crossAxisSpacing: Space.s10,
-            childAspectRatio: 2.4,
-            children: [
-              for (final topic in HelpContent.topics)
-                _TopicTile(
-                  topic: topic,
-                  onTap: () => context.pushOnce(Routes.helpTopic(topic.key)),
-                ),
-            ],
-          ),
-          Gap.s24,
-          ListGroup(
-            title: 'Common questions',
-            children: [
-              for (final (key, q) in HelpContent.common)
-                ListRow(
-                  title: q.question,
-                  summary: HelpContent.topic(key)!.title,
-                  onTap: () => context.pushOnce(Routes.helpQuestion(key, q.id)),
-                ),
-              Pressable(
-                onTap: () =>
-                    context.pushOnce(Routes.helpTopic(HelpContent.all)),
-                scaleOnPress: false,
-                borderRadius: BorderRadius.zero,
-                pressedColor: c.primarySoft,
-                semanticLabel: 'All questions',
-                excludeChildSemantics: true,
-                child: SizedBox(
-                  height: 56,
-                  child: Center(
-                    child: Text(
-                      'All questions',
-                      style: t.base.copyWith(
-                        color: c.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Gap.s24,
-          ListGroup(
-            title: 'Talk to us',
-            children: [
-              ListRow(
-                title: 'Raise a complaint',
-                summary: 'A person reads every one',
-                icon: Icons.flag_outlined,
-                tileTone: TileTone.rose,
-                onTap: () => context.pushOnce(Routes.complaint),
-              ),
-              ..._contactRows(support),
-            ],
-          ),
-          Gap.s16,
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -188,6 +159,133 @@ class HelpScreen extends ConsumerWidget {
   ];
 }
 
+/// Canvas `.htop`: the ink band with a white back button, the heading and
+/// the search pill.
+class _HelpHeader extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.text;
+    return ColoredBox(
+      color: c.ink,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Space.gutter,
+            0,
+            Space.gutter,
+            Space.s20,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Transform.translate(
+                    offset: const Offset(-Space.s8, 0),
+                    child: AppIconButton(
+                      icon: Icons.chevron_left,
+                      size: 28,
+                      label: 'Back',
+                      color: c.white,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                    ),
+                  ),
+                  const SizedBox(height: Space.s6),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'How can we help?',
+                      style: t.h1b.copyWith(color: c.white),
+                    ),
+                  ),
+                  const SizedBox(height: Space.s14),
+                  Pressable(
+                    onTap: () => context.pushOnce(
+                      Routes.helpTopicSearch(HelpContent.all),
+                    ),
+                    scaleOnPress: false,
+                    borderRadius: BorderRadius.circular(Radii.pill),
+                    semanticLabel: 'Search help',
+                    excludeChildSemantics: true,
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 50),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Space.s16,
+                        vertical: Space.s6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: c.white,
+                        borderRadius: BorderRadius.circular(Radii.pill),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search, size: 18, color: c.muted),
+                          const SizedBox(width: Space.s10),
+                          Expanded(
+                            child: Text(
+                              'Search: "limit", "late payment"…',
+                              style: t.body.copyWith(color: c.muted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Canvas `.topics`: three columns, 8 apart; tiles in a row share a height
+/// so large text grows them together.
+class _TopicGrid extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    const topics = HelpContent.topics;
+    return Column(
+      children: [
+        for (var r = 0; r < topics.length; r += 3) ...[
+          if (r > 0) Gap.s8,
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = r; i < r + 3; i++) ...[
+                  if (i > r) const SizedBox(width: Space.s8),
+                  Expanded(
+                    child: i < topics.length
+                        ? _TopicTile(
+                            topic: topics[i],
+                            onTap: () => context.pushOnce(
+                              Routes.helpTopic(topics[i].key),
+                            ),
+                          )
+                        : const SizedBox(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _TopicTile extends StatelessWidget {
   const new({required this.topic, required this.onTap});
 
@@ -204,25 +302,28 @@ class _TopicTile extends StatelessWidget {
       semanticLabel: topic.title,
       excludeChildSemantics: true,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: Space.s12),
+        constraints: const BoxConstraints(minHeight: 96),
+        padding: const EdgeInsets.symmetric(
+          horizontal: Space.s4,
+          vertical: Space.s14,
+        ),
         decoration: BoxDecoration(
           color: c.white,
           borderRadius: BorderRadius.circular(Radii.row),
           border: Border.all(color: c.line),
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconTile(topic.icon, tone: topic.tone, size: 36),
-            const SizedBox(width: Space.s10),
-            Expanded(
-              child: Text(
-                topic.title,
-                style: context.text.base.copyWith(
-                  color: c.ink,
-                  fontWeight: FontWeight.w700,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+            IconTile(topic.icon, tone: topic.tone, size: 38),
+            Gap.s8,
+            Text(
+              topic.title,
+              textAlign: TextAlign.center,
+              style: context.text.small.copyWith(
+                color: c.ink,
+                fontWeight: FontWeight.w700,
+                height: 1.25,
               ),
             ),
           ],
@@ -234,10 +335,22 @@ class _TopicTile extends StatelessWidget {
 
 /// The wash card that opens Ask Atom.
 class AskAtomCard extends StatelessWidget {
-  const new({required this.subtitle, this.title = 'Ask Atom', super.key});
+  const new({
+    required this.subtitle,
+    this.title = 'Ask Atom',
+    this.avatarSize = 44,
+    this.chevronRose = false,
+    super.key,
+  });
 
   final String title;
   final String subtitle;
+
+  /// 46 on Help, 44 under a topic.
+  final double avatarSize;
+
+  /// Help's card has a rose chevron; elsewhere it is the usual glyph.
+  final bool chevronRose;
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +367,7 @@ class AskAtomCard extends StatelessWidget {
       semanticLabel: '$title. $subtitle',
       child: Row(
         children: [
-          const AtomAvatar(),
+          AtomAvatar(size: avatarSize),
           const SizedBox(width: Space.s12),
           Expanded(
             child: Column(
@@ -262,13 +375,18 @@ class AskAtomCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: t.body.copyWith(fontWeight: FontWeight.w800),
+                  style: t.body.copyWith(fontWeight: FontWeight.w700),
                 ),
-                Text(subtitle, style: t.small),
+                Text(subtitle, style: t.small.copyWith(color: c.body)),
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: c.glyph),
+          const SizedBox(width: Space.s8),
+          Icon(
+            Icons.chevron_right,
+            size: 20,
+            color: chevronRose ? c.rose : c.glyph,
+          ),
         ],
       ),
     );
@@ -276,7 +394,8 @@ class AskAtomCard extends StatelessWidget {
 }
 
 /// One topic with expandable answers; `all` lists every question with a
-/// search box (canvas "Help topic").
+/// search box (canvas "Help topic"). The search box is on every topic: a
+/// query there searches all of Help.
 class HelpTopicScreen extends StatefulWidget {
   const new({
     required this.topic,
@@ -318,36 +437,50 @@ class _HelpTopicScreenState extends State<HelpTopicScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.text;
+    final c = context.colors;
     final topic = HelpContent.topic(widget.topic);
     final title = _isAll ? 'All questions' : (topic?.title ?? 'Help');
-    final items = _isAll
+    final searching = normaliseQuery(_query.text).isNotEmpty;
+    final items = _isAll || searching
         ? HelpContent.search(_query.text)
         : [for (final q in topic?.questions ?? <HelpQuestion>[]) (topic!, q)];
 
     return Scaffold(
-      backgroundColor: context.colors.surface,
+      backgroundColor: c.surface,
       appBar: AppTopBar(title: title),
       body: FormPage(
         children: [
-          if (_isAll) ...[
-            AppTextField(
-              label: 'Search questions',
+          FocusRing(
+            builder: ({required focused}) => TextField(
               controller: _query,
               autofocus: widget.search,
-              placeholder: 'Try "limit" or "payment"',
               textInputAction: TextInputAction.search,
-              suffix: _query.text.isEmpty
-                  ? const Icon(Icons.search)
-                  : AppIconButton(
-                      icon: Icons.close,
-                      label: 'Clear search',
-                      size: 20,
-                      onPressed: _query.clear,
-                    ),
+              style: t.body,
+              decoration: InputDecoration(
+                hintText: 'Search help',
+                fillColor: focused ? c.white : c.field,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(
+                    left: Space.s14,
+                    right: Space.s10,
+                  ),
+                  child: Icon(Icons.search, size: 18, color: c.muted),
+                ),
+                prefixIconConstraints: const BoxConstraints(),
+                suffixIcon: _query.text.isEmpty
+                    ? null
+                    : AppIconButton(
+                        icon: Icons.close,
+                        label: 'Clear search',
+                        size: 18,
+                        color: c.muted,
+                        onPressed: _query.clear,
+                      ),
+              ).applyDefaults(Theme.of(context).inputDecorationTheme),
             ),
-            Gap.s16,
-          ],
-          if (items.isEmpty && _isAll)
+          ),
+          Gap.s14,
+          if (items.isEmpty && (_isAll || searching))
             StateView(
               icon: Icons.search_off,
               title: 'No questions match',
@@ -372,18 +505,35 @@ class _HelpTopicScreenState extends State<HelpTopicScreen> {
               ),
             )
           else
-            ListGroup(
-              children: [
-                for (final (_, q) in items)
-                  _QuestionRow(
-                    question: q,
-                    open: _open == q.id,
-                    onTap: () =>
-                        setState(() => _open = _open == q.id ? null : q.id),
-                  ),
-              ],
+            // Canvas `.card` with no padding: 24 radius, hairline rows.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(Radii.card),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: c.white,
+                  border: Border.all(color: c.line),
+                  borderRadius: BorderRadius.circular(Radii.card),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < items.length; i++) ...[
+                      if (i > 0) Divider(height: 1, color: c.line),
+                      _QuestionRow(
+                        question: items[i].$2,
+                        open: _open == items[i].$2.id,
+                        onTap: () => setState(
+                          () => _open = _open == items[i].$2.id
+                              ? null
+                              : items[i].$2.id,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          Gap.s16,
+          Gap.s14,
           const AskAtomCard(
             title: 'Still stuck? Ask Atom',
             subtitle: 'It can see your limit and orders',
@@ -417,25 +567,38 @@ class _QuestionRow extends StatelessWidget {
             pressedColor: c.primarySoft,
             semanticLabel: question.question,
             excludeChildSemantics: true,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Space.s16,
-                vertical: Space.s14,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      question.question,
-                      style: t.body.copyWith(fontWeight: FontWeight.w700),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.s16,
+                  vertical: Space.s12,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        question.question,
+                        style: t.body.copyWith(
+                          fontWeight: FontWeight.w700,
+                          height: 1.25,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: Space.s8),
-                  Icon(
-                    open ? Icons.expand_less : Icons.expand_more,
-                    color: c.glyph,
-                  ),
-                ],
+                    const SizedBox(width: Space.s12),
+                    AnimatedRotation(
+                      turns: open ? 0.5 : 0,
+                      duration: context.reduceMotion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 150),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 20,
+                        color: c.glyph,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -448,7 +611,10 @@ class _QuestionRow extends StatelessWidget {
               Space.s16,
               Space.s16,
             ),
-            child: Text(question.answer, style: t.base),
+            child: Text(
+              question.answer,
+              style: t.base.copyWith(fontWeight: FontWeight.w500, height: 1.55),
+            ),
           ),
       ],
     );
@@ -514,6 +680,7 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.text;
+    final c = context.colors;
     final status = ref.watch(complaintFormProvider);
     final offline = ref.watch(isOfflineProvider);
     final topics =
@@ -525,27 +692,21 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
       dirty: _dirty,
       busy: status.busy,
       child: Scaffold(
-        backgroundColor: context.colors.surface,
+        backgroundColor: c.surface,
         appBar: const AppTopBar(title: 'Raise a complaint'),
         body: FormPage(
-          footer: SubmitSection(
-            label: 'Send complaint',
-            status: status,
-            offline: offline,
-            fieldsOnScreen: _focus.keys.toSet(),
-            onSubmit: () => unawaited(_submit()),
-          ),
           children: [
-            const PageIntro(
-              title: 'Raise a complaint',
-              lead:
-                  'Tell us what went wrong. A person reads every complaint, '
-                  "and you'll get a reference number.",
+            Text(
+              'Tell us what went wrong. A person reads every complaint, '
+              "and you'll get a reference number.",
+              style: t.small,
             ),
-            Gap.s24,
+            Gap.s16,
+            // Canvas `.form{gap:14px}`.
             PickerField<String>(
               label: 'What is it about?',
-              sheetTitle: 'Complaint topic',
+              sheetTitle: 'What is it about?',
+              searchPlaceholder: 'Search topics',
               noun: 'topics',
               focusNode: _focus['topic'],
               options: [for (final o in topics) PickerOption(o.value, o.label)],
@@ -556,33 +717,38 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
                 ref.read(complaintFormProvider.notifier).clearField('topic');
               },
             ),
-            Gap.s16,
+            Gap.s14,
             PickerField<int>(
               label: 'Which order? (optional)',
-              sheetTitle: 'Complaint order',
+              sheetTitle: 'Which order?',
+              searchPlaceholder: 'Search by order number or product',
               noun: 'orders',
               focusNode: _focus['order_id'],
               loading: plans.isLoading && !plans.hasValue,
               options: [
-                const PickerOption(_noOrder, 'Not about an order'),
                 for (final p in plans.value?.data ?? const <Plan>[])
                   PickerOption(
                     p.order.id,
-                    p.product == null
-                        ? p.order.reference
-                        : '${p.order.reference} · ${p.product!.title}',
+                    p.order.reference,
+                    subtitle: _orderLine(p),
                   ),
+                const PickerOption(
+                  _noOrder,
+                  'Not about an order',
+                  subtitle: 'Leave this empty',
+                ),
               ],
               value: _order,
               error: status.field('order_id'),
               onChanged: (v) => setState(() => _order = v),
             ),
-            Gap.s16,
+            Gap.s14,
             AppTextField(
               label: 'What happened?',
               controller: _message,
               focusNode: _focus['message'],
-              minLines: 5,
+              placeholder: 'Dates and amounts help us look into it faster.',
+              minLines: 4,
               maxLines: 10,
               maxLength: maxComplaintLength,
               keyboardType: TextInputType.multiline,
@@ -595,36 +761,53 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
                   .read(complaintFormProvider.notifier)
                   .clearField('message'),
             ),
-            Gap.s24,
+            Gap.s16,
+            SubmitSection(
+              label: 'Send complaint',
+              status: status,
+              offline: offline,
+              fieldsOnScreen: _focus.keys.toSet(),
+              onSubmit: () => unawaited(_submit()),
+            ),
+            Gap.s16,
             AppCard(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Space.s18,
+                vertical: Space.s16,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('What happens next', style: t.h4),
-                  Gap.s8,
-                  Text.rich(
-                    TextSpan(
-                      style: t.base,
-                      children: [
-                        const TextSpan(text: 'We reply within '),
-                        placeholderSpan(context, HelpPlaceholders.responseTime),
-                        const TextSpan(text: ', in the app and by email.'),
-                      ],
-                    ),
+                  Semantics(
+                    header: true,
+                    child: Text('What happens next', style: t.h4),
                   ),
                   Gap.s8,
-                  Text.rich(
-                    TextSpan(
-                      style: t.base,
-                      children: [
-                        const TextSpan(
-                          text:
-                              'Not happy with our answer? You can take it '
-                              'to the SECP: ',
-                        ),
-                        placeholderSpan(context, HelpPlaceholders.secpLink),
-                      ],
-                    ),
+                  TickList(
+                    [
+                      TextSpan(
+                        children: [
+                          const TextSpan(text: 'We reply within '),
+                          placeholderSpan(
+                            context,
+                            HelpPlaceholders.responseTime,
+                          ),
+                          const TextSpan(text: ', in the app and by email.'),
+                        ],
+                      ),
+                      TextSpan(
+                        children: [
+                          const TextSpan(
+                            text:
+                                'Not happy with our answer? You can take it '
+                                'to the SECP: ',
+                          ),
+                          placeholderSpan(context, HelpPlaceholders.secpLink),
+                        ],
+                      ),
+                    ],
+                    icons: const [Icons.check, Icons.shield_outlined],
+                    color: c.primary,
                   ),
                 ],
               ),
@@ -633,6 +816,12 @@ class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
         ),
       ),
     );
+  }
+
+  /// "OXY 3218L Android · delivered": the second line of an order.
+  static String? _orderLine(Plan p) {
+    final parts = [?p.product?.title, ?p.order.statusLabel?.toLowerCase()];
+    return parts.isEmpty ? null : parts.join(' · ');
   }
 }
 
@@ -651,78 +840,161 @@ class ComplaintSentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = context.text;
+    // Canvas: a white outcome screen with no bar; back still goes to Help.
     return Scaffold(
-      backgroundColor: c.surface,
-      appBar: const AppTopBar(),
-      body: StateView(
-        icon: Icons.check,
-        iconTone: StateTone.green,
-        title: 'Complaint sent',
-        actions: [
-          AppButton.primary(
-            'Back to Help',
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go(Routes.help);
-              }
-            },
-          ),
-          AppButton.ghost(
-            'Go to Home',
-            onPressed: () => context.go(Routes.home),
-          ),
-        ],
-        child: Column(
-          children: [
-            Gap.s8,
-            Text.rich(
-              TextSpan(
-                style: t.small,
-                children: [
-                  const TextSpan(
-                    text:
-                        'A person will read it and reply in the app and by '
-                        'email within ',
+      backgroundColor: c.white,
+      body: SafeArea(
+        child: StateView(
+          icon: Icons.check,
+          iconTone: StateTone.green,
+          title: 'Complaint sent',
+          titleStyle: t.h2,
+          actions: [
+            AppButton.primary(
+              'Back to Help',
+              block: true,
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(Routes.help);
+                }
+              },
+            ),
+            AppButton.ghost(
+              'Go to Home',
+              block: true,
+              onPressed: () => context.go(Routes.home),
+            ),
+          ],
+          child: Column(
+            children: [
+              Gap.s12,
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 290),
+                child: Text.rich(
+                  TextSpan(
+                    style: t.small,
+                    children: [
+                      const TextSpan(
+                        text:
+                            'A person will read it and reply in the app and '
+                            'by email within ',
+                      ),
+                      placeholderSpan(context, HelpPlaceholders.responseTime),
+                      const TextSpan(text: '.'),
+                    ],
                   ),
-                  placeholderSpan(context, HelpPlaceholders.responseTime),
-                  const TextSpan(text: '.'),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              if (reference.isNotEmpty) ...[
+                Gap.s12,
+                _RefBox(reference: reference, onCopy: () => unawaited(_copy())),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Canvas `.refbox`: dashed line-3 border, 16 radius, surface fill, the
+/// reference at 17/800 and a small primary Copy button.
+class _RefBox extends StatelessWidget {
+  const new({required this.reference, required this.onCopy});
+
+  final String reference;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.text;
+    return CustomPaint(
+      foregroundPainter: _DashedBorder(c.line3),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: Space.s16,
+          vertical: Space.s14,
+        ),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(Radii.row),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Your reference', style: t.tiny),
+                  // Copy is the button beside it; a selectable line here
+                  // would be a long-press target under 48 dp.
+                  Text(reference, style: t.h4.copyWith(letterSpacing: 0.5)),
                 ],
               ),
-              textAlign: TextAlign.center,
             ),
-            if (reference.isNotEmpty) ...[
-              Gap.s16,
-              AppCard(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Space.s16,
-                  vertical: Space.s12,
+            const SizedBox(width: Space.s12),
+            Pressable(
+              onTap: onCopy,
+              borderRadius: BorderRadius.circular(Radii.pill),
+              pressedColor: c.primarySoft,
+              semanticLabel: 'Copy reference $reference',
+              excludeChildSemantics: true,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: Sizes.target),
+                padding: const EdgeInsets.symmetric(horizontal: Space.s14),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: c.white,
+                  borderRadius: BorderRadius.circular(Radii.pill),
+                  border: Border.all(color: c.line2),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Your reference', style: t.tiny),
-                          SelectableText(reference, style: t.h3),
-                        ],
-                      ),
-                    ),
-                    AppButton.ghost(
-                      'Copy',
-                      icon: Icons.copy,
-                      semanticLabel: 'Copy reference $reference',
-                      onPressed: () => unawaited(_copy()),
-                    ),
-                  ],
+                child: Text(
+                  'Copy',
+                  style: t.small.copyWith(
+                    color: c.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+/// A 1 px dashed rounded border (CSS `border:1px dashed`).
+class _DashedBorder extends CustomPainter {
+  const new(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(Radii.row),
+    ).deflate(0.5);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    for (final metric in (Path()..addRRect(rrect)).computeMetrics()) {
+      for (var d = 0.0; d < metric.length; d += 7) {
+        canvas.drawPath(
+          metric.extractPath(d, math.min(d + 4, metric.length)),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorder old) => old.color != color;
 }

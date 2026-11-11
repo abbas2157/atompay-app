@@ -126,7 +126,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           }),
         ),
         body: AutofillGroup(
-          child: FormPage(
+          child: AuthPage(
+            bottom: AuthFooterLink(
+              lead: 'Already have an account? ',
+              link: 'Sign in',
+              onPressed: () => context.go(Routes.login),
+            ),
             children: [
               PageIntro(
                 eyebrow: 'Create an account',
@@ -137,7 +142,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           'with your mobile number and we send it on '
                           'WhatsApp.',
               ),
-              Gap.s24,
+              AuthGap.form,
               AppTextField(
                 label: 'Full name',
                 controller: _name,
@@ -151,7 +156,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   setState(() {});
                 },
               ),
-              Gap.s14,
+              AuthGap.field,
               AppTextField(
                 label: emailOnly ? 'Email address' : 'Email or mobile number',
                 controller: _login,
@@ -168,37 +173,42 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   setState(() {});
                 },
               ),
-              Gap.s14,
-              PasswordField(
-                label: 'Password',
-                controller: _password,
-                focusNode: _focus['password'],
-                textInputAction: TextInputAction.next,
-                autofillHints: const [AutofillHints.newPassword],
-                error: status.field('password'),
-                onChanged: (_) {
-                  form.clearField('password');
-                  setState(() {});
-                },
+              AuthGap.field,
+              _PasswordPair(
+                password: AppTextField(
+                  label: 'Password',
+                  controller: _password,
+                  focusNode: _focus['password'],
+                  obscureText: true,
+                  keyboardType: TextInputType.visiblePassword,
+                  textInputAction: TextInputAction.next,
+                  autofillHints: const [AutofillHints.newPassword],
+                  error: status.field('password'),
+                  onChanged: (_) {
+                    form.clearField('password');
+                    setState(() {});
+                  },
+                ),
+                confirm: AppTextField(
+                  label: 'Confirm',
+                  controller: _confirm,
+                  focusNode: _focus['password_confirmation'],
+                  obscureText: true,
+                  keyboardType: TextInputType.visiblePassword,
+                  textInputAction: TextInputAction.done,
+                  autofillHints: const [AutofillHints.newPassword],
+                  error: status.field('password_confirmation'),
+                  onChanged: (_) => form.clearField('password_confirmation'),
+                  onSubmitted: (_) => _submit(),
+                ),
               ),
-              Gap.s14,
-              PasswordField(
-                label: 'Confirm password',
-                controller: _confirm,
-                focusNode: _focus['password_confirmation'],
-                textInputAction: TextInputAction.done,
-                autofillHints: const [AutofillHints.newPassword],
-                error: status.field('password_confirmation'),
-                onChanged: (_) => form.clearField('password_confirmation'),
-                onSubmitted: (_) => _submit(),
-              ),
-              Gap.s8,
+              AuthGap.field,
               Text(
                 'At least 8 characters. This also creates your '
                 'AtomShop.pk account.',
                 style: t.tiny,
               ),
-              Gap.s20,
+              AuthGap.form,
               SubmitSection(
                 label: 'Send my code',
                 status: status,
@@ -207,21 +217,38 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 onSubmit: _submit,
                 onRetryReady: () => setState(() {}),
               ),
-              Gap.s16,
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text('Already have an account? ', style: t.small),
-                  TextLink(
-                    'Sign in',
-                    onPressed: () => context.go(Routes.login),
-                  ),
-                ],
-              ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Password and Confirm side by side (canvas `.two`, 12 apart), stacked
+/// once large text leaves no room for two columns.
+class _PasswordPair extends StatelessWidget {
+  const new({required this.password, required this.confirm});
+
+  final Widget password;
+  final Widget confirm;
+
+  @override
+  Widget build(BuildContext context) {
+    final stacked = MediaQuery.textScalerOf(context).scale(10) >= 13;
+    if (stacked) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [password, AuthGap.field, confirm],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: password),
+        const SizedBox(width: Space.s12),
+        Expanded(child: confirm),
+      ],
     );
   }
 }
@@ -275,7 +302,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
       child: Scaffold(
         backgroundColor: context.colors.white,
         appBar: const AppTopBar(white: true),
-        body: FormPage(
+        body: AuthPage(
           children: [
             PageIntro(
               eyebrow: 'Almost there',
@@ -296,7 +323,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                 const TextSpan(text: '.'),
               ],
             ),
-            Gap.s24,
+            AuthGap.code,
             OtpField(
               controller: _code,
               error: status.field('code'),
@@ -305,7 +332,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
                   .clearField('code'),
               onCompleted: (_) => _submit(),
             ),
-            Gap.s20,
+            AuthGap.code,
             SubmitSection(
               label: 'Verify and continue',
               status: status,
@@ -314,7 +341,7 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
               onSubmit: _submit,
               onRetryReady: () => setState(() {}),
             ),
-            Gap.s16,
+            AuthGap.code,
             ResendRow(
               sentAt: draft.sentAt,
               resendIn: sent.resendIn,
@@ -322,21 +349,18 @@ class _VerifyCodeScreenState extends ConsumerState<VerifyCodeScreen> {
               onResend: () =>
                   ref.read(verifySignupFormProvider.notifier).resend(),
             ),
-            Gap.s8,
+            // 24 to the text: the link's 48 dp target adds ~14 above it.
+            Gap.s10,
             Center(
               child: TextLink(
                 byWhatsApp ? 'Use a different number' : 'Use a different email',
                 onPressed: () => context.pop(),
+                style: t.small.copyWith(
+                  color: context.colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-            if (byWhatsApp) ...[
-              Gap.s8,
-              Text(
-                'The WhatsApp message has a button that copies the code.',
-                style: t.tiny,
-                textAlign: TextAlign.center,
-              ),
-            ],
           ],
         ),
       ),

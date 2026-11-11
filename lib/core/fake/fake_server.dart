@@ -63,6 +63,19 @@ class FakeServer implements HttpClientAdapter {
   /// Calls to these paths never answer (loading states in golden tests).
   final Set<String> hang = {};
 
+  /// Calls to these paths time out.
+  final Set<String> timeout = {};
+
+  /// `app-config.store_url`, `support` and `maintenance.until`; null like
+  /// the live config until the business supplies them.
+  String? storeUrl;
+  Map<String, String?> support = {
+    'phone': null,
+    'whatsapp': null,
+    'email': null,
+  };
+  String? maintenanceUntil;
+
   /// `app-config.min_version`; above the app's version → Update required.
   String minVersion = '1.0.0';
 
@@ -179,6 +192,56 @@ class FakeServer implements HttpClientAdapter {
         daysAgo: 32,
       ),
     ]);
+  }
+
+  /// A new customer part-way through applying: identity filled in, no
+  /// photos yet (golden tests compare the filled forms).
+  void seedDraftProfile() => profile = _profileJson(status: 'not_started');
+
+  /// One order in each status the Orders list can show (canvas
+  /// "OrderStates").
+  void seedEveryOrderState() {
+    orders.clear();
+    var id = 1300;
+    for (final (status, firstDue, paid, title) in [
+      ('Pending', 40, 0, 'Haier 1.5 ton inverter AC'),
+      ('Varification', 40, 0, 'Samsung Galaxy A35'),
+      ('Processing', 35, 0, 'Dawlance 9178 refrigerator'),
+      ('Delivered', 30, 0, 'OXY 3218L Android'),
+      ('Instalments', -20, 1, 'Infinix Hot 50'),
+      ('Instalments', -45, 1, 'Anker Soundcore Q20i'),
+      ('Instalments', -80, 3, 'Xiaomi Redmi Pad SE'),
+      ('Cancelled', 30, 0, 'Canon EOS 2000D'),
+    ]) {
+      id++;
+      orders.add(
+        _order(
+          id: id,
+          reference: 'AS-0$id',
+          productId: id,
+          title: title,
+          price: 47000,
+          firstDue: firstDue,
+          paidCount: paid,
+          status: status,
+        ),
+      );
+    }
+  }
+
+  /// A first application sent and waiting (or turned down): the identity
+  /// check is pending and there is no limit.
+  void seedPendingApplication({bool rejected = false}) {
+    profile = _profileJson(status: 'pending');
+    user['kyc_status'] = 'pending';
+    assessments.add(
+      _assessment(
+        id: 939,
+        status: rejected ? 'rejected' : 'pending',
+        income: 200000,
+        decidedDaysAgo: rejected ? 1 : 0,
+      ),
+    );
   }
 
   Map<String, dynamic> _profileJson({required String status}) => {
@@ -680,6 +743,12 @@ class FakeServer implements HttpClientAdapter {
       // Never answers: the screen stays in its loading state.
       await Completer<void>().future;
     }
+    if (timeout.contains(path)) {
+      throw DioException.receiveTimeout(
+        timeout: const Duration(seconds: 20),
+        requestOptions: options,
+      );
+    }
     if (offline.contains('*') || offline.contains(path)) {
       throw DioException.connectionError(
         requestOptions: options,
@@ -766,13 +835,13 @@ class FakeServer implements HttpClientAdapter {
       case ('GET', '/app-config'):
         return ok({
           'min_version': {'android': minVersion, 'ios': minVersion},
-          'store_url': {'android': null, 'ios': null},
+          'store_url': {'android': storeUrl, 'ios': storeUrl},
           'shop_url': 'https://atomshop.pk',
           'password_reset_url': 'https://atompay.shop/forgot-password',
           'privacy_url': 'https://atompay.shop/privacy-policy',
           'terms_url': null,
           'account_deletion_url': 'https://atompay.shop/delete-account',
-          'support': {'phone': null, 'whatsapp': null, 'email': null},
+          'support': support,
           'features': {
             'push': false,
             'password_reset_channels': ['email', 'whatsapp'],
@@ -782,7 +851,7 @@ class FakeServer implements HttpClientAdapter {
           'maintenance': {
             'active': maintenance,
             'message': null,
-            'until': null,
+            'until': maintenanceUntil,
           },
           'apps': {
             'atomshop': {

@@ -66,12 +66,12 @@ void main() {
     final h = await signedInAt(tester, FakeScenario.repaying);
     expect(find.text('Rs. 28,666'), findsOneWidget);
     expect(find.text('In use Rs. 31,334'), findsOneWidget);
-    expect(find.text('Next payment'), findsOneWidget);
+    expect(find.text('NEXT PAYMENT'), findsOneWidget);
     expect(find.byType(Mini3), findsOneWidget);
     expect(find.textContaining('2nd of 3'), findsOneWidget);
     expect(find.text('Nothing fits Rs. 28,666 right now'), findsOneWidget);
 
-    await tester.tap(find.text('Next payment'));
+    await tester.tap(find.text('NEXT PAYMENT'));
     await settle(tester);
     expect(location(h), Routes.plan(1279));
   });

@@ -49,9 +49,13 @@ class PickerField<T> extends StatelessWidget {
     this.loading = false,
     this.total,
     this.focusNode,
+    this.searchIcon = false,
     super.key,
   });
 
+  /// Canvas: a long searchable list (474 areas) shows a primary search
+  /// icon in place of the chevron.
+  final bool searchIcon;
   final String label;
   final String sheetTitle;
 
@@ -142,8 +146,11 @@ class PickerField<T> extends StatelessWidget {
                   )
                 else
                   Icon(
-                    Icons.keyboard_arrow_down,
-                    color: disabled ? c.glyph : c.ink,
+                    searchIcon ? Icons.search : Icons.keyboard_arrow_down,
+                    size: searchIcon ? 18 : 20,
+                    color: disabled
+                        ? c.glyph
+                        : (searchIcon ? c.primary : c.body),
                   ),
               ],
             ),
@@ -174,6 +181,8 @@ Future<T?> showPickerSheet<T>({
   String searchPlaceholder = 'Type to search',
 }) => showModalBottomSheet<T>(
   context: context,
+  // Over the tab bar, under one scrim, as on the canvas.
+  useRootNavigator: true,
   isScrollControlled: true,
   useSafeArea: true,
   showDragHandle: false,
@@ -254,11 +263,13 @@ class _PickerSheetState<T> extends State<PickerSheet<T>> {
               ),
             ),
             Padding(
+              // Canvas: 6 20 12; the Close button's own padding sits
+              // inside the 20 px gutter.
               padding: const EdgeInsets.fromLTRB(
                 Space.s20,
+                Space.s6,
                 Space.s8,
-                Space.s8,
-                Space.s8,
+                Space.s4,
               ),
               child: Row(
                 children: [
@@ -270,6 +281,7 @@ class _PickerSheetState<T> extends State<PickerSheet<T>> {
                           header: true,
                           child: Text(widget.title, style: t.h4),
                         ),
+                        const SizedBox(height: Space.s2),
                         Semantics(
                           liveRegion: true,
                           child: Text(count, style: t.tiny),
@@ -286,7 +298,7 @@ class _PickerSheetState<T> extends State<PickerSheet<T>> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Space.s16),
+              padding: const EdgeInsets.symmetric(horizontal: Space.s20),
               child: TextField(
                 controller: _query,
                 autofocus: true,
@@ -295,12 +307,16 @@ class _PickerSheetState<T> extends State<PickerSheet<T>> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: widget.searchPlaceholder,
-                  prefixIcon: Icon(Icons.search, color: c.muted),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 14, right: 10),
+                    child: Icon(Icons.search, size: 20, color: c.body),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(),
                   suffixIcon: hasQuery || _query.text.isNotEmpty
                       ? AppIconButton(
-                          icon: Icons.cancel,
+                          icon: Icons.close,
                           label: 'Clear search',
-                          size: 20,
+                          size: 18,
                           color: c.muted,
                           onPressed: () => setState(_query.clear),
                         )
@@ -309,7 +325,7 @@ class _PickerSheetState<T> extends State<PickerSheet<T>> {
                 ).applyDefaults(Theme.of(context).inputDecorationTheme),
               ),
             ),
-            const SizedBox(height: Space.s8),
+            const SizedBox(height: Space.s12),
             Expanded(
               child: shown.isEmpty
                   ? Padding(

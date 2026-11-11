@@ -110,153 +110,194 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         : width >= 840
         ? 3
         : 2;
+    final c = context.colors;
     final t = context.text;
 
-    Widget chip(String label, {required bool selected, VoidCallback? onTap}) =>
-        Padding(
-          padding: const EdgeInsets.only(right: Space.s8),
-          child: Pressable(
-            onTap: onTap,
-            selected: selected,
-            semanticLabel: label,
-            excludeChildSemantics: true,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Space.s16,
-                vertical: Space.s10,
-              ),
-              decoration: BoxDecoration(
-                color: selected ? context.colors.ink : context.colors.white,
-                borderRadius: BorderRadius.circular(Radii.pill),
-                border: Border.all(
-                  color: selected ? context.colors.ink : context.colors.line2,
-                ),
-              ),
-              child: Text(
-                label,
-                style: t.small.copyWith(
-                  color: selected ? context.colors.white : context.colors.ink,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+    // Canvas `.segc`: one grey pill track; the chosen segment is white.
+    Widget segment(
+      String label, {
+      required bool selected,
+      required VoidCallback onTap,
+    }) => Pressable(
+      onTap: onTap,
+      selected: selected,
+      semanticLabel: label,
+      excludeChildSemantics: true,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: Space.s16),
+        decoration: BoxDecoration(
+          color: selected ? c.white : null,
+          borderRadius: BorderRadius.circular(Radii.pill),
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: c.ink.withValues(alpha: 0.12),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: t.base.copyWith(
+            color: selected ? c.ink : c.body,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+
+    final segments = [
+      segment(
+        'All',
+        selected: filter.category == null,
+        onTap: () => _setFilter(
+          ProductFilter(query: filter.query, withinLimit: filter.withinLimit),
+        ),
+      ),
+      for (final cat in categories)
+        segment(
+          cat.title,
+          selected: filter.category == cat.id,
+          onTap: () => _setFilter(
+            ProductFilter(
+              category: cat.id,
+              query: filter.query,
+              withinLimit: filter.withinLimit,
             ),
           ),
-        );
+        ),
+    ];
 
-    final header = Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Space.gutter,
-        Space.s8,
-        Space.s8,
-        Space.s8,
+    // Not on the canvas: a toggle beside the categories, styled as a
+    // canvas `.chip`.
+    final fitsChip = Pressable(
+      onTap: () => _setFilter(
+        ProductFilter(
+          category: filter.category,
+          query: filter.query,
+          withinLimit: !filter.withinLimit,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Eyebrow('Shop with AtomPay', atomPay: true),
-                    Semantics(
-                      header: true,
-                      child: Text('Eligible products', style: t.h2),
-                    ),
-                  ],
-                ),
-              ),
-              AppIconButton(
-                icon: _searching ? Icons.close : Icons.search,
-                label: _searching ? 'Close search' : 'Search products',
-                onPressed: () {
-                  setState(() => _searching = !_searching);
-                  if (!_searching && _search.text.isNotEmpty) {
-                    _search.clear();
-                    _onSearch('');
-                  }
-                },
-              ),
+      selected: filter.withinLimit,
+      semanticLabel: 'Fits my limit',
+      excludeChildSemantics: true,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: Space.s14),
+        decoration: BoxDecoration(
+          color: filter.withinLimit ? c.primarySoft : c.white,
+          borderRadius: BorderRadius.circular(Radii.pill),
+          border: Border.all(
+            color: filter.withinLimit ? c.primaryLine : c.line2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (filter.withinLimit) ...[
+              Icon(Icons.check, size: 16, color: c.primaryDark),
+              const SizedBox(width: Space.s6),
             ],
-          ),
-          Gap.s4,
-          Text('Look for the badge on the listing.', style: t.base),
-          Text(
-            'AtomPay is offered on selected listed products only, never on '
-            'custom orders or offers.',
-            style: t.small,
-          ),
-          if (_searching) ...[
-            Gap.s12,
-            Padding(
-              padding: const EdgeInsets.only(right: Space.s8),
-              child: AppTextField(
-                label: 'Search',
-                controller: _search,
-                placeholder: 'Brand or product',
-                textInputAction: TextInputAction.search,
-                onChanged: _onSearch,
+            Text(
+              'Fits my limit',
+              style: t.small.copyWith(
+                color: filter.withinLimit ? c.primaryDark : c.ink,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
+        ),
+      ),
+    );
+
+    final filters = SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(Space.s4),
+            decoration: BoxDecoration(
+              color: c.greySoft,
+              borderRadius: BorderRadius.circular(Radii.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < segments.length; i++) ...[
+                  if (i > 0) const SizedBox(width: Space.s4),
+                  segments[i],
+                ],
+              ],
+            ),
+          ),
+          if (hasLimit) ...[const SizedBox(width: Space.s8), fitsChip],
         ],
       ),
     );
 
-    final chips = SizedBox(
-      height: Sizes.target,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
-        children: [
-          chip(
-            'All',
-            selected: filter.category == null,
-            onTap: () => _setFilter(
-              ProductFilter(
-                query: filter.query,
-                withinLimit: filter.withinLimit,
-              ),
-            ),
-          ),
-          for (final cat in categories)
-            chip(
-              cat.title,
-              selected: filter.category == cat.id,
-              onTap: () => _setFilter(
-                ProductFilter(
-                  category: cat.id,
-                  query: filter.query,
-                  withinLimit: filter.withinLimit,
-                ),
-              ),
-            ),
-          if (hasLimit)
-            chip(
-              'Fits my limit',
-              selected: filter.withinLimit,
-              onTap: () => _setFilter(
-                ProductFilter(
-                  category: filter.category,
-                  query: filter.query,
-                  withinLimit: !filter.withinLimit,
-                ),
-              ),
-            ),
-        ],
+    final intro = [
+      const Eyebrow('Eligible products'),
+      Gap.s6,
+      Semantics(
+        header: true,
+        child: Text('Look for the badge on the listing.', style: t.h2),
       ),
+      Gap.s6,
+      Text(
+        'AtomPay is offered on selected listed products only — never on '
+        'custom orders or offers.',
+        style: t.small,
+      ),
+      if (_searching) ...[
+        Gap.s14,
+        AppTextField(
+          label: 'Search',
+          controller: _search,
+          placeholder: 'Brand or product',
+          textInputAction: TextInputAction.search,
+          onChanged: _onSearch,
+        ),
+      ],
+      Gap.s14,
+      filters,
+    ];
+
+    const gridPadding = EdgeInsets.fromLTRB(
+      Space.gutter,
+      Space.s14,
+      Space.gutter,
+      Space.s32,
     );
+
+    Widget row(int start, int count, Widget Function(int) build) =>
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var j = 0; j < columns; j++) ...[
+                if (j > 0) const SizedBox(width: Space.s12),
+                Expanded(
+                  child: start + j < count
+                      ? build(start + j)
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ],
+          ),
+        );
 
     Widget content(ProductPage page) {
       if (page.items.isEmpty) {
         return SliverFillRemaining(
           hasScrollBody: false,
           child: StateView(
-            icon: Icons.inventory_2_outlined,
+            icon: Icons.shopping_bag_outlined,
             title: 'Nothing here right now',
             body: filter.withinLimit
-                ? 'No eligible products fit your limit at the moment. New '
+                ? 'No eligible phones fit your limit at the moment. New '
                       'products are added every week.'
                 : 'No eligible products match. New products are added every '
                       'week.',
@@ -281,31 +322,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       }
       final more = ref.read(productListProvider(filter).notifier).hasMore;
       return SliverPadding(
-        padding: const EdgeInsets.fromLTRB(
-          Space.gutter,
-          Space.s8,
-          Space.gutter,
-          Space.s32,
-        ),
+        padding: gridPadding,
         sliver: SliverList.list(
           children: [
             for (var i = 0; i < page.items.length; i += columns) ...[
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (var j = 0; j < columns; j++) ...[
-                      if (j > 0) const SizedBox(width: Space.s12),
-                      Expanded(
-                        child: i + j < page.items.length
-                            ? _card(page.items[i + j])
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Gap.s12,
+              if (i > 0) Gap.s12,
+              row(i, page.items.length, (k) => _card(page.items[k])),
             ],
             if (more)
               const Padding(
@@ -319,8 +341,27 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
     return TabRootBack(
       child: Scaffold(
-        backgroundColor: context.colors.surface,
+        backgroundColor: c.surface,
+        appBar: AppTopBar(
+          title: 'Shop with AtomPay',
+          leading: null,
+          actions: [
+            AppIconButton(
+              icon: _searching ? Icons.close : Icons.search,
+              size: 22,
+              label: _searching ? 'Close search' : 'Search products',
+              onPressed: () {
+                setState(() => _searching = !_searching);
+                if (!_searching && _search.text.isNotEmpty) {
+                  _search.clear();
+                  _onSearch('');
+                }
+              },
+            ),
+          ],
+        ),
         body: SafeArea(
+          top: false,
           bottom: false,
           child: ScrollToTopOnReselect(
             controller: _scroll,
@@ -330,8 +371,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 controller: _scroll,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  SliverToBoxAdapter(child: header),
-                  SliverToBoxAdapter(child: chips),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(
+                      Space.gutter,
+                      Space.gutter,
+                      Space.gutter,
+                      0,
+                    ),
+                    sliver: SliverList.list(children: intro),
+                  ),
                   switch (list) {
                     AsyncValue(hasValue: true, :final value?) => content(value),
                     AsyncError(:final error) => SliverFillRemaining(
@@ -342,8 +390,25 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                             ref.invalidate(productListProvider(filter)),
                       ),
                     ),
-                    _ => SliverToBoxAdapter(
-                      child: _ShopSkeleton(columns: columns),
+                    _ => SliverPadding(
+                      padding: gridPadding,
+                      sliver: SliverToBoxAdapter(
+                        child: LoadingShape(
+                          label: 'Loading products',
+                          child: Column(
+                            children: [
+                              for (var r = 0; r < 2; r++) ...[
+                                if (r > 0) Gap.s12,
+                                row(
+                                  r * columns,
+                                  columns * 2,
+                                  (_) => const ProductCardSkeleton(),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   },
                 ],
@@ -365,35 +430,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   );
 }
 
-class _ShopSkeleton extends StatelessWidget {
-  const new({required this.columns});
-
-  final int columns;
-
-  @override
-  Widget build(BuildContext context) => LoadingShape(
-    label: 'Loading products',
-    child: Padding(
-      padding: const EdgeInsets.all(Space.gutter),
-      child: Column(
-        children: [
-          for (var r = 0; r < 2; r++) ...[
-            Row(
-              children: [
-                for (var j = 0; j < columns; j++) ...[
-                  if (j > 0) const SizedBox(width: Space.s12),
-                  const Expanded(child: SkeletonCard(height: 250)),
-                ],
-              ],
-            ),
-            Gap.s12,
-          ],
-        ],
-      ),
-    ),
-  );
-}
-
 // ---- Product plan ---------------------------------------------------------
 
 /// One product and its 3-month plan from `/plan-preview` (canvas "Your
@@ -408,7 +444,7 @@ class ProductScreen extends ConsumerWidget {
     final product = ref.watch(productProvider(productId));
     return Scaffold(
       backgroundColor: context.colors.surface,
-      appBar: const AppTopBar(title: 'Your plan', bottomBorder: true),
+      appBar: const AppTopBar(title: 'Your plan'),
       body: AsyncBody(
         value: product,
         loading: const LoadingShape(
@@ -448,106 +484,120 @@ class _ProductBody extends ConsumerWidget {
     final c = context.colors;
     final preview = ref.watch(planPreviewProvider(product.price));
     final limit = ref.watch(dashboardProvider).value?.data.limit;
+    final image = product.imageUrl == null
+        ? Icon(Icons.image_outlined, size: 56, color: c.glyph)
+        : Image.network(
+            product.imageUrl!,
+            fit: BoxFit.contain,
+            semanticLabel: product.title,
+            errorBuilder: (_, _, _) =>
+                Icon(Icons.image_outlined, size: 56, color: c.glyph),
+          );
     return FormPage(
-      footer: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AppButton.dark(
-            'Buy on Atomshop.pk',
-            large: true,
-            block: true,
-            trailingIcon: Icons.north_east,
-            semanticLabel: 'Buy on Atomshop.pk, opens outside the app',
-            onPressed: () => Links.open(product.url),
-          ),
-          Gap.s8,
-          AppButton.ghost(
-            'Ask Atom about this plan',
-            block: true,
-            onPressed: () => context.pushOnce(Routes.atom),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(Radii.productCard),
-          child: SizedBox(
-            height: 220,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                ColoredBox(
-                  color: c.white,
-                  child: product.imageUrl == null
-                      ? Icon(Icons.image_outlined, size: 56, color: c.glyph)
-                      : Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.contain,
-                          semanticLabel: product.title,
-                          errorBuilder: (_, _, _) => Icon(
-                            Icons.image_outlined,
-                            size: 56,
-                            color: c.glyph,
-                          ),
-                        ),
-                ),
-                const Positioned(
-                  left: Space.s12,
-                  top: Space.s12,
-                  child: AppBadge.rose('AtomPay eligible'),
-                ),
-              ],
-            ),
+        // Full bleed, on surface, with a hairline under it (canvas).
+        Container(
+          height: 240,
+          decoration: BoxDecoration(
+            color: c.surface,
+            border: Border(bottom: BorderSide(color: c.line)),
           ),
-        ),
-        Gap.s16,
-        if (product.brand != null)
-          Text(
-            product.brand!.toUpperCase(),
-            style: t.xs.copyWith(letterSpacing: 0.6),
-          ),
-        Semantics(header: true, child: Text(product.title, style: t.h2)),
-        Gap.s4,
-        Semantics(
-          label: 'Cash price ${rsSpoken(product.price)}',
-          excludeSemantics: true,
-          child: Text('Cash price ${rs(product.price)}', style: t.base),
-        ),
-        if (product.description != null) ...[
-          Gap.s8,
-          Text(product.description!, style: t.small),
-        ],
-        Gap.s16,
-        switch (preview) {
-          AsyncData(:final value) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              PlanBreakdown(plan: value, title: 'Your AtomPay plan'),
-              if (value.fitsLimit != null && limit != null) ...[
-                Gap.s14,
-                _FitNote(
-                  plan: value,
-                  available: limit.available,
-                  cap: limit.maxInstalment,
-                ),
-              ],
+              image,
+              const Positioned(
+                left: Space.s16,
+                top: Space.s16,
+                child: AppBadge.rose('AtomPay eligible'),
+              ),
             ],
           ),
-          AsyncError(:final error) => ErrorStateView(
-            error: error,
-            onRetry: () => ref.invalidate(planPreviewProvider(product.price)),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(Space.gutter),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (product.brand != null) ...[
+                Text(
+                  product.brand!.toUpperCase(),
+                  style: t.xs.copyWith(letterSpacing: 0.6),
+                ),
+                Gap.s4,
+              ],
+              Semantics(header: true, child: Text(product.title, style: t.h2)),
+              Gap.s4,
+              Semantics(
+                label: 'Cash price ${rsSpoken(product.price)}',
+                excludeSemantics: true,
+                child: Text.rich(
+                  TextSpan(
+                    style: t.small,
+                    children: [
+                      const TextSpan(text: 'Cash price '),
+                      TextSpan(
+                        text: rs(product.price),
+                        style: TextStyle(
+                          color: c.ink,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Gap.s14,
+              switch (preview) {
+                AsyncData(:final value) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    PlanBreakdown(plan: value, title: 'Your AtomPay plan'),
+                    if (value.fitsLimit != null && limit != null) ...[
+                      Gap.s14,
+                      _FitNote(
+                        plan: value,
+                        available: limit.available,
+                        cap: limit.maxInstalment,
+                      ),
+                    ],
+                  ],
+                ),
+                AsyncError(:final error) => ErrorStateView(
+                  error: error,
+                  onRetry: () =>
+                      ref.invalidate(planPreviewProvider(product.price)),
+                ),
+                _ => const LoadingShape(
+                  label: 'Loading the plan',
+                  child: SkeletonCard(lines: 5),
+                ),
+              },
+              Gap.s14,
+              AppButton.dark(
+                'Buy on Atomshop.pk',
+                large: true,
+                block: true,
+                trailingIcon: Icons.north_east,
+                semanticLabel: 'Buy on Atomshop.pk, opens outside the app',
+                onPressed: () => Links.open(product.url),
+              ),
+              Gap.s14,
+              AppButton.ghost(
+                'Ask Atom about this plan',
+                block: true,
+                onPressed: () => context.pushOnce(Routes.atom),
+              ),
+              Gap.s14,
+              Text(
+                'You place the order on Atomshop.pk and choose AtomPay at '
+                'checkout.',
+                style: t.tiny,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          _ => const LoadingShape(
-            label: 'Loading the plan',
-            child: SkeletonCard(lines: 5),
-          ),
-        },
-        Gap.s14,
-        Text(
-          'You place the order on Atomshop.pk and choose AtomPay at checkout.',
-          style: t.small,
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -639,19 +689,26 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
     };
     return Scaffold(
       backgroundColor: c.surface,
-      appBar: const AppTopBar(title: 'Estimate a plan', bottomBorder: true),
+      appBar: const AppTopBar(title: 'Estimate a plan'),
       body: FormPage(
         children: [
-          Text('See roughly what a monthly payment looks like.', style: t.h3),
-          Gap.s4,
+          Semantics(
+            header: true,
+            child: Text(
+              'See roughly what a monthly payment looks like.',
+              style: t.h2,
+            ),
+          ),
+          Gap.s6,
           Text(
             'One price in, three months out. No advance and no markup to '
             'choose.',
-            style: t.lead,
+            style: t.small,
           ),
-          Gap.s20,
+          Gap.s14,
           AppTextField(
             label: 'Product price',
+            large: true,
             controller: _price,
             prefixText: 'Rs. ',
             keyboardType: TextInputType.number,
@@ -664,89 +721,172 @@ class _CalculatorScreenState extends ConsumerState<CalculatorScreen> {
             onChanged: _onPrice,
           ),
           if (suggestions.isNotEmpty) ...[
-            Gap.s12,
-            Text('Try a real product', style: t.small),
-            Gap.s6,
-            Wrap(
-              spacing: Space.s8,
-              runSpacing: Space.s8,
-              children: [
-                for (final p in suggestions.take(4))
-                  Pressable(
-                    onTap: () => _usePrice(p.price),
-                    semanticLabel: '${p.title}, ${rsSpoken(p.price)}',
-                    excludeChildSemantics: true,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Space.s14,
-                        vertical: Space.s10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: c.white,
-                        borderRadius: BorderRadius.circular(Radii.pill),
-                        border: Border.all(color: c.line2),
-                      ),
-                      child: Text(
-                        '${p.title} · ${rs(p.price)}',
-                        style: t.small.copyWith(
-                          color: c.ink,
-                          fontWeight: FontWeight.w700,
+            Gap.s14,
+            // Canvas `.chips`: the label is for screen readers only.
+            Semantics(
+              container: true,
+              label: 'Try a real product',
+              child: Wrap(
+                spacing: Space.s8,
+                runSpacing: Space.s8,
+                children: [
+                  for (final p in suggestions.take(4))
+                    Pressable(
+                      onTap: () => _usePrice(p.price),
+                      semanticLabel: '${p.title}, ${rsSpoken(p.price)}',
+                      excludeChildSemantics: true,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: Space.s14,
+                          vertical: Space.s8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: c.primarySoft,
+                          borderRadius: BorderRadius.circular(Radii.pill),
+                          border: Border.all(color: c.primaryLine),
+                        ),
+                        child: Center(
+                          widthFactor: 1,
+                          heightFactor: 1,
+                          child: Text(
+                            '${p.title} · ${rs(p.price)}',
+                            style: t.small.copyWith(
+                              color: c.primaryDark,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ],
-          Gap.s20,
           switch (preview) {
             null => const SizedBox.shrink(),
-            AsyncData(:final value) => Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AppCard(
-                  color: c.primarySoft,
-                  borderColor: c.primaryLine,
-                  semanticLabel:
-                      '${rsSpoken(value.instalments.first)} per month for '
-                      '${value.months} months',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'PER MONTH × ${value.months}',
-                        style: t.tiny.copyWith(
-                          color: c.primary,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      Text(rs(value.instalments.first), style: t.h1),
-                    ],
+            AsyncData(:final value) => Padding(
+              padding: const EdgeInsets.only(top: Space.s14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _EstimateCard(plan: value),
+                  Gap.s14,
+                  FeeDisclaimer(
+                    percent: value.processingFeePercent,
+                    fee: value.processingFee,
                   ),
-                ),
-                Gap.s12,
-                PlanBreakdown(plan: value),
-                Gap.s12,
-                const Note(
-                  tone: NoteTone.blue,
-                  text:
-                      'This is a close estimate to plan your budget. Your '
-                      'exact plan is confirmed at AtomShop checkout once you '
-                      'pick a real product.',
-                ),
-              ],
+                ],
+              ),
             ),
             AsyncError(error: Validation()) => const SizedBox.shrink(),
             AsyncError(:final error) => ErrorStateView(
               error: error,
               onRetry: () => ref.invalidate(planPreviewProvider(price!)),
             ),
-            _ => const LoadingShape(
-              label: 'Working out the plan',
-              child: SkeletonCard(lines: 5),
+            _ => const Padding(
+              padding: EdgeInsets.only(top: Space.s14),
+              child: LoadingShape(
+                label: 'Working out the plan',
+                child: SkeletonCard(lines: 5),
+              ),
             ),
           },
+          Gap.s14,
+          const Note(
+            tone: NoteTone.blue,
+            text:
+                'This is a close estimate to plan your budget — your exact '
+                'plan is confirmed at AtomShop checkout once you pick a real '
+                'product.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The estimate: the monthly amount large, then each month and the total
+/// (canvas Calculator). Every figure is the server's. Primary soft, not the
+/// gradient: that belongs to the limit card alone (brief §4).
+class _EstimateCard extends StatelessWidget {
+  const new({required this.plan});
+
+  final PlanPreview plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.text;
+    final c = context.colors;
+    final months = plan.instalments;
+    final plain = plan.advance == 0 && plan.markup == 0;
+    final rows = [
+      for (var i = 0; i < months.length; i++) ('Month ${i + 1}', months[i]),
+      (plain ? 'Total · no advance, 0% markup' : 'Total', plan.total),
+    ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(Space.s20),
+      decoration: BoxDecoration(
+        color: c.primarySoft,
+        borderRadius: BorderRadius.circular(Radii.list),
+        border: Border.all(color: c.primaryLine),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'PER MONTH × ${plan.months}',
+            style: t.tiny.copyWith(
+              color: c.primary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          Gap.s14,
+          if (months.isNotEmpty)
+            Semantics(
+              label: '${rsSpoken(months.first)} per month',
+              excludeSemantics: true,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  rs(months.first),
+                  style: t.display.copyWith(height: 1.05),
+                ),
+              ),
+            ),
+          Gap.s14,
+          for (var i = 0; i < rows.length; i++)
+            MergeSemantics(
+              child: Container(
+                padding: EdgeInsets.only(
+                  top: i == 0 ? Space.s4 : Space.s12,
+                  bottom: Space.s12,
+                ),
+                decoration: i == 0
+                    ? null
+                    : BoxDecoration(
+                        border: Border(top: BorderSide(color: c.primaryLine)),
+                      ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        rows[i].$1,
+                        style: t.body.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    const SizedBox(width: Space.s12),
+                    Semantics(
+                      label: rsSpoken(rows[i].$2),
+                      excludeSemantics: true,
+                      child: Text(rs(rows[i].$2), style: t.h4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );

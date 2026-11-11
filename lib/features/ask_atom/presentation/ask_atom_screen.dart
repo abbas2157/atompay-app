@@ -132,46 +132,67 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
   Future<bool> _explainMic() async {
     final allow = await showModalBottomSheet<bool>(
       context: context,
-      showDragHandle: true,
       isScrollControlled: true,
+      barrierColor: context.colors.scrim,
       builder: (context) {
         final t = context.text;
+        final c = context.colors;
+        // Canvas `.msheet`: padding 8 20 30, 14 between every part.
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
               Space.s20,
-              0,
+              Space.s8,
               Space.s20,
-              Space.s20,
+              Space.s28,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Canvas `.grab`: 40 × 5, line-2, 10 above and 4 below.
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 5,
+                    margin: const EdgeInsets.only(
+                      top: Space.s10,
+                      bottom: Space.s4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: c.line2,
+                      borderRadius: BorderRadius.circular(Radii.pill),
+                    ),
+                  ),
+                ),
+                Gap.s14,
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: IconTile(Icons.mic_none, size: 56),
                 ),
-                Gap.s16,
+                Gap.s14,
                 Semantics(
                   header: true,
-                  child: Text('Ask Atom with your voice', style: t.h3),
+                  child: Text(
+                    'Ask Atom with your voice',
+                    style: t.h3.copyWith(fontWeight: FontWeight.w700),
+                  ),
                 ),
-                Gap.s8,
+                Gap.s14,
                 Text(
                   'AtomPay uses the microphone only while you hold this '
                   'conversation open and tap the mic. Your phone turns '
                   'speech into text; we keep the text, never the recording.',
-                  style: t.base,
+                  style: t.small.copyWith(color: c.body),
                 ),
-                Gap.s20,
+                Gap.s14,
                 AppButton.primary(
                   'Allow microphone',
                   large: true,
                   block: true,
                   onPressed: () => Navigator.of(context).pop(true),
                 ),
-                Gap.s8,
+                Gap.s14,
                 AppButton.ghost(
                   "Not now, I'll type",
                   block: true,
@@ -340,7 +361,7 @@ class _Header extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 64),
+          constraints: const BoxConstraints(minHeight: 60),
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: Space.s8,
@@ -354,7 +375,7 @@ class _Header extends StatelessWidget {
                   color: c.white,
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
-                const SizedBox(width: Space.s4),
+                const SizedBox(width: Space.s10),
                 const AtomAvatar(size: 42),
                 const SizedBox(width: Space.s10),
                 Expanded(
@@ -375,8 +396,9 @@ class _Header extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: Space.s10),
                 AppIconButton(
-                  icon: Icons.support_agent,
+                  icon: Icons.headset_outlined,
                   label: 'Talk to a person',
                   color: c.white,
                   onPressed: () => context.go(Routes.help),
@@ -417,13 +439,17 @@ class _Start extends ConsumerWidget {
             style: t.h2,
           ),
         ),
-        Gap.s16,
+        // Canvas `.abody{gap:12px}`; `.lbl` adds 8 under itself, and "Ask"
+        // 2 above.
+        Gap.s12,
         if (noticed.isNotEmpty) ...[
           const SectionLabel('Atom noticed'),
+          Gap.s12,
           for (final card in noticed) ...[card, Gap.s12],
-          Gap.s4,
+          const SizedBox(height: Space.s2),
         ],
         const SectionLabel('Ask'),
+        Gap.s12,
         switch (chips) {
           AsyncData(:final value) => _Chips(value, onTap: onAsk),
           AsyncError() => Text('Type a question below.', style: t.small),
@@ -448,7 +474,7 @@ class _Start extends ConsumerWidget {
   List<Widget> _noticed(Dashboard d) => [
     if (d.nextDue case final due?)
       _NoticeCard(
-        icon: Icons.event_outlined,
+        icon: Icons.schedule,
         tone: TileTone.amber,
         title:
             'Your ${due.label.toLowerCase()} is due '
@@ -466,7 +492,7 @@ class _Start extends ConsumerWidget {
       ),
     if (d.limit.hasLimit)
       _NoticeCard(
-        icon: Icons.account_balance_wallet_outlined,
+        icon: Icons.credit_card,
         tone: TileTone.wash,
         title: '${rs(d.limit.available)} left to spend',
         spokenTitle: '${rsSpoken(d.limit.available)} left to spend',
@@ -526,15 +552,27 @@ class _NoticeCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (body != null)
+                if (body != null) ...[
+                  const SizedBox(height: Space.s2),
                   Semantics(
                     label: spokenBody,
                     excludeSemantics: spokenBody != null,
-                    child: Text(body!, style: t.small),
+                    child: Text(
+                      body!,
+                      style: t.small.copyWith(
+                        color: c.body,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
+                ],
                 if (action != null) ...[
                   Gap.s8,
-                  AppButton.primary(action!, onPressed: onAction),
+                  AppButton.primary(
+                    action!,
+                    compact: true,
+                    onPressed: onAction,
+                  ),
                 ],
               ],
             ),
@@ -565,14 +603,18 @@ class _Chips extends StatelessWidget {
             onTap: () => onTap(chip),
             semanticLabel: 'Ask: $chip',
             excludeChildSemantics: true,
-            pressedColor: c.primarySoft,
+            pressedColor: c.primaryLine,
+            // Canvas `.chip`: royal soft fill, royal line, dark royal text.
             child: Container(
               constraints: const BoxConstraints(minHeight: Sizes.target),
-              padding: const EdgeInsets.symmetric(horizontal: Space.s16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: Space.s14,
+                vertical: Space.s8,
+              ),
               decoration: BoxDecoration(
-                color: c.white,
+                color: c.primarySoft,
                 borderRadius: BorderRadius.circular(Radii.pill),
-                border: Border.all(color: c.line2),
+                border: Border.all(color: c.primaryLine),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -581,7 +623,7 @@ class _Chips extends StatelessWidget {
                     child: Text(
                       chip,
                       style: t.small.copyWith(
-                        color: c.ink,
+                        color: c.primaryDark,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -621,7 +663,7 @@ class _Turn extends StatelessWidget {
     final t = context.text;
     final answer = turn.answer;
     return Padding(
-      padding: const EdgeInsets.only(bottom: Space.s16),
+      padding: const EdgeInsets.only(bottom: Space.s12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -704,32 +746,43 @@ class _BotBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        const AtomAvatar(size: 30),
-        const SizedBox(width: Space.s8),
-        Flexible(
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              horizontal: Space.s14,
-              vertical: Space.s12,
-            ),
+    // Canvas `.bot`: at most 94% wide; the avatar has a hairline ring.
+    return FractionallySizedBox(
+      widthFactor: 0.94,
+      alignment: AlignmentDirectional.centerStart,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          DecoratedBox(
+            position: DecorationPosition.foreground,
             decoration: BoxDecoration(
-              color: c.white,
+              shape: BoxShape.circle,
               border: Border.all(color: c.line),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(Radii.row),
-                topRight: Radius.circular(Radii.row),
-                bottomLeft: Radius.circular(Space.s4),
-                bottomRight: Radius.circular(Radii.row),
-              ),
             ),
-            child: child,
+            child: const AtomAvatar(size: 30),
           ),
-        ),
-      ],
+          const SizedBox(width: Space.s8),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Space.s14,
+                vertical: Space.s12,
+              ),
+              decoration: BoxDecoration(
+                color: c.white,
+                border: Border.all(color: c.line),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(Radii.row),
+                  topRight: Radius.circular(Radii.row),
+                  bottomLeft: Radius.circular(Space.s4),
+                  bottomRight: Radius.circular(Radii.row),
+                ),
+              ),
+              child: child,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -761,7 +814,7 @@ class _AnswerBodyState extends State<_AnswerBody> {
     final c = context.colors;
     final t = context.text;
     final a = widget.answer;
-    final style = t.base.copyWith(height: 1.55);
+    final style = t.base.copyWith(height: 1.55, fontWeight: FontWeight.w500);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -774,7 +827,7 @@ class _AnswerBodyState extends State<_AnswerBody> {
                   TextSpan(
                     text: text,
                     style: bold
-                        ? TextStyle(color: c.ink, fontWeight: FontWeight.w800)
+                        ? TextStyle(color: c.ink, fontWeight: FontWeight.w700)
                         : null,
                   ),
               ],
@@ -812,7 +865,7 @@ class _AnswerBodyState extends State<_AnswerBody> {
                             rs(rows[i].value),
                             style: t.small.copyWith(
                               color: c.ink,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
@@ -828,23 +881,18 @@ class _AnswerBodyState extends State<_AnswerBody> {
         for (final action in a.actions) ...[
           AppButton.ghost(
             action.label,
+            compact: true,
             onPressed: () => widget.onOpen(action.route),
           ),
           Gap.s10,
         ],
         Row(
           children: [
-            _SmallButton(
-              icon: widget.speaking ? Icons.stop : Icons.volume_up_outlined,
-              text: widget.speaking ? 'Stop' : 'Listen',
-              label: widget.speaking
-                  ? 'Stop reading aloud'
-                  : 'Read this answer aloud',
-              selected: widget.speaking,
-              onTap: widget.onSpeak,
-            ),
+            _SayButton(speaking: widget.speaking, onTap: widget.onSpeak),
             const Spacer(),
-            ExcludeSemantics(child: Text('Helpful?', style: t.tiny)),
+            Flexible(
+              child: ExcludeSemantics(child: Text('Helpful?', style: t.tiny)),
+            ),
             _SmallButton(
               icon: Icons.thumb_up_outlined,
               label: 'Helpful',
@@ -864,6 +912,54 @@ class _AnswerBodyState extends State<_AnswerBody> {
   }
 }
 
+/// Canvas `.say`: "Listen", a 48 dp pill in royal; "Stop" while reading.
+class _SayButton extends StatelessWidget {
+  const new({required this.speaking, required this.onTap});
+
+  final bool speaking;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Pressable(
+      onTap: onTap,
+      selected: speaking,
+      semanticLabel: speaking ? 'Stop reading aloud' : 'Read this answer aloud',
+      excludeChildSemantics: true,
+      scaleOnPress: false,
+      pressedColor: c.primarySoft,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: Sizes.target),
+        padding: const EdgeInsets.symmetric(horizontal: Space.s12),
+        decoration: BoxDecoration(
+          color: speaking ? c.primarySoft : c.white,
+          borderRadius: BorderRadius.circular(Radii.pill),
+          border: Border.all(color: speaking ? c.primaryLine : c.line),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              speaking ? Icons.stop : Icons.volume_up_outlined,
+              size: 16,
+              color: c.primary,
+            ),
+            const SizedBox(width: Space.s6),
+            Text(
+              speaking ? 'Stop' : 'Listen',
+              style: context.text.tiny.copyWith(
+                color: c.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// A 32 dp bordered control with a 48 dp hit area.
 class _SmallButton extends StatelessWidget {
   const new({
@@ -871,12 +967,10 @@ class _SmallButton extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
-    this.text,
   });
 
   final IconData icon;
   final String label;
-  final String? text;
   final bool selected;
   final VoidCallback onTap;
 
@@ -892,33 +986,14 @@ class _SmallButton extends StatelessWidget {
       scaleOnPress: false,
       child: HitArea(
         child: Container(
+          width: 32,
           height: 32,
-          constraints: const BoxConstraints(minWidth: 32),
-          padding: EdgeInsets.symmetric(
-            horizontal: text == null ? 0 : Space.s10,
-          ),
           decoration: BoxDecoration(
             color: selected ? c.primarySoft : c.white,
             borderRadius: BorderRadius.circular(Space.s10),
             border: Border.all(color: selected ? c.primaryLine : c.line),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: fg),
-              if (text != null) ...[
-                const SizedBox(width: Space.s6),
-                Text(
-                  text!,
-                  style: context.text.tiny.copyWith(
-                    color: fg,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ],
-          ),
+          child: Icon(icon, size: 16, color: fg),
         ),
       ),
     );
@@ -1088,7 +1163,7 @@ class _ListeningPanel extends StatelessWidget {
             children: [
               Text(
                 'LISTENING · 0:$time',
-                style: t.eyebrow,
+                style: t.eyebrow.copyWith(letterSpacing: 1),
                 semanticsLabel: 'Listening',
               ),
               Gap.s12,
@@ -1096,18 +1171,15 @@ class _ListeningPanel extends StatelessWidget {
               Gap.s12,
               ConstrainedBox(
                 constraints: const BoxConstraints(minHeight: Sizes.target),
-                child: Text(
-                  heard.isEmpty ? '…' : heard,
-                  style: t.h4,
-                  textAlign: TextAlign.center,
-                ),
+                child: _Heard(heard),
               ),
+              Gap.s12,
               Text(
                 'Speak in English. Stops by itself when you pause.',
                 style: t.tiny,
                 textAlign: TextAlign.center,
               ),
-              Gap.s16,
+              Gap.s12,
               Row(
                 children: [
                   Expanded(
@@ -1117,7 +1189,7 @@ class _ListeningPanel extends StatelessWidget {
                       onPressed: onCancel,
                     ),
                   ),
-                  const SizedBox(width: Space.s12),
+                  const SizedBox(width: Space.s10),
                   Expanded(
                     child: AppButton.primary(
                       'Done',
@@ -1131,6 +1203,44 @@ class _ListeningPanel extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The live transcript (canvas `.heard`): the last word, still being
+/// recognised, in muted.
+class _Heard extends StatelessWidget {
+  const new(this.heard);
+
+  final String heard;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final style = context.text.h4.copyWith(
+      fontWeight: FontWeight.w700,
+      height: 1.4,
+    );
+    if (heard.isEmpty) {
+      return Text(
+        '…',
+        style: style.copyWith(color: c.muted),
+        textAlign: TextAlign.center,
+      );
+    }
+    final cut = heard.trimRight().lastIndexOf(' ') + 1;
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: heard.substring(0, cut)),
+          TextSpan(
+            text: heard.substring(cut),
+            style: TextStyle(color: c.muted),
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }

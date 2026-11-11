@@ -5,6 +5,109 @@ import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:flutter/material.dart';
 
+/// Canvas auth `.content` (`padding-top:4px`): the gap between the page's
+/// blocks. Sign in, sign up and the reset forms use 22; the code screens 24.
+abstract final class AuthGap {
+  static const form = SizedBox(height: Space.s22);
+  static const code = SizedBox(height: Space.s24);
+
+  /// `.form{gap:14px}` between fields.
+  static const field = SizedBox(height: Space.s14);
+}
+
+/// The scrolling page of the auth screens: 16 dp gutters with the canvas's
+/// 4 px top inset, width capped on tablets, and an optional [bottom] that
+/// sits at the foot of the screen (`margin-top:auto; padding-bottom:28px`)
+/// and scrolls with the content once it no longer fits.
+class AuthPage extends StatelessWidget {
+  const new({required this.children, this.bottom, super.key});
+
+  final List<Widget> children;
+  final Widget? bottom;
+
+  @override
+  Widget build(BuildContext context) {
+    final top = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    );
+    return LayoutBuilder(
+      builder: (context, box) => SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.fromLTRB(
+          Space.gutter,
+          Space.s4,
+          Space.gutter,
+          bottom == null ? Space.gutter : 0,
+        ),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 560,
+              minHeight: bottom == null
+                  ? 0
+                  : (box.maxHeight - Space.s4).clamp(0, double.infinity),
+            ),
+            // The footer sits at the foot of the screen, or after the
+            // content once it no longer fits.
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                top,
+                if (bottom != null)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: Space.s22,
+                      bottom: Space.s28,
+                    ),
+                    child: bottom,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "New to AtomPay? Create an account": centred `.small` text with an
+/// 800-weight link of the same size.
+class AuthFooterLink extends StatelessWidget {
+  const new({
+    required this.lead,
+    required this.link,
+    required this.onPressed,
+    super.key,
+  });
+
+  final String lead;
+  final String link;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.text;
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(lead, style: t.small),
+        TextLink(
+          link,
+          onPressed: onPressed,
+          style: t.small.copyWith(
+            color: context.colors.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// "Didn't get it? Resend in 0:42", then a Resend link once the server's
 /// `resend_in` has passed.
 class ResendRow extends StatefulWidget {

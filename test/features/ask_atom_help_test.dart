@@ -385,7 +385,8 @@ void main() {
       expect(h.server.complaints, isEmpty);
 
       await tapLabel(tester, 'What is it about?, not chosen');
-      expect(find.text('Complaint topic'), findsOneWidget);
+      // The sheet's title repeats the field label.
+      expect(find.text('What is it about?'), findsNWidgets(2));
       await tapText(tester, 'A payment');
       await tapText(tester, 'Use A payment');
       await tapLabel(tester, 'Which order? (optional), not chosen');

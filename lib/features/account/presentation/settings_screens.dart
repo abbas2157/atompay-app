@@ -8,10 +8,12 @@ import 'package:atompay_mobile/core/router/navigation.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/utils/links.dart';
+import 'package:atompay_mobile/core/widgets/brand.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/dialogs.dart';
 import 'package:atompay_mobile/core/widgets/fields.dart';
 import 'package:atompay_mobile/core/widgets/form_parts.dart';
+import 'package:atompay_mobile/core/widgets/pressable.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/account/application/account_controllers.dart';
@@ -42,7 +44,6 @@ class SettingsScreen extends ConsumerWidget {
       confirm: 'Sign out',
       cancel: 'Stay signed in',
       destructive: true,
-      cancelIsDefault: true,
     );
     if (!sure) return;
     await ref.read(sessionProvider.notifier).signOut();
@@ -84,26 +85,26 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Notifications',
                 summary: notifSummary,
                 icon: Icons.notifications_none,
-                tileTone: TileTone.amber,
                 onTap: () => context.pushOnce(Routes.notificationSettings),
               ),
             ],
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s20),
           ListGroup(
             title: 'Security',
             children: [
               ListRow(
                 title: 'Account security',
                 summary: 'Password, sign-out everywhere',
-                icon: Icons.shield_outlined,
+                icon: Icons.verified_user_outlined,
                 tileTone: TileTone.green,
                 onTap: () => context.pushOnce(Routes.security),
               ),
               ListRow(
                 title: 'Change password',
                 summary: 'Also changes it on Atomshop.pk',
-                icon: Icons.key_outlined,
+                icon: Icons.lock_outline,
+                tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.password),
               ),
               ListRow(
@@ -113,42 +114,43 @@ class SettingsScreen extends ConsumerWidget {
                     : '${sessions.length} '
                           '${sessions.length == 1 ? 'device' : 'devices'} '
                           'signed in',
-                icon: Icons.devices_outlined,
+                icon: Icons.smartphone,
                 tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.devices),
               ),
             ],
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s20),
           ListGroup(
             title: 'Privacy',
             children: [
               ListRow(
                 title: 'Permissions',
                 summary: 'Camera · notifications · microphone',
-                icon: Icons.lock_outline,
+                icon: Icons.tune,
                 tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.permissions),
               ),
               ListRow(
                 title: 'Privacy policy',
                 summary: 'How we use and keep your data',
-                icon: Icons.privacy_tip_outlined,
+                icon: Icons.shield_outlined,
                 tileTone: TileTone.grey,
                 external: true,
                 onTap: () => unawaited(Links.open(config.privacyUrl)),
               ),
+              // Brief §6: hidden while app-config.terms_url is null.
               if (config.termsUrl case final terms?)
                 ListRow(
                   title: 'Terms and conditions',
-                  icon: Icons.gavel_outlined,
+                  icon: Icons.description_outlined,
                   tileTone: TileTone.grey,
                   external: true,
                   onTap: () => unawaited(Links.open(terms)),
                 ),
             ],
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s20),
           ListGroup(
             title: 'Your data',
             children: [
@@ -163,31 +165,82 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           Gap.s8,
-          Wrap(
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text('Need a copy of your data? Ask through ', style: t.small),
-              TextLink('Help', onPressed: () => context.pushOnce(Routes.help)),
-              Text(". There's no self-service export yet.", style: t.small),
-            ],
+          _ExportNote(onHelp: () => context.pushOnce(Routes.help)),
+          const SizedBox(height: Space.s20),
+          AppButton.ghostDanger(
+            'Sign out',
+            block: true,
+            icon: Icons.logout,
+            onPressed: () => unawaited(_signOut(context, ref)),
           ),
-          Gap.s16,
-          ListGroup(
-            children: [
-              ListRow(
-                title: 'Sign out',
-                icon: Icons.logout,
-                tileTone: TileTone.rose,
-                titleColor: c.rose,
-                showChevron: false,
-                onTap: () => unawaited(_signOut(context, ref)),
+          const SizedBox(height: Space.s20),
+          Semantics(
+            container: true,
+            label: 'AtomPay, ${versionLabel(info)}',
+            child: ExcludeSemantics(
+              child: Column(
+                children: [
+                  const AtomPayMark(size: 36),
+                  Gap.s4,
+                  Text(
+                    'AtomPay · ${versionLabel(info)}',
+                    style: t.tiny,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-          Gap.s24,
-          Center(child: Text('AtomPay · ${versionLabel(info)}', style: t.tiny)),
-          Gap.s16,
+          Gap.s8,
         ],
+      ),
+    );
+  }
+}
+
+/// "Need a copy of your data? Ask through Help." One paragraph (canvas
+/// `.tiny u-mt8 u-lh`) with "Help" styled as the link. The whole paragraph
+/// is the target, so it keeps a 48 dp hit area.
+class _ExportNote extends StatelessWidget {
+  const new({required this.onHelp});
+
+  final VoidCallback onHelp;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.text;
+    return Pressable(
+      onTap: onHelp,
+      isButton: false,
+      scaleOnPress: false,
+      borderRadius: BorderRadius.circular(Radii.tile),
+      minSize: const Size(0, Sizes.target),
+      semanticLabel:
+          "Need a copy of your data? Ask through Help. There's no "
+          'self-service export yet.',
+      excludeChildSemantics: true,
+      child: Semantics(
+        link: true,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text.rich(
+            TextSpan(
+              style: t.tiny.copyWith(height: 1.5),
+              children: [
+                const TextSpan(text: 'Need a copy of your data? Ask through '),
+                TextSpan(
+                  text: 'Help',
+                  style: TextStyle(
+                    color: context.colors.primary,
+                    fontWeight: FontWeight.w700,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+                const TextSpan(text: ". There's no self-service export yet."),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -216,7 +269,6 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
       confirm: 'Sign out everywhere',
       cancel: 'Cancel',
       destructive: true,
-      cancelIsDefault: true,
     );
     if (!sure || !mounted) return;
     setState(() => _busy = true);
@@ -250,25 +302,28 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
       appBar: const AppTopBar(title: 'Account security'),
       body: FormPage(
         children: [
-          Text(
-            'One account for AtomPay and Atomshop.pk. Changes here apply to '
-            'both.',
-            style: t.lead,
+          const Note(
+            tone: NoteTone.green,
+            icon: Icons.verified_user_outlined,
+            text:
+                'One account for AtomPay and Atomshop.pk. Changes here apply '
+                'to both.',
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s20),
           ListGroup(
             title: 'Sign-in',
             children: [
               ListRow(
                 title: 'Password',
                 summary: 'Change it, or reset with a code',
-                icon: Icons.key_outlined,
+                icon: Icons.lock_outline,
+                tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.password),
               ),
               ListRow(
                 title: 'Email and mobile',
                 summary: contact.isEmpty ? null : contact,
-                icon: Icons.alternate_email,
+                icon: Icons.mail_outline,
                 tileTone: TileTone.grey,
               ),
             ],
@@ -277,9 +332,9 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
           Text(
             'Email and mobile are changed on Atomshop.pk, where the account '
             'lives.',
-            style: t.small,
+            style: t.tiny.copyWith(height: 1.5),
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s20),
           ListGroup(
             title: 'Sessions',
             children: [
@@ -291,7 +346,7 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
                   1 => 'This phone and 1 other',
                   final n => 'This phone and $n others',
                 },
-                icon: Icons.devices_outlined,
+                icon: Icons.smartphone,
                 tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.devices),
               ),
@@ -315,9 +370,13 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
               ),
             ],
           ),
-          Gap.s24,
+          const SizedBox(height: Space.s20),
           const SectionLabel('On this phone'),
           const AppCard(
+            padding: EdgeInsets.symmetric(
+              horizontal: Space.s18,
+              vertical: Space.s16,
+            ),
             child: TickList([
               TextSpan(
                 text:
@@ -329,7 +388,7 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
                     "CNIC and selfie screens can't be screenshotted or shown "
                     'in the app switcher.',
               ),
-            ], icon: Icons.lock_outline),
+            ]),
           ),
         ],
       ),
@@ -376,7 +435,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
   Widget _badge(PermissionView? v) => switch (v) {
     null => const AppBadge.grey('…'),
     PermissionView.allowed => AppBadge.green(v.label),
-    PermissionView.off => AppBadge.rose(v.label),
+    PermissionView.off => AppBadge.grey(v.label),
     PermissionView.notAsked => AppBadge.grey(v.label),
   };
 
@@ -396,6 +455,7 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
       summary: summary,
       icon: icon,
       badge: _badge(v),
+      alignTop: true,
       semanticLabel: '$title, ${v?.label ?? 'checking'}. $summary',
     );
 
@@ -408,9 +468,9 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
             'AtomPay asks for three things, only when you use the feature '
             'that needs them. You can change any of them at any time in your '
             "phone's settings.",
-            style: t.lead,
+            style: t.small,
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s20),
           ListGroup(
             title: 'What AtomPay can use',
             children: [
@@ -436,8 +496,8 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
               ),
             ],
           ),
-          Gap.s16,
-          AppButton.ghost(
+          Gap.s14,
+          AppButton.primary(
             'Open phone settings',
             block: true,
             trailingIcon: Icons.north_east,
@@ -448,33 +508,43 @@ class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
           Text(
             'Turned something off? The app keeps working; it asks again only '
             'when you use that feature.',
-            style: t.small,
+            style: t.tiny.copyWith(height: 1.5),
           ),
-          Gap.s24,
+          const SizedBox(height: Space.s20),
           const SectionLabel('Never asked for'),
           Wrap(
             spacing: Space.s8,
             runSpacing: Space.s8,
             children: [
               for (final label in _neverAsked)
+                // A label, not a control (canvas `.never span`).
                 Container(
+                  // 13 px text at 1.3 plus 10 + 10: the canvas's 36 high.
                   padding: const EdgeInsets.symmetric(
                     horizontal: Space.s12,
-                    vertical: Space.s6,
+                    vertical: Space.s10,
                   ),
                   decoration: BoxDecoration(
-                    color: c.greySoft,
+                    color: c.surface,
+                    border: Border.all(color: c.line),
                     borderRadius: BorderRadius.circular(Radii.pill),
                   ),
-                  child: Text(label, style: t.small.copyWith(color: c.body)),
+                  child: Text(
+                    label,
+                    style: t.small.copyWith(
+                      color: c.body,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
                 ),
             ],
           ),
-          Gap.s12,
+          Gap.s8,
           Text(
             'Lending apps in Pakistan may not read these, even with your '
             'consent (Google Play and SECP rules).',
-            style: t.small,
+            style: t.tiny.copyWith(height: 1.5),
           ),
         ],
       ),
@@ -515,7 +585,6 @@ class NotificationSettingsScreen extends ConsumerWidget {
                 ListRow(
                   title: 'Email alerts',
                   summary: 'To the email on your account',
-                  icon: Icons.mail_outline,
                   trailing: switch (email) {
                     AsyncData(:final value) => Semantics(
                       label: 'Email alerts',
@@ -542,8 +611,12 @@ class NotificationSettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
-          Gap.s12,
-          Text('The inbox in the app always shows everything.', style: t.small),
+          Gap.s8,
+          Text(
+            'The inbox in the app always shows everything. Accounts with only '
+            'a mobile number get no email, so that switch is hidden for them.',
+            style: t.tiny.copyWith(height: 1.5),
+          ),
         ],
       ),
     );
@@ -622,22 +695,25 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       dirty: _dirty,
       busy: status.busy,
       child: Scaffold(
-        backgroundColor: context.colors.surface,
-        appBar: const AppTopBar(title: 'Change password'),
+        backgroundColor: context.colors.white,
+        appBar: const AppTopBar(
+          title: 'Change password',
+          white: true,
+          bottomBorder: false,
+        ),
         body: AutofillGroup(
           child: FormPage(
-            footer: SubmitSection(
-              label: 'Change password',
-              status: status,
-              offline: ref.watch(isOfflineProvider),
-              fieldsOnScreen: _focus.keys.toSet(),
-              onSubmit: () => unawaited(_submit()),
+            padding: const EdgeInsets.fromLTRB(
+              Space.gutter,
+              Space.s4,
+              Space.gutter,
+              Space.gutter,
             ),
             children: [
               Text(
-                'This is your AtomShop password too: it changes on '
+                'This is your AtomShop password too — it changes on '
                 'Atomshop.pk as well. Your other devices are signed out.',
-                style: context.text.lead,
+                style: context.text.small,
               ),
               Gap.s20,
               PasswordField(
@@ -654,10 +730,14 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   child: TextLink(
                     'Forgotten it? Reset with a code',
                     external: true,
+                    style: context.text.tiny.copyWith(
+                      color: context.colors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                     onPressed: () => unawaited(Links.open(resetUrl)),
                   ),
                 ),
-              Gap.s12,
+              Gap.s14,
               PasswordField(
                 label: 'New password',
                 controller: _password,
@@ -668,7 +748,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 textInputAction: TextInputAction.next,
                 onChanged: (_) => form.clearField('password'),
               ),
-              Gap.s16,
+              Gap.s14,
               PasswordField(
                 label: 'Confirm new password',
                 controller: _confirm,
@@ -678,6 +758,15 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 textInputAction: TextInputAction.done,
                 onChanged: (_) => form.clearField('password_confirmation'),
                 onSubmitted: (_) => unawaited(_submit()),
+              ),
+              Gap.s20,
+              // Inline under the form, as on the canvas (not a pinned bar).
+              SubmitSection(
+                label: 'Change password',
+                status: status,
+                offline: ref.watch(isOfflineProvider),
+                fieldsOnScreen: _focus.keys.toSet(),
+                onSubmit: () => unawaited(_submit()),
               ),
             ],
           ),
@@ -746,7 +835,7 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                 Text(
                   "Where your AtomPay account is signed in. Don't recognise "
                   'one? Sign it out and change your password.',
-                  style: t.lead,
+                  style: t.small,
                 ),
                 Gap.s16,
                 ListGroup(
@@ -760,14 +849,15 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                             ? null
                             : 'Last used ${dayMonth(s.lastUsedAt!)}',
                         icon: Icons.smartphone,
-                        tileTone: s.current ? TileTone.green : TileTone.grey,
+                        tileTone: TileTone.grey,
                         badge: s.current
                             ? const AppBadge.green('This device')
                             : null,
                         trailing: s.current
                             ? null
-                            : AppButton.ghost(
+                            : AppButton.ghostDanger(
                                 'Sign out',
+                                compact: true,
                                 busy: _ending.contains(s.id),
                                 semanticLabel: 'Sign out ${s.deviceName}',
                                 onPressed: _ending.isEmpty
@@ -777,9 +867,9 @@ class _DevicesScreenState extends ConsumerState<DevicesScreen> {
                       ),
                   ],
                 ),
-                if (others.length > 1) ...[
+                if (others.isNotEmpty) ...[
                   Gap.s16,
-                  AppButton.ghost(
+                  AppButton.ghostDanger(
                     'Sign out of all other devices',
                     block: true,
                     onPressed: _ending.isEmpty
@@ -861,86 +951,66 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
         appBar: const AppTopBar(title: 'Delete your account'),
         body: FormPage(
           children: [
-            Semantics(
-              header: true,
-              child: Text('Delete your account', style: t.h1),
-            ),
-            Gap.s8,
-            Text.rich(
-              TextSpan(
-                style: t.lead,
-                children: [
-                  const TextSpan(text: 'This closes your '),
-                  TextSpan(
-                    text: 'Atomshop.pk account too',
-                    style: TextStyle(color: c.ink, fontWeight: FontWeight.w800),
-                  ),
-                  const TextSpan(
-                    text:
-                        ". AtomPay and Atomshop share one account. It can't be "
-                        'undone.',
-                  ),
-                ],
-              ),
-            ),
-            Gap.s16,
             const Note(
-              tone: NoteTone.amber,
+              tone: NoteTone.rose,
               spans: [
+                TextSpan(text: 'This closes your '),
                 TextSpan(
-                  text: 'Before you can delete\n',
+                  text: 'Atomshop.pk account too',
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
                 TextSpan(
                   text:
-                      'Every instalment plan must be fully repaid, and no '
-                      'order can be waiting for approval.',
+                      ". AtomPay and Atomshop share one account. It can't be "
+                      'undone.',
                 ),
               ],
             ),
-            Gap.s16,
-            AppCard(
+            Gap.s14,
+            _DeleteCard(
+              title: 'Before you can delete',
+              child: Text(
+                'Every instalment plan must be fully repaid, and no order can '
+                'be waiting for approval.',
+                style: t.small.copyWith(color: c.body),
+              ),
+            ),
+            Gap.s14,
+            _DeleteCard(
+              title: 'Deleted straight away',
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Deleted straight away', style: t.h4),
-                  Gap.s12,
-                  TickList(
-                    const [
-                      TextSpan(
-                        text:
-                            'Your sign-ins on every phone and browser, and '
-                            'push tokens.',
-                      ),
-                      TextSpan(
-                        text:
-                            'Your CNIC number, date of birth, address, CNIC '
-                            'photos and selfie.',
-                      ),
-                      TextSpan(text: 'Your inbox, preferences and any codes.'),
-                      TextSpan(
-                        text:
-                            'Your name, email, mobile and password on the '
-                            'Atomshop account.',
-                      ),
-                    ],
-                    icon: Icons.close,
-                    color: c.rose,
-                  ),
-                  Gap.s8,
-                  Text('What we keep, and why', style: t.h4),
-                  Gap.s8,
-                  Text(
-                    'The law requires us to keep financial records. Past '
-                    'orders, schedules and payments stay, linked only to an '
-                    'anonymous closed account. Nothing left in them names '
-                    'you.',
-                    style: t.base,
-                  ),
+                  for (final (i, line) in _deletedNow.indexed) ...[
+                    if (i > 0) Gap.s6,
+                    // Canvas `.lst`: a disc list, 18 in.
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: Space.s18,
+                          child: ExcludeSemantics(
+                            child: Text('•', style: t.base),
+                          ),
+                        ),
+                        Expanded(child: Text(line, style: t.base)),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
-            Gap.s20,
+            Gap.s14,
+            _DeleteCard(
+              title: 'What we keep, and why',
+              child: Text(
+                'The law requires us to keep financial records. Past orders, '
+                'schedules and payments stay, linked only to an anonymous '
+                'closed account. Nothing left in them names you.',
+                style: t.small.copyWith(color: c.body),
+              ),
+            ),
+            Gap.s14,
             PasswordField(
               label: 'Enter your password to confirm',
               controller: _password,
@@ -950,7 +1020,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                   .read(deleteAccountFormProvider.notifier)
                   .clearField('password'),
             ),
-            Gap.s12,
+            Gap.s14,
             ConsentRow(
               value: _understood,
               onChanged: (v) => setState(() => _understood = v),
@@ -959,7 +1029,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 'account.',
               ),
             ),
-            Gap.s16,
+            Gap.s14,
             if (status.generalMessage({'password'}) case final m?) ...[
               Semantics(
                 liveRegion: true,
@@ -990,17 +1060,77 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                 ),
               ),
             ],
-            if (webUrl != null) ...[
-              Gap.s12,
-              Center(
-                child: TextLink(
-                  "Can't sign in? Delete on the web",
-                  external: true,
-                  onPressed: () => unawaited(Links.open(webUrl)),
-                ),
-              ),
-            ],
+            if (webUrl != null) ...[Gap.s6, _WebDeleteLink(url: webUrl)],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A Delete-account card: canvas `.card u-pad` with an `.h3` title.
+class _DeleteCard extends StatelessWidget {
+  const new({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+    padding: const EdgeInsets.all(Space.s18),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(header: true, child: Text(title, style: context.text.h4)),
+        Gap.s10,
+        child,
+      ],
+    ),
+  );
+}
+
+/// "Can't sign in? Delete on the web at atompay.shop/delete-account." The
+/// canvas's centred `.tiny` line, kept tappable with a 48 dp target.
+class _WebDeleteLink extends StatelessWidget {
+  const new({required this.url});
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.text;
+    final uri = Uri.tryParse(url);
+    final shown = uri == null || uri.host.isEmpty
+        ? url
+        : '${uri.host}${uri.path}';
+    return Pressable(
+      onTap: () => unawaited(Links.open(url)),
+      isButton: false,
+      scaleOnPress: false,
+      borderRadius: BorderRadius.circular(Radii.tile),
+      minSize: const Size(0, Sizes.target),
+      semanticLabel: "Can't sign in? Delete on the web, opens outside the app",
+      excludeChildSemantics: true,
+      child: Semantics(
+        link: true,
+        child: Center(
+          child: Text.rich(
+            TextSpan(
+              style: t.tiny.copyWith(height: 1.5),
+              children: [
+                const TextSpan(text: "Can't sign in? Delete on the web at "),
+                TextSpan(
+                  text: shown,
+                  style: TextStyle(
+                    color: context.colors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const TextSpan(text: '.'),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
     );
@@ -1023,68 +1153,152 @@ class _DeleteBlocked extends ConsumerWidget {
         if (p.state != 'completed' && p.state != 'cancelled') p,
     ];
     return Scaffold(
-      backgroundColor: c.surface,
-      appBar: const AppTopBar(title: "Can't delete yet"),
-      body: FormPage(
-        footer: AppButton.primary(
-          'Back to account',
-          large: true,
-          block: true,
-          onPressed: () => context.go(Routes.account),
-        ),
+      backgroundColor: c.white,
+      appBar: const AppTopBar(white: true, bottomBorder: false),
+      body: Column(
         children: [
-          Semantics(
-            header: true,
-            liveRegion: true,
-            child: Text("You can delete once it's repaid", style: t.h1),
-          ),
-          Gap.s8,
-          Text(
-            'Your account is still open. Nothing has been deleted.',
-            style: t.lead,
-          ),
-          Gap.s16,
-          for (final p in owing) ...[
-            AppCard(
-              padding: const EdgeInsets.all(Space.s16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          p.product?.title ?? p.order.reference,
-                          style: t.body.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          p.progress.totalCount == 0
-                              ? p.order.reference
-                              : '${p.order.reference} · '
-                                    '${_left(p)} payments left',
-                          style: t.small,
-                        ),
-                      ],
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, box) => SingleChildScrollView(
+                padding: const EdgeInsets.all(Space.gutter),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: box.maxHeight > Space.gutter * 2
+                        ? box.maxHeight - Space.gutter * 2
+                        : 0,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: c.amberSoft,
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              child: Icon(
+                                Icons.schedule,
+                                size: 32,
+                                color: c.amberInk,
+                              ),
+                            ),
+                          ),
+                          Gap.s20,
+                          Semantics(
+                            header: true,
+                            liveRegion: true,
+                            child: Text(
+                              "You can delete once it's repaid",
+                              style: t.h2,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Gap.s8,
+                          Text(
+                            'Your account is still open. Nothing has been '
+                            'deleted.',
+                            style: t.lead,
+                            textAlign: TextAlign.center,
+                          ),
+                          for (final p in owing) ...[
+                            Gap.s20,
+                            AppCard(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: Space.s18,
+                                vertical: Space.s16,
+                              ),
+                              onTap: () =>
+                                  context.pushOnce(Routes.plan(p.order.id)),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          p.product?.title ?? p.order.reference,
+                                          style: t.body.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Text(
+                                          p.progress.totalCount == 0
+                                              ? p.order.reference
+                                              : '${p.order.reference} · '
+                                                    '${_left(p)} payments left',
+                                          style: t.small,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (p.progress.remainingAmount > 0) ...[
+                                    const SizedBox(width: Space.s12),
+                                    Text(
+                                      rs(p.progress.remainingAmount),
+                                      style: t.h4,
+                                      semanticsLabel: rsSpoken(
+                                        p.progress.remainingAmount,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                          Gap.s20,
+                          Text(
+                            'When the last payment is recorded, come back here '
+                            'and it will go through.',
+                            style: t.small,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  if (p.progress.remainingAmount > 0)
-                    Text(
-                      rs(p.progress.remainingAmount),
-                      style: t.h4,
-                      semanticsLabel: rsSpoken(p.progress.remainingAmount),
-                    ),
-                ],
+                ),
               ),
             ),
-            Gap.s12,
-          ],
-          Text(
-            'When the last payment is recorded, come back here and it will go '
-            'through.',
-            style: t.small,
+          ),
+          // Canvas `.actionbar`.
+          Container(
+            decoration: BoxDecoration(
+              color: c.white,
+              border: Border(top: BorderSide(color: c.line)),
+            ),
+            padding: const EdgeInsets.fromLTRB(
+              Space.s16,
+              Space.s12,
+              Space.s16,
+              Space.s16,
+            ),
+            child: SafeArea(
+              top: false,
+              child: AppButton.ghost(
+                'Back to account',
+                large: true,
+                block: true,
+                onPressed: () => context.go(Routes.account),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+/// Canvas "DeleteAccount": what goes straight away.
+const _deletedNow = [
+  'Your sign-ins on every phone and browser, and push tokens.',
+  'Your CNIC number, date of birth, address, CNIC photos and selfie.',
+  'Your inbox, preferences and any codes.',
+  'Your name, email, mobile and password on the Atomshop account.',
+];

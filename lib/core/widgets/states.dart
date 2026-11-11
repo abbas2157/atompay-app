@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:atompay_mobile/core/format/dates.dart';
 import 'package:atompay_mobile/core/network/api_exception.dart';
+import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
+import 'package:go_router/go_router.dart';
 
 /// One shimmering block. Shimmer stops under reduced motion.
 class Skeleton extends StatefulWidget {
@@ -160,10 +162,14 @@ class StateView extends StatelessWidget {
     this.actions = const [],
     this.reference,
     this.child,
+    this.titleStyle,
     super.key,
   });
 
   final String title;
+
+  /// Defaults to h4 (17); full-screen outcomes use h2.
+  final TextStyle? titleStyle;
   final String? body;
   final IconData? icon;
   final StateTone iconTone;
@@ -193,8 +199,10 @@ class StateView extends StatelessWidget {
           horizontal: Space.s28,
           vertical: Space.s40,
         ),
+        // Canvas `.state`: 12 between items, body at most 290 wide, the
+        // buttons at most 300 and 20 below the text.
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 320),
+          constraints: const BoxConstraints(maxWidth: 300),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -210,30 +218,41 @@ class StateView extends StatelessWidget {
                   ),
                   child: Icon(icon, size: 32, color: fg),
                 ),
-              const SizedBox(height: Space.s16),
+              const SizedBox(height: Space.s12),
               Semantics(
                 header: true,
                 liveRegion: true,
-                child: Text(title, style: t.h4, textAlign: TextAlign.center),
+                child: Text(
+                  title,
+                  style: titleStyle ?? t.h4,
+                  textAlign: TextAlign.center,
+                ),
               ),
               if (body != null) ...[
-                const SizedBox(height: Space.s8),
-                Text(body!, style: t.small, textAlign: TextAlign.center),
-              ],
-              if (reference != null) ...[
-                const SizedBox(height: Space.s8),
-                Text(
-                  'Reference $reference',
-                  style: t.tiny.copyWith(fontWeight: FontWeight.w700),
+                const SizedBox(height: Space.s12),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 290),
+                  child: Text(
+                    body!,
+                    style: t.small,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
               ?child,
               if (actions.isNotEmpty) ...[
-                const SizedBox(height: Space.s16),
+                const SizedBox(height: Space.s20),
                 for (var i = 0; i < actions.length; i++) ...[
                   if (i > 0) const SizedBox(height: Space.s10),
                   SizedBox(width: double.infinity, child: actions[i]),
                 ],
+              ],
+              if (reference != null) ...[
+                const SizedBox(height: Space.s12),
+                Text(
+                  'Ref $reference',
+                  style: t.tiny.copyWith(fontWeight: FontWeight.w700),
+                ),
               ],
             ],
           ),
@@ -246,7 +265,8 @@ class StateView extends StatelessWidget {
 enum StateTone { grey, green, amber, rose, blue }
 
 /// The error screen for each [ApiException] type (brief §8). [notFound]
-/// lets a screen say what is missing ("We can't find this order").
+/// lets a screen say what is missing ("We can't find this order");
+/// [offlineBody] says what will load once back online.
 class ErrorStateView extends StatelessWidget {
   const new({
     required this.error,
@@ -254,6 +274,8 @@ class ErrorStateView extends StatelessWidget {
     this.notFound = "We can't find this",
     this.notFoundBody,
     this.notFoundAction,
+    this.offlineBody,
+    this.serverBody,
     super.key,
   });
 
@@ -262,38 +284,49 @@ class ErrorStateView extends StatelessWidget {
   final String notFound;
   final String? notFoundBody;
   final Widget? notFoundAction;
+  final String? offlineBody;
+  final String? serverBody;
 
   @override
   Widget build(BuildContext context) {
-    final mark = ClipRRect(
-      borderRadius: BorderRadius.circular(Radii.tile),
-      child: Image.asset(
-        'assets/images/atompay_mark.png',
-        width: 48,
-        height: 48,
-        excludeFromSemantics: true,
-      ),
+    // Canvas `.state .acts .btn-p`: retry is the primary action.
+    final retry = AppButton.primary(
+      'Try again',
+      block: true,
+      onPressed: onRetry,
     );
-    final retry = AppButton.ghost('Try again', onPressed: onRetry);
+    final support = AppButton.ghost(
+      'Contact support',
+      block: true,
+      onPressed: () => context.push(Routes.help),
+    );
     return switch (error) {
       Offline() => StateView(
-        image: mark,
+        icon: Icons.wifi_off_rounded,
         title: "You're offline",
-        body: 'Check your connection and try again.',
+        body:
+            offlineBody ??
+            "Connect to Wi-Fi or mobile data and we'll load this for you.",
         actions: [retry],
       ),
       Timeout() => StateView(
-        image: mark,
+        icon: Icons.schedule,
+        iconTone: StateTone.amber,
         title: 'This is taking too long',
-        body: 'The connection is slow. Try again in a moment.',
+        body:
+            "Atomshop.pk didn't answer in time. Check your connection and "
+            'try again.',
         actions: [retry],
       ),
       final Server s => StateView(
-        image: mark,
+        icon: Icons.error_outline,
+        iconTone: StateTone.rose,
         title: 'Something went wrong on our side',
-        body: "It isn't you. Please try again in a few minutes.",
+        body:
+            serverBody ??
+            'Your orders and payments are safe. Please try again in a moment.',
         reference: s.reference,
-        actions: [retry],
+        actions: [retry, support],
       ),
       NotFound() => StateView(
         icon: Icons.search_off,
@@ -318,13 +351,14 @@ class ErrorStateView extends StatelessWidget {
         body: 'For your security, please sign in again.',
       ),
       final ApiException e => StateView(
-        image: mark,
+        icon: Icons.error_outline,
+        iconTone: StateTone.rose,
         title: "We couldn't load this",
         body: e.message.isEmpty ? null : e.message,
         actions: [retry],
       ),
       _ => StateView(
-        image: mark,
+        icon: Icons.wifi_off_rounded,
         title: "We couldn't load this",
         body: 'Check your connection and try again.',
         actions: [retry],
@@ -409,10 +443,14 @@ class AsyncBody<T> extends ConsumerWidget {
     required this.loading,
     required this.onRetry,
     this.notFound = "We can't find this",
+    this.notFoundBody,
     this.notFoundAction,
+    this.offlineBody,
     super.key,
   });
 
+  final String? notFoundBody;
+  final String? offlineBody;
   final AsyncValue<T> value;
   final Widget Function(T data) data;
   final Widget loading;
@@ -428,7 +466,9 @@ class AsyncBody<T> extends ConsumerWidget {
         error: value.error!,
         onRetry: onRetry,
         notFound: notFound,
+        notFoundBody: notFoundBody,
         notFoundAction: notFoundAction,
+        offlineBody: offlineBody,
       );
     }
     return loading;

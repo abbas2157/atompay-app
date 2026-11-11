@@ -322,7 +322,7 @@ class _Framed extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: Space.s12),
     child: AppCard(
       padding: EdgeInsets.zero,
-      child: SizedBox(height: 360, child: child),
+      child: SizedBox(height: 460, child: child),
     ),
   );
 }

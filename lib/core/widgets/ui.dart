@@ -12,8 +12,8 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.leading = TopBarLeading.back,
     this.onLeading,
     this.actions = const [],
-    this.white = false,
-    this.bottomBorder = false,
+    this.white,
+    this.bottomBorder,
     super.key,
   });
 
@@ -23,8 +23,13 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Defaults to `Navigator.maybePop`, so dirty-form and busy guards run.
   final VoidCallback? onLeading;
   final List<Widget> actions;
-  final bool white;
-  final bool bottomBorder;
+
+  /// Null follows canvas `.topw`: a titled bar is white with a hairline
+  /// under it; a bare bar (back only) has neither.
+  final bool? white;
+  final bool? bottomBorder;
+  bool get _isWhite => white ?? title != null;
+  bool get _hasBorder => bottomBorder ?? title != null;
 
   @override
   Size get preferredSize => const Size.fromHeight(Sizes.appBar);
@@ -43,12 +48,12 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _bar(BuildContext context, AppColors c, TopBarLeading? lead) {
     return Material(
-      color: white ? c.white : c.surface,
+      color: _isWhite ? c.white : c.surface,
       child: SafeArea(
         bottom: false,
         child: Container(
           height: Sizes.appBar,
-          decoration: bottomBorder
+          decoration: _hasBorder
               ? BoxDecoration(
                   border: Border(bottom: BorderSide(color: c.line)),
                 )
@@ -59,15 +64,16 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               if (lead != null)
                 AppIconButton(
                   icon: lead == TopBarLeading.back
-                      ? Icons.arrow_back
+                      ? Icons.chevron_left
                       : Icons.close,
+                  size: lead == TopBarLeading.back ? 28 : 22,
                   label: lead == TopBarLeading.back ? 'Back' : 'Close',
                   onPressed:
                       onLeading ?? () => Navigator.of(context).maybePop(),
                 )
               else
                 const SizedBox(width: Space.s8),
-              const SizedBox(width: Space.s6),
+              if (lead != null) const SizedBox(width: Space.s6),
               Expanded(
                 child: title == null
                     ? const SizedBox()
@@ -81,6 +87,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                         ),
                       ),
               ),
+              if (actions.isNotEmpty) const SizedBox(width: Space.s6),
               ...actions,
             ],
           ),
@@ -375,7 +382,7 @@ class IconTile extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(size * 0.3),
       ),
-      child: Icon(icon, size: size * 0.5, color: fg),
+      child: Icon(icon, size: size * 0.45, color: fg),
     );
   }
 }
@@ -396,10 +403,14 @@ class ListRow extends StatelessWidget {
     this.showChevron = true,
     this.titleColor,
     this.semanticLabel,
+    this.alignTop = false,
     super.key,
   });
 
   final String title;
+
+  /// Canvas `.li.u-top`: tile and badge pinned to the top of a long row.
+  final bool alignTop;
   final IconData? icon;
   final TileTone tileTone;
 
@@ -438,6 +449,9 @@ class ListRow extends StatelessWidget {
         vertical: Space.s12,
       ),
       child: Row(
+        crossAxisAlignment: alignTop
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         children: [
           if (leading != null)
             leading!
@@ -453,15 +467,17 @@ class ListRow extends StatelessWidget {
                   style: t.body.copyWith(
                     fontWeight: FontWeight.w700,
                     color: titleColor,
+                    height: 1.25,
                   ),
                 ),
                 if (summary != null) ...[
-                  const SizedBox(height: Space.s2),
+                  const SizedBox(height: 1),
                   Text(
                     summary!,
-                    style: t.small.copyWith(fontWeight: FontWeight.w500),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    style: t.small.copyWith(
+                      fontWeight: FontWeight.w500,
+                      height: 1.3,
+                    ),
                   ),
                 ],
                 if (stacked && side.isNotEmpty) ...[
@@ -484,7 +500,7 @@ class ListRow extends StatelessWidget {
             const SizedBox(width: Space.s8),
             Icon(
               external ? Icons.north_east : Icons.chevron_right,
-              size: external ? 18 : 22,
+              size: external ? 16 : 20,
               color: c.glyph,
             ),
           ],
@@ -558,7 +574,7 @@ class SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: Space.s4, bottom: Space.s8),
+    padding: const EdgeInsets.only(bottom: Space.s8),
     child: Semantics(
       header: true,
       child: Text(
@@ -593,7 +609,7 @@ class SectionHeader extends StatelessWidget {
         TextLink(
           action!,
           onPressed: onAction,
-          style: context.text.small.copyWith(
+          style: context.text.base.copyWith(
             color: context.colors.primary,
             fontWeight: FontWeight.w700,
           ),
@@ -643,10 +659,7 @@ class KeyValueList extends StatelessWidget {
         for (var i = 0; i < rows.length; i++)
           MergeSemantics(
             child: Container(
-              padding: EdgeInsets.only(
-                top: i == 0 ? 0 : Space.s10,
-                bottom: Space.s10,
-              ),
+              padding: EdgeInsets.only(top: i == 0 ? 0 : 11, bottom: 11),
               decoration: BoxDecoration(
                 border: i == 0 ? null : Border(top: BorderSide(color: c.line)),
               ),
@@ -654,9 +667,13 @@ class KeyValueList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  // Long labels wrap instead of pushing the value off
-                  // screen (and at 200% text).
-                  Flexible(
+                  // Canvas `.kv`: the label keeps its width and the value
+                  // takes the rest, right-aligned. A label never takes
+                  // more than 60% (long ones wrap, also at 200% text).
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.sizeOf(context).width * 0.6,
+                    ),
                     child: Text(
                       rows[i].label.toUpperCase(),
                       style: t.tiny.copyWith(
@@ -768,6 +785,7 @@ class Track extends StatelessWidget {
                                 '${steps[i].title}, ${_spoken(steps[i].state)}',
                             style: t.base.copyWith(
                               fontWeight: FontWeight.w700,
+                              height: 1.25,
                               color: switch (steps[i].state) {
                                 TrackState.done => c.ink,
                                 TrackState.now => c.primary,
@@ -780,8 +798,11 @@ class Track extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: Space.s2),
                               child: Text(
-                                steps[i].hint!,
+                                steps[i].state == TrackState.done
+                                    ? '✓ ${steps[i].hint!}'
+                                    : steps[i].hint!,
                                 style: t.tiny.copyWith(
+                                  height: 1.3,
                                   color: steps[i].state == TrackState.done
                                       ? c.green
                                       : c.muted,
@@ -890,7 +911,7 @@ class LimitCard extends StatelessWidget {
                   .merge(ink)
                   .copyWith(fontWeight: FontWeight.w800, letterSpacing: 1.2),
             ),
-            const SizedBox(height: Space.s6),
+            SizedBox(height: compact ? Space.s6 : Space.s14),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -913,26 +934,30 @@ class LimitCard extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: Space.s12),
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                spacing: Space.s14,
-                runSpacing: Space.s6,
-                children: [
-                  Text(
-                    'Limit ${rs(approved)}',
-                    style: t.small
-                        .merge(ink)
-                        .copyWith(fontWeight: FontWeight.w700),
-                  ),
-                  Text(
-                    showCap
-                        ? 'Up to ${rs(monthlyCap!)} a month'
-                        : 'In use ${rs(used)}',
-                    style: t.small
-                        .merge(ink)
-                        .copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ],
+              // Full width, so the second item sits at the right edge.
+              SizedBox(
+                width: double.infinity,
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  spacing: Space.s14,
+                  runSpacing: Space.s6,
+                  children: [
+                    Text(
+                      'Limit ${rs(approved)}',
+                      style: t.small
+                          .merge(ink)
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      showCap
+                          ? 'Up to ${rs(monthlyCap!)} a month'
+                          : 'In use ${rs(used)}',
+                      style: t.small
+                          .merge(ink)
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
               ),
             ],
           ],
@@ -1068,37 +1093,83 @@ TextSpan placeholderSpan(BuildContext context, String text) => TextSpan(
 
 /// A bulleted list with an icon per item.
 class TickList extends StatelessWidget {
-  const new(this.items, {this.icon = Icons.check, this.color, super.key});
+  const new(
+    this.items, {
+    this.icon = Icons.check,
+    this.icons,
+    this.color,
+    super.key,
+  });
 
   final List<InlineSpan> items;
   final IconData icon;
+
+  /// One icon per item (canvas lists with a camera, a bell, …), in place
+  /// of [icon].
+  final List<IconData>? icons;
   final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    // Canvas `.ticks`: 12 between items, nothing after the last.
     return Column(
       children: [
-        for (final item in items)
+        for (var i = 0; i < items.length; i++)
           Padding(
-            padding: const EdgeInsets.only(bottom: Space.s12),
+            padding: EdgeInsets.only(
+              bottom: i < items.length - 1 ? Space.s12 : 0,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: Space.s2),
-                  child: Icon(icon, size: 18, color: color ?? c.green),
+                  child: Icon(
+                    icons?[i] ?? icon,
+                    size: 20,
+                    color: color ?? c.green,
+                  ),
                 ),
                 const SizedBox(width: Space.s12),
                 Expanded(
                   child: Text.rich(
-                    TextSpan(style: context.text.base, children: [item]),
+                    TextSpan(style: context.text.base, children: [items[i]]),
                   ),
                 ),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+/// A money figure in a narrow tile ("Rs. 47,000"): kept on one line by
+/// shrinking a little on 360 dp phones. At large text sizes it wraps
+/// instead, so it never gets smaller than the user asked for.
+class FigureText extends StatelessWidget {
+  const new(
+    this.text, {
+    required this.style,
+    this.alignment = Alignment.centerLeft,
+    this.textAlign = TextAlign.start,
+    super.key,
+  });
+
+  final String text;
+  final TextStyle style;
+  final AlignmentGeometry alignment;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = Text(text, style: style, textAlign: textAlign);
+    if (MediaQuery.textScalerOf(context).scale(10) > 13) return label;
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: alignment,
+      child: Text(text, style: style, maxLines: 1, softWrap: false),
     );
   }
 }

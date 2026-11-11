@@ -55,16 +55,136 @@ class WelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = context.text;
+    // Canvas `.terms`: three separate white tiles.
     Widget term(String big, String small) => Expanded(
       child: Semantics(
         label: '$big $small',
         excludeSemantics: true,
-        child: Column(
-          children: [
-            Text(big, style: t.h2),
-            Text(small, style: t.small),
-          ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: Space.s14,
+            horizontal: Space.s10,
+          ),
+          decoration: BoxDecoration(
+            color: c.white,
+            borderRadius: BorderRadius.circular(Radii.row),
+            border: Border.all(color: c.line),
+          ),
+          child: Column(
+            children: [
+              Text(
+                big,
+                style: t.h3.copyWith(letterSpacing: -0.5),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: Space.s2),
+              Text(small, style: t.tiny, textAlign: TextAlign.center),
+            ],
+          ),
         ),
+      ),
+    );
+    const gap = SizedBox(height: Space.s18);
+    final top = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Space.s28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Dev and staging: long-press for the gallery. A developer
+          // shortcut, hidden from screen readers.
+          GestureDetector(
+            excludeFromSemantics: true,
+            onLongPress: Env.isProd ? null : () => context.push(Routes.gallery),
+            child: Container(
+              decoration: BoxDecoration(
+                color: c.white,
+                borderRadius: BorderRadius.circular(26),
+                boxShadow: [
+                  BoxShadow(
+                    color: c.ink.withValues(alpha: 0.08),
+                    blurRadius: 40,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
+              ),
+              child: const AtomPayMark(size: 96),
+            ),
+          ),
+          gap,
+          Semantics(
+            label: 'AtomPay, pay in steps',
+            excludeSemantics: true,
+            child: Column(
+              children: [
+                Text(
+                  'ATOMPAY',
+                  style: t.h1.copyWith(letterSpacing: -0.8, height: 1),
+                ),
+                Gap.s6,
+                Text('PAY IN STEPS', style: t.xs.copyWith(letterSpacing: 3.4)),
+              ],
+            ),
+          ),
+          gap,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 300),
+            child: Text(
+              'Buy on Atomshop.pk now and pay the cash price over three '
+              'months.',
+              style: t.lead,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+    final bottom = Padding(
+      padding: const EdgeInsets.fromLTRB(
+        Space.s20,
+        Space.s24,
+        Space.s20,
+        Space.s18,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                term('Rs. 0', 'advance'),
+                const SizedBox(width: Space.s8),
+                term('0%', 'markup'),
+                const SizedBox(width: Space.s8),
+                term('3', 'months'),
+              ],
+            ),
+          ),
+          Gap.s14,
+          AppButton.primary(
+            'Create an account',
+            large: true,
+            block: true,
+            onPressed: () => context.push(Routes.register),
+          ),
+          Gap.s14,
+          AppButton.ghost(
+            'Sign in',
+            large: true,
+            block: true,
+            onPressed: () => context.push(Routes.login),
+          ),
+          Gap.s14,
+          Padding(
+            padding: const EdgeInsets.only(bottom: Space.s14),
+            child: Text(
+              'Part of the Atom ecosystem: Atomshop · AtomPay · Atom Seller · '
+              'AtomBrand',
+              style: t.tiny,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
     return Scaffold(
@@ -72,76 +192,18 @@ class WelcomeScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, box) => SingleChildScrollView(
-            padding: const EdgeInsets.all(Space.gutter),
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: box.maxHeight - Space.gutter * 2,
-              ),
+              constraints: BoxConstraints(minHeight: box.maxHeight),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 480),
+                  // The brand sits centred in the space above the actions
+                  // (the empty first child takes the other half of it); at
+                  // large text the page simply scrolls.
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Column(
-                        children: [
-                          Gap.s32,
-                          // Dev and staging: long-press for the gallery. A
-                          // developer shortcut, hidden from screen readers.
-                          GestureDetector(
-                            excludeFromSemantics: true,
-                            onLongPress: Env.isProd
-                                ? null
-                                : () => context.push(Routes.gallery),
-                            child: const AtomPayLogo(height: 140),
-                          ),
-                          Gap.s24,
-                          Text(
-                            'Buy on Atomshop.pk now and pay the cash price '
-                            'over three months.',
-                            style: t.lead,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Gap.s24,
-                          AppCard(
-                            child: Row(
-                              children: [
-                                term('Rs. 0', 'advance'),
-                                term('0%', 'markup'),
-                                term('3', 'months'),
-                              ],
-                            ),
-                          ),
-                          Gap.s16,
-                          AppButton.primary(
-                            'Create an account',
-                            large: true,
-                            block: true,
-                            onPressed: () => context.push(Routes.register),
-                          ),
-                          Gap.s12,
-                          AppButton.ghost(
-                            'Sign in',
-                            large: true,
-                            block: true,
-                            onPressed: () => context.push(Routes.login),
-                          ),
-                          Gap.s16,
-                          Text(
-                            'Part of the Atom ecosystem: Atomshop · AtomPay · '
-                            'Atom Seller · AtomBrand',
-                            style: t.tiny,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ],
+                    children: [const SizedBox.shrink(), top, bottom],
                   ),
                 ),
               ),
@@ -171,6 +233,7 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
     final t = context.text;
     final config = ref.watch(appConfigProvider);
     final bold = TextStyle(color: c.ink, fontWeight: FontWeight.w700);
+    const gap = SizedBox(height: Space.s18);
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -190,13 +253,30 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
                 eyebrow: 'Before you start',
                 title: 'What AtomPay asks for, and why',
               ),
-              Gap.s20,
+              gap,
               AppCard(
+                color: c.apayWash,
+                borderColor: c.apayLine,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.s18,
+                  vertical: Space.s16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SectionLabel('Who provides your credit'),
-                    const TbdText('[LICENSED ENTITY NAME]'),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        'WHO PROVIDES YOUR CREDIT',
+                        style: t.tiny.copyWith(
+                          color: c.rose,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    Gap.s10,
+                    TbdText('[LICENSED ENTITY NAME]', style: t.body),
                     Gap.s4,
                     Text.rich(
                       TextSpan(
@@ -212,71 +292,85 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
                   ],
                 ),
               ),
-              Gap.s20,
+              gap,
               const SectionLabel('We ask for'),
-              TickList([
-                TextSpan(
-                  children: [
-                    TextSpan(text: 'Camera', style: bold),
-                    const TextSpan(
-                      text:
-                          ': only while you photograph your CNIC and take a '
-                          'selfie. Never in the background.',
-                    ),
-                  ],
-                ),
-                TextSpan(
-                  children: [
-                    TextSpan(text: 'Notifications', style: bold),
-                    const TextSpan(
-                      text: ': optional, for payment reminders and decisions.',
-                    ),
-                  ],
-                ),
-                TextSpan(
-                  children: [
-                    TextSpan(text: 'Microphone', style: bold),
-                    const TextSpan(
-                      text:
-                          ': optional, only if you ask Atom by voice. We '
-                          'keep the text, not the recording.',
-                    ),
-                  ],
-                ),
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Your CNIC, address and income',
-                      style: bold,
-                    ),
-                    const TextSpan(
-                      text:
-                          ': to verify you and set your limit, as the law '
-                          'requires.',
-                    ),
-                  ],
-                ),
-              ]),
-              Gap.s8,
-              const SectionLabel('We never access'),
               TickList(
-                const [
+                [
                   TextSpan(
-                    text:
-                        'Your contacts, photo gallery, files, call logs, '
-                        'messages or location, not even with your permission.',
+                    children: [
+                      TextSpan(text: 'Camera', style: bold),
+                      const TextSpan(
+                        text:
+                            ' — only while you photograph your CNIC and take '
+                            'a selfie. Never in the background.',
+                      ),
+                    ],
+                  ),
+                  TextSpan(
+                    children: [
+                      TextSpan(text: 'Notifications', style: bold),
+                      const TextSpan(
+                        text:
+                            ' — optional, for payment reminders and '
+                            'decisions.',
+                      ),
+                    ],
+                  ),
+                  TextSpan(
+                    children: [
+                      TextSpan(text: 'Microphone', style: bold),
+                      const TextSpan(
+                        text:
+                            ' — optional, only if you ask Atom by voice. We '
+                            'keep the text, not the recording.',
+                      ),
+                    ],
+                  ),
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Your CNIC, address and income',
+                        style: bold,
+                      ),
+                      const TextSpan(
+                        text:
+                            ' — to verify you and set your limit, as the law '
+                            'requires.',
+                      ),
+                    ],
                   ),
                 ],
-                icon: Icons.block,
-                color: c.rose,
+                icons: const [
+                  Icons.photo_camera_outlined,
+                  Icons.notifications_none_rounded,
+                  Icons.mic_none_rounded,
+                  Icons.shield_outlined,
+                ],
+                color: c.primary,
               ),
-              Gap.s8,
+              gap,
+              const SectionLabel('We never access'),
+              const TickList([
+                TextSpan(
+                  text:
+                      'Your contacts, photo gallery, files, call logs, '
+                      'messages or location — not even with your permission.',
+                ),
+              ]),
+              gap,
+              // The canvas links "privacy policy" and "terms" inline; they
+              // stay separate links here for their 48 dp targets.
               Note(
                 tone: NoteTone.blue,
+                icon: Icons.language,
                 spans: [
                   const TextSpan(text: 'Your data is stored in Pakistan '),
                   placeholderSpan(context, '[CONFIRM HOSTING]'),
-                  const TextSpan(text: '.'),
+                  TextSpan(
+                    text: config.termsUrl == null
+                        ? '. Read the privacy policy.'
+                        : '. Read the privacy policy and terms.',
+                  ),
                 ],
                 action: Wrap(
                   spacing: Space.s16,
@@ -295,7 +389,7 @@ class _FirstRunScreenState extends ConsumerState<FirstRunScreen> {
                   ],
                 ),
               ),
-              Gap.s16,
+              gap,
               ConsentRow(
                 value: _ok,
                 onChanged: (v) => setState(() => _ok = v),
@@ -327,7 +421,19 @@ class UpdateRequiredScreen extends ConsumerWidget {
     return PopScope(
       canPop: false,
       child: _BlockingPage(
-        icon: const AtomPayMark(size: 72),
+        icon: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(Radii.card - 2),
+            boxShadow: [
+              BoxShadow(
+                color: context.colors.ink.withValues(alpha: 0.08),
+                blurRadius: 40,
+                offset: const Offset(0, 16),
+              ),
+            ],
+          ),
+          child: const AtomPayMark(size: 80),
+        ),
         title: 'Time to update',
         body:
             'A new version of AtomPay is available. Please update to '
@@ -374,10 +480,18 @@ class _MaintenanceScreenState extends ConsumerState<MaintenanceScreen> {
     return PopScope(
       canPop: false,
       child: _BlockingPage(
-        icon: const IconTile(
-          Icons.build_outlined,
-          tone: TileTone.amber,
-          size: 72,
+        icon: Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: context.colors.amberSoft,
+            borderRadius: BorderRadius.circular(Radii.card),
+          ),
+          child: Icon(
+            Icons.build_outlined,
+            size: 36,
+            color: context.colors.amberInk,
+          ),
         ),
         title: "We'll be right back",
         body:
@@ -444,42 +558,65 @@ class _BlockingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.text;
+    const gap = SizedBox(height: Space.s18);
     return Scaffold(
       backgroundColor: context.colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(Space.gutter),
-          child: Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        icon,
-                        Gap.s20,
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            title,
-                            style: t.h2,
-                            textAlign: TextAlign.center,
-                          ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Space.s28,
+                    vertical: Space.s24,
+                  ),
+                  child: Column(
+                    children: [
+                      icon,
+                      gap,
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          title,
+                          style: t.h2,
+                          textAlign: TextAlign.center,
                         ),
-                        Gap.s8,
-                        Text(body, style: t.lead, textAlign: TextAlign.center),
-                        if (badge != null) ...[Gap.s16, badge!],
-                      ],
-                    ),
+                      ),
+                      gap,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 300),
+                        child: Text(
+                          body,
+                          style: t.lead,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      if (badge != null) ...[gap, badge!],
+                    ],
                   ),
                 ),
               ),
-              for (var i = 0; i < actions.length; i++) ...[
-                if (i > 0) Gap.s12,
-                actions[i],
-              ],
-            ],
-          ),
+            ),
+            if (actions.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  Space.s20,
+                  0,
+                  Space.s20,
+                  Space.s20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < actions.length; i++) ...[
+                      if (i > 0) Gap.s12,
+                      actions[i],
+                    ],
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );

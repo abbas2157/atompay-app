@@ -129,7 +129,12 @@ class _TabSpec {
 
 const _left = [
   _TabSpec('Home', Icons.home_outlined, Icons.home, Tabs.home),
-  _TabSpec('Shop', Icons.storefront_outlined, Icons.storefront, Tabs.shop),
+  _TabSpec(
+    'Shop',
+    Icons.shopping_bag_outlined,
+    Icons.shopping_bag_outlined,
+    Tabs.shop,
+  ),
 ];
 const _right = [
   _TabSpec(
@@ -222,8 +227,9 @@ class _TabButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(selected ? spec.activeIcon : spec.icon, color: color),
-            const SizedBox(height: Space.s2),
+            // Canvas: the selected tab keeps its outline icon, in primary.
+            Icon(spec.icon, size: 22, color: color),
+            const SizedBox(height: 3),
             Text(
               spec.label,
               style: context.text.xs.copyWith(color: color),
@@ -249,7 +255,7 @@ class _AtomButton extends StatelessWidget {
     semanticLabel: 'Ask Atom',
     excludeChildSemantics: true,
     child: Transform.translate(
-      offset: const Offset(0, -Space.s14),
+      offset: const Offset(0, -Space.s22),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -257,7 +263,7 @@ class _AtomButton extends StatelessWidget {
           const SizedBox(height: Space.s4),
           Text(
             'Ask Atom',
-            style: context.text.xs.copyWith(color: context.colors.ink),
+            style: context.text.xs.copyWith(color: context.colors.muted),
             maxLines: 1,
           ),
         ],

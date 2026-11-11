@@ -11,6 +11,7 @@ import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/auth/application/auth_forms.dart';
 import 'package:atompay_mobile/features/auth/application/session_controller.dart';
+import 'package:atompay_mobile/features/auth/presentation/code_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInput;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,7 +88,6 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final status = ref.watch(signInFormProvider);
-    final t = context.text;
     final offline = ref.watch(isOfflineProvider);
     return FormExitGuard(
       dirty: false,
@@ -100,7 +100,12 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               context.canPop() ? context.pop() : context.go(Routes.welcome),
         ),
         body: AutofillGroup(
-          child: FormPage(
+          child: AuthPage(
+            bottom: AuthFooterLink(
+              lead: 'New to AtomPay? ',
+              link: 'Create an account',
+              onPressed: () => context.go(Routes.register),
+            ),
             children: [
               const PageIntro(
                 eyebrow: 'Welcome back',
@@ -109,7 +114,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     'The same email or mobile and password you use on '
                     'Atomshop.pk.',
               ),
-              Gap.s24,
+              AuthGap.form,
               AppTextField(
                 label: 'Email or mobile number',
                 controller: _login,
@@ -127,7 +132,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     ref.read(signInFormProvider.notifier).clearField('login'),
                 onSubmitted: (_) => _passwordFocus.requestFocus(),
               ),
-              Gap.s14,
+              AuthGap.field,
               PasswordField(
                 label: 'Password',
                 controller: _password,
@@ -139,14 +144,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                     .clearField('password'),
                 onSubmitted: (_) => _submit(),
               ),
+              AuthGap.field,
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.centerRight,
                 child: TextLink(
                   'Forgot password?',
                   onPressed: () => context.pushOnce(Routes.forgot),
                 ),
               ),
-              Gap.s12,
+              AuthGap.form,
               SubmitSection(
                 label: 'Sign in',
                 status: status,
@@ -155,22 +161,18 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 onSubmit: _submit,
                 onRetryReady: () => setState(() {}),
               ),
-              Gap.s16,
+              AuthGap.form,
               const Note(
                 tone: NoteTone.wash,
-                text:
-                    'AtomPay is offered on eligible products: always 3 '
-                    'months, no advance, 0% markup. A 3% processing fee is '
-                    'shown with every plan, and delivery charges apply.',
-              ),
-              Gap.s16,
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text('New to AtomPay? ', style: t.small),
-                  TextLink(
-                    'Create an account',
-                    onPressed: () => context.go(Routes.register),
+                icon: Icons.shield_outlined,
+                spans: [
+                  TextSpan(
+                    text:
+                        'AtomPay is offered on eligible products: always 3 '
+                        'months, no advance, 0% markup. A 3% processing fee '
+                        'is shown with every plan, and delivery charges '
+                        'apply.',
+                    style: TextStyle(fontWeight: FontWeight.w500),
                   ),
                 ],
               ),

@@ -88,20 +88,20 @@ abstract final class HelpContent {
     HelpTopic(
       key: 'getting-started',
       title: 'Getting started',
-      icon: Icons.rocket_launch_outlined,
+      icon: Icons.arrow_forward,
       tone: TileTone.blue,
     ),
     HelpTopic(
       key: 'limit',
       title: 'Your limit',
-      icon: Icons.account_balance_wallet_outlined,
+      icon: Icons.credit_card,
       tone: TileTone.wash,
       questions: [_monthly],
     ),
     HelpTopic(
       key: 'applying',
       title: 'Applying & KYC',
-      icon: Icons.badge_outlined,
+      icon: Icons.shield_outlined,
       tone: TileTone.green,
     ),
     HelpTopic(
@@ -114,7 +114,7 @@ abstract final class HelpContent {
     HelpTopic(
       key: 'payments',
       title: 'Payments',
-      icon: Icons.event_outlined,
+      icon: Icons.schedule,
       tone: TileTone.amber,
       questions: [_cost],
     ),

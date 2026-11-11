@@ -77,7 +77,14 @@ class _AtomPayAppState extends ConsumerState<AtomPayApp> {
         final mq = MediaQuery.of(context);
         return MediaQuery(
           data: mq.copyWith(textScaler: mq.textScaler.clamp(maxScaleFactor: 2)),
-          child: child!,
+          // Dark status-bar icons on the light screens; the dark ones (splash,
+          // Ask Atom, camera, document viewer, Help) set light on their own.
+          child: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+            ),
+            child: child!,
+          ),
         );
       },
     );

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
@@ -43,61 +44,174 @@ class _NotifPermissionScreenState extends ConsumerState<NotifPermissionScreen> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = context.text;
-    return Scaffold(
-      backgroundColor: c.white,
-      appBar: AppTopBar(
-        title: 'Turn on notifications',
-        leading: TopBarLeading.close,
-        onLeading: () => unawaited(_notNow()),
-        white: true,
-        actions: [
-          TextLink('Not now', onPressed: () => unawaited(_notNow())),
-          const SizedBox(width: Space.s8),
+    final ink = TextStyle(color: c.ink, fontWeight: FontWeight.w700);
+    final reasons = <(IconData, Color, List<InlineSpan>)>[
+      (
+        Icons.schedule,
+        c.amberInk,
+        [TextSpan(text: 'Before a payment is due', style: ink)],
+      ),
+      (
+        Icons.star_border,
+        c.rose,
+        [TextSpan(text: 'When your limit is decided', style: ink)],
+      ),
+      (
+        Icons.local_shipping_outlined,
+        c.primary,
+        [
+          TextSpan(text: 'When your order moves', style: ink),
+          const TextSpan(text: ' — approved, delivered, paid'),
         ],
       ),
-      body: FormPage(
-        footer: AppButton.primary(
-          'Turn on notifications',
-          large: true,
-          block: true,
-          busy: _busy,
-          onPressed: () => unawaited(_allow()),
-        ),
-        children: [
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: IconTile(
-              Icons.notifications_active_outlined,
-              tone: TileTone.amber,
-              size: 64,
+    ];
+    return Scaffold(
+      backgroundColor: c.white,
+      // Canvas: no title and no close, only "Not now" at the right.
+      appBar: AppTopBar(
+        leading: null,
+        white: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: Space.s14),
+            child: TextLink(
+              'Not now',
+              onPressed: () => unawaited(_notNow()),
+              style: t.button.copyWith(color: c.body),
             ),
           ),
-          Gap.s20,
-          const PageIntro(
-            title: 'Never miss a payment date',
-            lead: 'We will only tell you what matters to your plan.',
-          ),
-          Gap.s20,
-          AppCard(
-            child: TickList([
-              const TextSpan(text: 'Before a payment is due'),
-              const TextSpan(text: 'When your limit is decided'),
-              TextSpan(
-                children: [
-                  const TextSpan(text: 'When your order moves '),
-                  TextSpan(
-                    text: '· approved, delivered, paid',
-                    style: TextStyle(color: c.muted),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, box) => SingleChildScrollView(
+                padding: const EdgeInsets.all(Space.gutter),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: math.max(0, box.maxHeight - Space.gutter * 2),
                   ),
-                ],
+                  // Canvas `.content{justify-content:center;gap:22px}`.
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 560),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: Container(
+                              width: 76,
+                              height: 76,
+                              decoration: BoxDecoration(
+                                color: c.primarySoft,
+                                borderRadius: BorderRadius.circular(Radii.card),
+                              ),
+                              child: Icon(
+                                Icons.notifications_none,
+                                size: 36,
+                                color: c.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: Space.s22),
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              'Never miss a payment date',
+                              style: t.h2,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Gap.s8,
+                          Text(
+                            'We will only tell you what matters to your plan.',
+                            style: t.lead,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: Space.s22),
+                          AppCard(
+                            padding: const EdgeInsets.all(Space.s18),
+                            child: Column(
+                              children: [
+                                for (var i = 0; i < reasons.length; i++)
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: i < reasons.length - 1
+                                          ? Space.s12
+                                          : 0,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: Space.s2,
+                                          ),
+                                          child: Icon(
+                                            reasons[i].$1,
+                                            size: 20,
+                                            color: reasons[i].$2,
+                                          ),
+                                        ),
+                                        const SizedBox(width: Space.s12),
+                                        Expanded(
+                                          child: Text.rich(
+                                            TextSpan(
+                                              style: t.base,
+                                              children: reasons[i].$3,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: Space.s22),
+                          Text(
+                            'Your inbox in the app shows everything either '
+                            'way. Change this any time in Account.',
+                            style: t.tiny.copyWith(height: 1.5),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ], icon: Icons.notifications_none),
+            ),
           ),
-          Gap.s16,
-          Text(
-            'Your inbox in the app shows everything either way. Change this '
-            'any time in Account.',
-            style: t.small,
+          Container(
+            decoration: BoxDecoration(
+              color: c.white,
+              border: Border(top: BorderSide(color: c.line)),
+            ),
+            padding: const EdgeInsets.fromLTRB(
+              Space.s16,
+              Space.s12,
+              Space.s16,
+              Space.s16,
+            ),
+            child: SafeArea(
+              top: false,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: AppButton.primary(
+                    'Turn on notifications',
+                    large: true,
+                    block: true,
+                    busy: _busy,
+                    onPressed: () => unawaited(_allow()),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

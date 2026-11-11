@@ -1,20 +1,22 @@
 @Tags(['golden'])
 library;
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:atompay_mobile/core/fake/fake_server.dart';
 import 'package:atompay_mobile/core/router/app_router.dart';
 import 'package:atompay_mobile/core/utils/app_clock.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/features/account/data/device_permissions.dart';
+import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/camera_service.dart';
 import 'package:atompay_mobile/features/ask_atom/data/voice_service.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
 import 'package:atompay_mobile/features/launch/presentation/onboarding_screen.dart';
-import 'package:atompay_mobile/features/notifications/application/inbox_controller.dart';
 import 'package:atompay_mobile/features/notifications/presentation/notif_permission_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/misc.dart' show ProviderOrFamily;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/harness.dart';
@@ -157,19 +159,6 @@ Future<void> _tapText(WidgetTester t, String text) => _tap(t, find.text(text));
 Future<void> _openField(WidgetTester t, String label) =>
     _tap(t, find.bySemanticsLabel(RegExp('^${RegExp.escape(label)},')));
 
-Future<void> _pick(WidgetTester t, String field, String option) async {
-  await _openField(t, field);
-  final sheet = find.byType(BottomSheet);
-  await t.enterText(
-    find.descendant(of: sheet, matching: find.byType(TextField)),
-    option,
-  );
-  await settle(t);
-  // The search box shows the same text; the row comes after it.
-  await _tap(t, find.descendant(of: sheet, matching: find.text(option)));
-  await _tapText(t, 'Use $option');
-}
-
 Future<void> _type(WidgetTester t, List<String> values) async {
   final fields = find.byType(TextField);
   for (var i = 0; i < values.length; i++) {
@@ -178,21 +167,49 @@ Future<void> _type(WidgetTester t, List<String> values) async {
   await settle(t);
 }
 
-void _fail(Harness h, String path, ProviderOrFamily provider) {
-  h.server.failNext[path] = 500;
-  h.container.invalidate(provider);
-}
-
-void _hang(Harness h, String path, ProviderOrFamily provider) {
-  h.server.hang.add(path);
-  h.container.invalidate(provider);
+/// Income answers as on the canvas (the identity part comes from
+/// [FakeServer.seedDraftProfile]).
+Future<void> _fillIncome(WidgetTester t, Harness h) async {
+  h.container
+      .read(applyFlowProvider.notifier)
+      .update(
+        (d) => d.copyWith(
+          employment: 'salaried',
+          employer: 'Cubic Reach (Pvt) Ltd',
+          source: 'salary',
+          income: 200000,
+          existing: 0,
+          expenses: 60000,
+        ),
+      );
+  // The text fields read the draft when the step opens: open it again.
+  final router = h.container.read(routerProvider);
+  final here = router.state.uri.toString();
+  router.go('/application?step=1');
+  await settle(t);
+  router.go(here);
+  await settle(t);
 }
 
 final boards = <Board>[
   // Launch
-  Board('Splash', before: (s) => s.hang.add('/app-config')),
-  Board('UpdateRequired', before: (s) => s.minVersion = '9.0.0'),
-  Board('Maintenance', before: (s) => s.maintenance = true),
+  // The canvas "Splash" board is the signed-out Welcome screen.
+  const Board('Splash', route: '/welcome', signedIn: false),
+  Board('LaunchSplash', before: (s) => s.hang.add('/app-config')),
+  Board(
+    'UpdateRequired',
+    before: (s) => s
+      ..minVersion = '9.0.0'
+      ..storeUrl =
+          'https://play.google.com/store/apps/details?id=com.ecommerce.atompay',
+  ),
+  Board(
+    'Maintenance',
+    before: (s) => s
+      ..maintenance = true
+      ..maintenanceUntil = DateTime(2026, 11, 9, 16, 30).toIso8601String()
+      ..support = {'phone': null, 'whatsapp': '+923001234567', 'email': null},
+  ),
   // Intro slides: not on the canvas (added on request), kept here so a
   // change shows up in review.
   for (var i = 1; i <= onboardingSlides.length; i++)
@@ -268,15 +285,13 @@ final boards = <Board>[
   ),
   const Board('HomeApproved', route: '/home', scenario: FakeScenario.approved),
   const Board('HomeRepaying', route: '/home'),
-  Board(
-    'HomeLoading',
-    route: '/home',
-    prepare: (h) => _hang(h, '/dashboard', dashboardProvider),
-  ),
+  // Set before launch, so the first load hangs or fails (an invalidate
+  // after a good load keeps the old data on screen).
+  Board('HomeLoading', route: '/home', before: (s) => s.hang.add('/dashboard')),
   Board(
     'HomeError',
     route: '/home',
-    prepare: (h) => _fail(h, '/dashboard', dashboardProvider),
+    before: (s) => s.offline.add('/dashboard'),
   ),
   Board(
     'HomeOffline',
@@ -296,34 +311,41 @@ final boards = <Board>[
   Board(
     'NotificationsLoading',
     route: '/home/notifications',
-    prepare: (h) => _hang(h, '/notifications', inboxControllerProvider),
+    before: (s) => s.hang.add('/notifications'),
   ),
 
   // Apply
-  const Board(
+  Board(
     'ApplyPersonal',
     route: '/application?step=1',
     scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedDraftProfile(),
   ),
-  const Board(
+  Board(
     'ApplyDocuments',
     route: '/application?step=2',
     scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedDraftProfile(),
   ),
-  const Board(
+  Board(
     'ApplyIncome',
     route: '/application?step=3',
     scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedDraftProfile(),
+    act: (t, h, _) => _fillIncome(t, h),
   ),
-  const Board(
+  Board(
     'ApplyReview',
     route: '/application?step=4',
     scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedDraftProfile(),
+    act: (t, h, _) => _fillIncome(t, h),
   ),
   Board(
     'CityPicker',
     route: '/application?step=1',
     scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedDraftProfile(),
     act: (t, h, _) => _openField(t, 'City'),
   ),
   Board(
@@ -346,22 +368,28 @@ final boards = <Board>[
     'AreaPicker',
     route: '/application?step=1',
     scenario: FakeScenario.newCustomer,
-    act: (t, h, _) async {
-      await _pick(t, 'City', 'Lahore');
-      await _openField(t, 'Area');
-    },
+    before: (s) => s.seedDraftProfile(),
+    act: (t, h, _) => _openField(t, 'Area'),
   ),
   Board(
     'EmploymentPicker',
     route: '/application?step=3',
     scenario: FakeScenario.newCustomer,
-    act: (t, h, _) => _openField(t, 'Employment status'),
+    before: (s) => s.seedDraftProfile(),
+    act: (t, h, _) async {
+      await _fillIncome(t, h);
+      await _openField(t, 'Employment status');
+    },
   ),
   Board(
     'IncomePicker',
     route: '/application?step=3',
     scenario: FakeScenario.newCustomer,
-    act: (t, h, _) => _openField(t, 'Income source'),
+    before: (s) => s.seedDraftProfile(),
+    act: (t, h, _) async {
+      await _fillIncome(t, h);
+      await _openField(t, 'Income source');
+    },
   ),
   const Board(
     'CameraPermission',
@@ -380,7 +408,12 @@ final boards = <Board>[
     scenario: FakeScenario.newCustomer,
   ),
   const Board('DocumentViewer', route: '/profile/document/cnic_front'),
-  const Board('Verification', route: '/application/status'),
+  Board(
+    'Verification',
+    route: '/application/status',
+    scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedPendingApplication(),
+  ),
   Board(
     'AppReview',
     route: '/application/status',
@@ -392,10 +425,8 @@ final boards = <Board>[
   Board(
     'AppRejected',
     route: '/application/status',
-    scenario: FakeScenario.approved,
-    before: (s) => s.assessments.first
-      ..['status'] = 'rejected'
-      ..['status_label'] = 'Not approved',
+    scenario: FakeScenario.newCustomer,
+    before: (s) => s.seedPendingApplication(rejected: true),
   ),
   const Board('AppHistory', route: '/application/history'),
 
@@ -409,44 +440,53 @@ final boards = <Board>[
   Board(
     'ProductsError',
     route: '/shop',
-    prepare: (h) => h.server.failNext['/products'] = 500,
+    before: (s) => s.timeout.add('/products'),
   ),
   Board(
     'ProductsLoading',
     route: '/shop',
-    prepare: (h) => h.server.hang.add('/products'),
+    before: (s) => s.hang.add('/products'),
   ),
   const Board(
     'ProductPlan',
     route: '/shop/51',
     scenario: FakeScenario.approved,
   ),
-  const Board('Calculator', route: '/calculator'),
+  Board(
+    'Calculator',
+    route: '/calculator',
+    act: (t, h, _) async {
+      await t.enterText(find.byType(TextField).first, '47000');
+      await settle(t);
+    },
+  ),
 
   // Orders
   const Board('Plans', route: '/plans'),
-  const Board('OrderStates', route: '/plans', scenario: FakeScenario.late),
+  Board(
+    'OrderStates',
+    route: '/plans',
+    scenario: FakeScenario.approved,
+    before: (s) => s.seedEveryOrderState(),
+  ),
   const Board('OrdersEmpty', route: '/plans', scenario: FakeScenario.approved),
   Board(
     'OrdersError',
     route: '/plans',
-    prepare: (h) => _fail(h, '/plans', plansProvider),
+    before: (s) => s.failNext['/plans'] = 500,
   ),
-  Board(
-    'OrdersLoading',
-    route: '/plans',
-    prepare: (h) => _hang(h, '/plans', plansProvider),
-  ),
+  Board('OrdersLoading', route: '/plans', before: (s) => s.hang.add('/plans')),
   const Board('PlanDetail', route: '/plans/1279'),
   Board(
     'PlanDetailError',
     route: '/plans/1279',
-    prepare: (h) => h.server.failNext['/plans/1279'] = 500,
+    // The canvas draws the not-found state.
+    before: (s) => s.failNext['/plans/1279'] = 404,
   ),
   Board(
     'PlanDetailLoading',
     route: '/plans/1279',
-    prepare: (h) => h.server.hang.add('/plans/1279'),
+    before: (s) => s.hang.add('/plans/1279'),
   ),
   const Board('PlanLate', route: '/plans/1279', scenario: FakeScenario.late),
   const Board('KeyFactStatement', route: '/plans/1279/kfs'),
@@ -582,6 +622,26 @@ final boards = <Board>[
   ),
 ];
 
+/// Phone boards render at the canvas board's full height, so the whole
+/// design can be compared, not just the first screen of it.
+final Map<String, double> _canvasHeights = () {
+  final json = jsonDecode(
+    File('docs/design/canvas/canvas.json').readAsStringSync(),
+  ) as Map<String, dynamic>;
+  final boards = json['boards'] as Map<String, dynamic>;
+  return {
+    for (final e in boards.entries)
+      e.key.replaceAll('.dc.html', ''):
+          ((e.value as Map<String, dynamic>)['h'] as num).toDouble(),
+  };
+}();
+
+Size _sizeFor(Board b) {
+  final h = _canvasHeights[b.name];
+  if (b.size != _phone || h == null) return b.size;
+  return Size(_phone.width, h);
+}
+
 void main() {
   setUp(() => AppClock.pin(_now));
   tearDown(AppClock.reset);
@@ -589,7 +649,7 @@ void main() {
   for (final b in boards) {
     testWidgets(b.name, (tester) async {
       tester.view
-        ..physicalSize = b.size
+        ..physicalSize = _sizeFor(b)
         ..devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final voice = FakeVoice(b.mic);

@@ -50,8 +50,10 @@ class AccountScreen extends ConsumerWidget {
       ),
       body: FormPage(
         children: [
-          if (user != null) _ProfileCard(user: user, city: city),
-          Gap.s24,
+          if (user != null) ...[
+            _ProfileCard(user: user, city: city),
+            const SizedBox(height: Space.s18),
+          ],
           ListGroup(
             title: 'Your AtomPay',
             children: [
@@ -74,7 +76,7 @@ class AccountScreen extends ConsumerWidget {
                   summary:
                       'Earning more? Your ${rs(limit.approved)} stays '
                       'active meanwhile',
-                  icon: Icons.trending_up,
+                  icon: Icons.edit_outlined,
                   tileTone: TileTone.wash,
                   onTap: () => context.pushOnce(Routes.applicationStep(3)),
                 ),
@@ -82,39 +84,43 @@ class AccountScreen extends ConsumerWidget {
                 title: 'Estimate a plan',
                 summary: 'Any price, three months',
                 icon: Icons.calculate_outlined,
-                tileTone: TileTone.amber,
                 onTap: () => context.pushOnce(Routes.calculator),
               ),
             ],
           ),
-          Gap.s16,
+          const SizedBox(height: Space.s18),
           ListGroup(
             children: [
               ListRow(
                 title: 'Settings',
                 summary: 'Security, sessions, permissions, privacy, sign out',
                 icon: Icons.settings_outlined,
-                tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.settings),
               ),
+            ],
+          ),
+          const SizedBox(height: Space.s18),
+          ListGroup(
+            title: 'Help',
+            children: [
               ListRow(
-                title: 'Help',
-                summary: 'Help and Ask Atom',
+                title: 'Help and Ask Atom',
                 icon: Icons.help_outline,
+                tileTone: TileTone.wash,
                 onTap: () => context.pushOnce(Routes.help),
               ),
               ListRow(
                 title: 'Our ecosystem',
                 summary: 'Atomshop, AtomPay, Atom Seller, AtomBrand',
-                icon: Icons.apps,
-                tileTone: TileTone.wash,
+                icon: Icons.hub_outlined,
+                tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.ecosystem),
               ),
               ListRow(
                 title: 'Raise a complaint',
                 summary: 'A person reads every one',
-                icon: Icons.flag_outlined,
-                tileTone: TileTone.rose,
+                icon: Icons.feedback_outlined,
+                tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.complaint),
               ),
               ListRow(
@@ -123,7 +129,7 @@ class AccountScreen extends ConsumerWidget {
                     ? 'Leave a review on the App Store'
                     : 'Leave a review on Google Play',
                 icon: Icons.star_outline,
-                tileTone: TileTone.amber,
+                tileTone: TileTone.grey,
                 onTap: () => context.pushOnce(Routes.rate),
               ),
               ListRow(
@@ -135,7 +141,7 @@ class AccountScreen extends ConsumerWidget {
               ),
             ],
           ),
-          Gap.s32,
+          const SizedBox(height: Space.s18 + Space.s6),
           Center(
             child: Semantics(
               container: true,
@@ -144,8 +150,15 @@ class AccountScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     const AtomPayMark(),
-                    Gap.s8,
-                    Text('AtomPay', style: t.h4),
+                    Gap.s6,
+                    Text(
+                      'AtomPay',
+                      style: t.base.copyWith(
+                        color: c.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Gap.s6,
                     Text(versionLabel(info), style: t.tiny),
                   ],
                 ),
@@ -190,13 +203,16 @@ class _ProfileCard extends StatelessWidget {
     final t = context.text;
     final line = [?user.phoneFormatted ?? user.phone, ?city].join(' · ');
     final badge = switch (user.kycStatus) {
-      'verified' => const AppBadge.green('Verified', icon: Icons.check),
+      'verified' => const AppBadge.green('Verified'),
       'pending' => const AppBadge.amber('Under review'),
       'rejected' => const AppBadge.rose('Needs attention'),
       _ => null,
     };
     return AppCard(
-      padding: const EdgeInsets.all(Space.s16),
+      padding: const EdgeInsets.symmetric(
+        horizontal: Space.s18,
+        vertical: Space.s16,
+      ),
       child: Row(
         children: [
           Container(
@@ -219,12 +235,15 @@ class _ProfileCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.name, style: t.h4),
+                Text(
+                  user.name,
+                  style: t.h4.copyWith(fontWeight: FontWeight.w700),
+                ),
                 if (line.isNotEmpty) Text(line, style: t.small),
               ],
             ),
           ),
-          ?badge,
+          if (badge != null) ...[const SizedBox(width: Space.s12), badge],
         ],
       ),
     );

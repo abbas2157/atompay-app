@@ -60,11 +60,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       backgroundColor: context.colors.surface,
       appBar: AppTopBar(
         title: 'Notifications',
-        bottomBorder: true,
         actions: [
           if (canMarkAll)
             Padding(
-              padding: const EdgeInsets.only(right: Space.s8),
+              // Canvas: the button's own 12 px padding.
+              padding: const EdgeInsets.only(right: Space.s12),
               child: Center(
                 child: TextLink(
                   _markingAll ? 'Marking…' : 'Mark all read',
@@ -121,8 +121,19 @@ class _InboxList extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Canvas `.content`: 16 between the day label, its list and
+              // the next day.
               for (final entry in groups.entries) ...[
-                SectionLabel(entry.key),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    entry.key.toUpperCase(),
+                    style: context.text.eyebrow.copyWith(
+                      color: context.colors.muted,
+                    ),
+                  ),
+                ),
+                Gap.s16,
                 ListGroup(
                   children: [
                     for (final n in entry.value)
@@ -149,7 +160,7 @@ class _InboxList extends ConsumerWidget {
               Text(
                 'The same alerts arrive by email. Turn email off in Account; '
                 'the inbox here always works.',
-                style: context.text.small,
+                style: context.text.tiny.copyWith(height: 1.5),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -179,10 +190,24 @@ class _Row extends StatelessWidget {
   final AppNotification n;
   final VoidCallback onTap;
 
+  /// The canvas draws each kind with its own tile.
+  static (IconData, TileTone) iconFor(String type) => switch (type) {
+    'payment_received' => (Icons.check, TileTone.green),
+    'order_delivered' => (Icons.local_shipping_outlined, TileTone.blue),
+    'limit_decided' => (Icons.star_border, TileTone.wash),
+    'kyc_verified' => (Icons.verified_user_outlined, TileTone.green),
+    'kyc_rejected' => (Icons.gpp_maybe_outlined, TileTone.rose),
+    'application_received' => (Icons.description_outlined, TileTone.grey),
+    'instalment_due' => (Icons.schedule, TileTone.amber),
+    'instalment_overdue' => (Icons.error_outline, TileTone.rose),
+    _ => (Icons.notifications_none, TileTone.blue),
+  };
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = context.text;
+    final (icon, tone) = iconFor(n.type);
     return Pressable(
       onTap: onTap,
       scaleOnPress: false,
@@ -190,45 +215,61 @@ class _Row extends StatelessWidget {
       pressedColor: c.primarySoft,
       semanticLabel: [if (!n.read) 'Unread', n.title, ?n.body].join('. '),
       excludeChildSemantics: true,
-      child: Padding(
+      // Canvas `.li.unread`: a surface-2 row with a primary dot after the
+      // title.
+      child: Container(
+        color: n.read ? null : c.surface2,
+        constraints: const BoxConstraints(minHeight: 60),
         padding: const EdgeInsets.symmetric(
           horizontal: Space.s16,
-          vertical: Space.s14,
+          vertical: Space.s12,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: Space.s6),
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: n.read ? Colors.transparent : c.apayCoral,
-                ),
-              ),
-            ),
-            const SizedBox(width: Space.s10),
+            IconTile(icon, tone: tone),
+            const SizedBox(width: Space.s12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    n.title,
-                    style: t.body.copyWith(
-                      fontWeight: n.read ? FontWeight.w600 : FontWeight.w800,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          n.title,
+                          style: t.body.copyWith(
+                            fontWeight: FontWeight.w700,
+                            height: 1.25,
+                          ),
+                        ),
+                      ),
+                      if (!n.read) ...[
+                        const SizedBox(width: Space.s8),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: c.primary,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   if (n.body != null) ...[
-                    const SizedBox(height: Space.s2),
-                    Text(n.body!, style: t.small),
+                    const SizedBox(height: 1),
+                    Text(
+                      n.body!,
+                      style: t.small.copyWith(
+                        fontWeight: FontWeight.w500,
+                        height: 1.25,
+                      ),
+                    ),
                   ],
                 ],
               ),
             ),
-            const SizedBox(width: Space.s8),
-            Icon(Icons.chevron_right, color: c.glyph),
           ],
         ),
       ),
@@ -271,19 +312,73 @@ class _InboxSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => const LoadingShape(
     label: 'Loading notifications',
-    child: Padding(
+    child: SingleChildScrollView(
+      physics: NeverScrollableScrollPhysics(),
       padding: EdgeInsets.all(Space.gutter),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Skeleton(width: 120),
-          Gap.s12,
-          SkeletonRow(),
-          SkeletonRow(),
-          SkeletonRow(),
-          SkeletonRow(),
+          _Fraction(0.36, Skeleton(height: 10)),
+          Gap.s14,
+          ListGroup(
+            children: [
+              _SkeletonItem(),
+              _SkeletonItem(),
+              _SkeletonItem(),
+              _SkeletonItem(),
+              _SkeletonItem(),
+              _SkeletonItem(),
+            ],
+          ),
         ],
       ),
     ),
+  );
+}
+
+/// One inbox row in the skeleton: a 36 dp tile and three lines.
+class _SkeletonItem extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s12),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Skeleton(width: 36, height: 36, radius: Radii.tile),
+        SizedBox(width: Space.s12),
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(top: Space.s2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _Fraction(0.75, Skeleton(height: 13)),
+                Gap.s8,
+                _Fraction(0.95, Skeleton(height: 10)),
+                Gap.s8,
+                _Fraction(0.3, Skeleton(height: 10)),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// A skeleton bar as a share of the row's width.
+class _Fraction extends StatelessWidget {
+  const new(this.factor, this.child);
+
+  final double factor;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => FractionallySizedBox(
+    widthFactor: factor,
+    alignment: AlignmentDirectional.centerStart,
+    child: child,
   );
 }

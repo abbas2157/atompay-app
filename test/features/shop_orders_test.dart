@@ -43,7 +43,7 @@ void main() {
       tester,
     ) async {
       await at(tester, Routes.shop, scenario: FakeScenario.approved);
-      expect(find.text('Eligible products'), findsOneWidget);
+      expect(find.text('ELIGIBLE PRODUCTS'), findsOneWidget);
       expect(find.byType(ProductCard), findsWidgets);
       expect(find.text('Cash price Rs. 47,000'), findsOneWidget);
       expect(find.text('Cash price Rs. 53,995'), findsOneWidget);
@@ -68,7 +68,10 @@ void main() {
       expect(find.text('OXY 3218L Android'), findsOneWidget);
       expect(find.text('Cash price Rs. 47,000'), findsOneWidget);
       expect(find.text('Rs. 15,666'), findsNWidgets(2));
-      expect(find.text('MONTH 3 · TAKES THE ROUNDING'), findsOneWidget);
+      expect(
+        find.text('Month 3 · takes the rounding', findRichText: true),
+        findsOneWidget,
+      );
       expect(find.text('Rs. 15,668'), findsOneWidget);
       expect(find.text('Rs. 47,000'), findsOneWidget);
       expect(find.text('Rs. 0'), findsOneWidget);
@@ -153,7 +156,10 @@ void main() {
     testWidgets('KFS: placeholders stay visible; email a copy', (tester) async {
       await at(tester, Routes.kfs(1279));
       expect(
-        find.text('[LICENSED ENTITY NAME] · SECP licence [NO.]'),
+        find.text(
+          '[LICENSED ENTITY NAME] · SECP licence [NO.]',
+          findRichText: true,
+        ),
         findsOneWidget,
       );
       expect(find.text('3% · Rs. 1,410'), findsOneWidget);
@@ -163,6 +169,12 @@ void main() {
       expect(find.text('[EARLY SETTLEMENT TERMS]'), findsOneWidget);
       expect(find.text('Rs. 47,000 in instalments'), findsOneWidget);
 
+      // The buttons follow the statement, at the end of the list.
+      await tester.scrollUntilVisible(
+        find.text('Email or SMS me a copy'),
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tapText(tester, 'Email or SMS me a copy');
       await tapText(tester, 'Email me a copy');
       expect(find.text('We have emailed you a copy'), findsOneWidget);

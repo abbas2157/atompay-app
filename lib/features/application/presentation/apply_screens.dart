@@ -18,6 +18,7 @@ import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
 import 'package:atompay_mobile/features/application/data/capture_doc.dart';
+import 'package:atompay_mobile/features/application/presentation/application_widgets.dart';
 import 'package:atompay_mobile/features/launch/data/app_config.dart';
 import 'package:atompay_mobile/features/launch/data/config_repository.dart';
 import 'package:flutter/material.dart';
@@ -91,9 +92,16 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
       dirty: first && draft.dirty,
       busy: false,
       child: Scaffold(
-        backgroundColor: context.colors.white,
-        appBar: AppTopBar(title: title, bottomBorder: true),
-        body: body,
+        backgroundColor: context.colors.surface,
+        // Canvas `.topw`: the bar and the step progress share one white
+        // header, with the hairline under the progress.
+        appBar: AppTopBar(title: title, bottomBorder: false),
+        body: Column(
+          children: [
+            _StepBar(step: step),
+            Expanded(child: body),
+          ],
+        ),
       ),
     );
   }
@@ -106,62 +114,103 @@ const _stepNames = [
   'Review & submit',
 ];
 
-/// "Step 1 of 4 · Personal details", a four-part bar and the heading.
-class _StepHeader extends StatelessWidget {
-  const new({required this.step, required this.title, required this.lead});
+/// Canvas wizard progress, in the white header under the app bar: four
+/// bars (done green, current royal), then "Step 1 of 4" and the step name.
+class _StepBar extends StatelessWidget {
+  const new({required this.step});
 
   final int step;
-  final String title;
-  final String lead;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = context.text;
+    final name = _stepNames[step - 1];
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: c.white,
+        border: Border(bottom: BorderSide(color: c.line)),
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        Space.gutter,
+        0,
+        Space.gutter,
+        Space.s14,
+      ),
+      child: Semantics(
+        label: 'Step $step of 4, $name',
+        excludeSemantics: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                for (var i = 1; i <= 4; i++) ...[
+                  if (i > 1) const SizedBox(width: Space.s6),
+                  Expanded(
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: i < step
+                            ? c.green
+                            : (i == step ? c.primary : c.line),
+                        borderRadius: BorderRadius.circular(Radii.pill),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            Gap.s8,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Step $step of 4', style: t.tiny),
+                const SizedBox(width: Space.s12),
+                Expanded(
+                  child: Text(
+                    name,
+                    textAlign: TextAlign.right,
+                    style: t.tiny.copyWith(
+                      color: c.ink,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The step's heading and its one-line explanation.
+class _StepHeader extends StatelessWidget {
+  const new({required this.title, required this.lead});
+
+  final String title;
+  final String lead;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          label: 'Step $step of 4, ${_stepNames[step - 1]}',
-          excludeSemantics: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'STEP $step OF 4 · ${_stepNames[step - 1].toUpperCase()}',
-                style: t.eyebrow,
-              ),
-              Gap.s8,
-              Row(
-                children: [
-                  for (var i = 1; i <= 4; i++) ...[
-                    if (i > 1) const SizedBox(width: Space.s4),
-                    Expanded(
-                      child: Container(
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: i <= step ? c.primary : c.line,
-                          borderRadius: BorderRadius.circular(Radii.pill),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
-          ),
-        ),
-        Gap.s20,
         Semantics(header: true, child: Text(title, style: t.h2)),
-        Gap.s8,
-        Text(lead, style: t.lead),
-        Gap.s20,
+        Gap.s6,
+        Text(lead, style: t.small),
+        Gap.s16,
       ],
     );
   }
 }
 
-/// Back and Continue under each step.
+/// Back and Continue under each step (canvas `.actionbar`: Back at its
+/// natural width, Continue takes the rest).
 class _StepFooter extends StatelessWidget {
   const new({
     required this.onContinue,
@@ -177,18 +226,14 @@ class _StepFooter extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       if (showBack) ...[
-        Expanded(
-          child: AppButton.ghost(
-            'Back',
-            large: true,
-            block: true,
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
+        AppButton.ghost(
+          'Back',
+          large: true,
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
-        const SizedBox(width: Space.s12),
+        const SizedBox(width: Space.s10),
       ],
       Expanded(
-        flex: 2,
         child: AppButton.primary(
           continueLabel,
           large: true,
@@ -304,11 +349,10 @@ class _PersonalStepState extends ConsumerState<_PersonalStep> {
       ),
       children: [
         const _StepHeader(
-          step: 1,
           title: 'Personal details',
           lead:
-              'Enter these exactly as they appear on your CNIC. The visit team '
-              'checks them against the card.',
+              'Enter these exactly as they appear on your CNIC — the visit '
+              'team checks them against the card.',
         ),
         AppTextField(
           label: 'Full name',
@@ -335,29 +379,31 @@ class _PersonalStepState extends ConsumerState<_PersonalStep> {
               _flow.update((x) => x.copyWith(cnic: v), field: 'cnic'),
         ),
         Gap.s14,
-        AppTextField(
-          label: 'Mobile number',
-          controller: _mobile,
-          focusNode: _focus['mobile'],
-          keyboardType: TextInputType.phone,
-          textInputAction: TextInputAction.next,
-          autofillHints: const [AutofillHints.telephoneNumber],
-          error: d.errors['mobile'],
-          onChanged: (v) =>
-              _flow.update((x) => x.copyWith(mobile: v), field: 'mobile'),
-        ),
-        Gap.s14,
-        _DateField(
-          label: 'Date of birth',
-          value: d.dateOfBirth,
-          error: d.errors['date_of_birth'],
-          focusNode: _focus['date_of_birth'],
-          onTap: _pickDate,
+        TwoUp(
+          first: AppTextField(
+            label: 'Mobile number',
+            controller: _mobile,
+            focusNode: _focus['mobile'],
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.telephoneNumber],
+            error: d.errors['mobile'],
+            onChanged: (v) =>
+                _flow.update((x) => x.copyWith(mobile: v), field: 'mobile'),
+          ),
+          second: _DateField(
+            label: 'Date of birth',
+            value: d.dateOfBirth,
+            error: d.errors['date_of_birth'],
+            focusNode: _focus['date_of_birth'],
+            onTap: _pickDate,
+          ),
         ),
         Gap.s14,
         PickerField<int>(
           label: 'City',
           sheetTitle: 'Choose your city',
+          searchPlaceholder: 'Type to search, e.g. Multan',
           noun: 'cities',
           focusNode: _focus['city_id'],
           loading: cities.isLoading && !cities.hasValue,
@@ -379,10 +425,10 @@ class _PersonalStepState extends ConsumerState<_PersonalStep> {
         Gap.s14,
         PickerField<int>(
           label: 'Area',
-          sheetTitle: cityName == null
-              ? 'Choose your area'
-              : 'Areas in $cityName',
+          sheetTitle: 'Choose your area',
+          searchPlaceholder: 'Type to search, e.g. DHA',
           noun: cityName == null ? 'areas' : 'areas in $cityName',
+          searchIcon: areaList.isNotEmpty,
           focusNode: _focus['area_id'],
           placeholder: areaList.isEmpty
               ? 'Choose'
@@ -405,7 +451,8 @@ class _PersonalStepState extends ConsumerState<_PersonalStep> {
           Gap.s6,
           Text(
             'Helps us deliver to the right part of $cityName.',
-            style: context.text.small,
+            // Canvas `.field .hint`, as under every field.
+            style: context.text.tiny.copyWith(fontWeight: FontWeight.w500),
           ),
         ],
         Gap.s14,
@@ -480,7 +527,7 @@ class _DateField extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.calendar_today_outlined, size: 18, color: c.ink),
+                Icon(Icons.calendar_today_outlined, size: 18, color: c.body),
               ],
             ),
           ),
@@ -515,6 +562,14 @@ class _DocumentsStep extends ConsumerWidget {
       if (bytes != null) flow.setPhoto(doc, bytes);
     }
 
+    Widget tile(CaptureDoc doc) => _DocTile(
+      doc: doc,
+      taken: d.photos.containsKey(doc),
+      onFile: d.profile?.uploaded(doc.key) ?? false,
+      error: d.errors[doc.key],
+      onTap: () => capture(doc),
+    );
+
     return FormPage(
       footer: _StepFooter(
         continueLabel: edit ? 'Save' : 'Continue',
@@ -527,26 +582,24 @@ class _DocumentsStep extends ConsumerWidget {
       ),
       children: [
         const _StepHeader(
-          step: 2,
           title: 'Identity documents',
           lead:
-              'Taken with the camera here: we never open your gallery. Clear, '
-              'well-lit, all four corners visible. Stored privately and seen '
-              'only by the verification team.',
+              'Taken with the camera here — we never open your gallery. '
+              'Clear, well-lit, all four corners visible. Stored privately and '
+              'seen only by the verification team.',
         ),
-        for (final doc in CaptureDoc.values) ...[
-          _DocRow(
-            doc: doc,
-            taken: d.photos.containsKey(doc),
-            onFile: d.profile?.uploaded(doc.key) ?? false,
-            error: d.errors[doc.key],
-            onTap: () => capture(doc),
-          ),
-          Gap.s12,
-        ],
-        Gap.s4,
+        // Canvas `.docs`: CNIC front and back side by side, then the
+        // selfie across the full width.
+        TwoUp(
+          first: tile(CaptureDoc.cnicFront),
+          second: tile(CaptureDoc.cnicBack),
+        ),
+        Gap.s12,
+        tile(CaptureDoc.selfie),
+        Gap.s16,
         const Note(
           tone: NoteTone.blue,
+          icon: Icons.verified_user_outlined,
           text:
               'Your documents are used only to verify your identity for '
               'AtomPay and are never shown on Atomshop.',
@@ -556,7 +609,9 @@ class _DocumentsStep extends ConsumerWidget {
   }
 }
 
-class _DocRow extends StatelessWidget {
+/// Canvas `.doc`: a dashed tile to photograph one document; solid green
+/// once taken (or already on file).
+class _DocTile extends StatelessWidget {
   const new({
     required this.doc,
     required this.taken,
@@ -576,6 +631,7 @@ class _DocRow extends StatelessWidget {
     final c = context.colors;
     final t = context.text;
     final done = taken || onFile;
+    final hasError = error != null;
     final summary = taken
         ? 'Taken · tap to retake'
         : onFile
@@ -583,55 +639,74 @@ class _DocRow extends StatelessWidget {
         : doc == CaptureDoc.selfie
         ? 'Hold your CNIC next to your face'
         : 'Tap to take a photo';
+    final radius = BorderRadius.circular(Radii.note);
+    // Dashed while empty; a solid edge once taken or when in error.
+    final solid = done || hasError;
+    final box = Container(
+      constraints: const BoxConstraints(minHeight: 150),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(Space.s16),
+      decoration: BoxDecoration(
+        color: hasError ? c.dangerWash : (done ? c.greenWash : c.surface2),
+        borderRadius: radius,
+        border: solid
+            ? Border.all(color: hasError ? c.danger : c.greenLine, width: 1.5)
+            : null,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: c.white,
+              borderRadius: BorderRadius.circular(Radii.tile),
+            ),
+            child: Icon(
+              done
+                  ? Icons.check
+                  : (doc == CaptureDoc.selfie
+                        ? Icons.person_outline
+                        : Icons.photo_camera_outlined),
+              size: 22,
+              color: done ? c.green : c.body,
+            ),
+          ),
+          Gap.s8,
+          Text(
+            doc.title,
+            textAlign: TextAlign.center,
+            style: t.base.copyWith(color: c.ink, fontWeight: FontWeight.w700),
+          ),
+          Text(
+            summary,
+            textAlign: TextAlign.center,
+            style: t.tiny.copyWith(fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Pressable(
           onTap: onTap,
           scaleOnPress: false,
-          borderRadius: BorderRadius.circular(Radii.row),
+          borderRadius: radius,
           pressedColor: c.primarySoft,
           semanticLabel:
               '${doc.title}, ${done ? 'done' : 'not taken'}. $summary',
           excludeChildSemantics: true,
-          child: Container(
-            padding: const EdgeInsets.all(Space.s14),
-            decoration: BoxDecoration(
-              color: done ? c.greenWash : c.field,
-              borderRadius: BorderRadius.circular(Radii.row),
-              border: Border.all(
-                color: error != null
-                    ? c.danger
-                    : (done ? c.greenLine : c.line2),
-              ),
-            ),
-            child: Row(
-              children: [
-                IconTile(
-                  done
-                      ? Icons.check
-                      : (doc == CaptureDoc.selfie
-                            ? Icons.face_outlined
-                            : Icons.badge_outlined),
-                  tone: done ? TileTone.green : TileTone.blue,
-                ),
-                const SizedBox(width: Space.s12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        doc.title,
-                        style: t.body.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      Text(summary, style: t.small),
-                    ],
+          child: solid
+              ? box
+              : CustomPaint(
+                  foregroundPainter: DashedOutlinePainter(
+                    color: c.line3,
+                    radius: Radii.note,
                   ),
+                  child: box,
                 ),
-                Icon(Icons.photo_camera_outlined, color: c.ink),
-              ],
-            ),
-          ),
         ),
         if (error != null)
           Padding(
@@ -749,44 +824,47 @@ class _IncomeStepState extends ConsumerState<_IncomeStep> {
       ),
       children: [
         const _StepHeader(
-          step: 3,
           title: 'Income & financial profile',
           lead:
-              'Honest figures get you the right limit. They are checked during '
-              'verification.',
+              'Honest figures get you the right limit — they are checked '
+              'during verification.',
         ),
-        PickerField<String>(
-          label: 'Employment status',
-          sheetTitle: 'Employment status',
-          noun: 'options',
-          focusNode: _focus['employment_status'],
-          loading: options.isLoading && !options.hasValue,
-          options: [
-            for (final e in opts.employmentStatuses)
-              PickerOption(e.value, e.label),
-          ],
-          value: d.employment,
-          error: d.errors['employment_status'],
-          onChanged: (v) => _flow.update(
-            (x) => x.copyWith(employment: v),
-            field: 'employment_status',
+        TwoUp(
+          first: PickerField<String>(
+            label: 'Employment status',
+            sheetTitle: 'Employment status',
+            searchPlaceholder: 'Search, e.g. retired',
+            noun: 'options',
+            focusNode: _focus['employment_status'],
+            loading: options.isLoading && !options.hasValue,
+            options: [
+              for (final e in opts.employmentStatuses)
+                PickerOption(e.value, e.label),
+            ],
+            value: d.employment,
+            error: d.errors['employment_status'],
+            onChanged: (v) => _flow.update(
+              (x) => x.copyWith(employment: v),
+              field: 'employment_status',
+            ),
           ),
-        ),
-        Gap.s14,
-        PickerField<String>(
-          label: 'Income source',
-          sheetTitle: 'Income source',
-          noun: 'options',
-          focusNode: _focus['income_source'],
-          loading: options.isLoading && !options.hasValue,
-          options: [
-            for (final e in opts.incomeSources) PickerOption(e.value, e.label),
-          ],
-          value: d.source,
-          error: d.errors['income_source'],
-          onChanged: (v) => _flow.update(
-            (x) => x.copyWith(source: v),
-            field: 'income_source',
+          second: PickerField<String>(
+            label: 'Income source',
+            sheetTitle: 'Main income source',
+            searchPlaceholder: 'Search, e.g. rental',
+            noun: 'options',
+            focusNode: _focus['income_source'],
+            loading: options.isLoading && !options.hasValue,
+            options: [
+              for (final e in opts.incomeSources)
+                PickerOption(e.value, e.label),
+            ],
+            value: d.source,
+            error: d.errors['income_source'],
+            onChanged: (v) => _flow.update(
+              (x) => x.copyWith(source: v),
+              field: 'income_source',
+            ),
           ),
         ),
         if (employment?.hasEmployer ?? false) ...[
@@ -814,40 +892,39 @@ class _IncomeStepState extends ConsumerState<_IncomeStep> {
           onChanged: _onIncome,
         ),
         Gap.s14,
-        _MoneyField(
-          label: 'Existing instalments',
-          hint: 'What you pay each month on other loans or instalments.',
-          controller: _existing,
-          focusNode: _focus['existing_instalments'],
-          error: d.errors['existing_instalments'],
-          onChanged: (t) {
-            final v = parseRupees(t);
-            _flow.update(
-              (x) => v == null
-                  ? x.copyWith(clearExisting: true)
-                  : x.copyWith(existing: v),
-              field: 'existing_instalments',
-            );
-          },
+        TwoUp(
+          first: _MoneyField(
+            label: 'Existing instalments',
+            controller: _existing,
+            focusNode: _focus['existing_instalments'],
+            error: d.errors['existing_instalments'],
+            onChanged: (t) {
+              final v = parseRupees(t);
+              _flow.update(
+                (x) => v == null
+                    ? x.copyWith(clearExisting: true)
+                    : x.copyWith(existing: v),
+                field: 'existing_instalments',
+              );
+            },
+          ),
+          second: _MoneyField(
+            label: 'Household expenses',
+            controller: _expenses,
+            focusNode: _focus['monthly_expenses'],
+            error: d.errors['monthly_expenses'],
+            onChanged: (t) {
+              final v = parseRupees(t);
+              _flow.update(
+                (x) => v == null
+                    ? x.copyWith(clearExpenses: true)
+                    : x.copyWith(expenses: v),
+                field: 'monthly_expenses',
+              );
+            },
+          ),
         ),
-        Gap.s14,
-        _MoneyField(
-          label: 'Household expenses',
-          hint: 'A month.',
-          controller: _expenses,
-          focusNode: _focus['monthly_expenses'],
-          error: d.errors['monthly_expenses'],
-          onChanged: (t) {
-            final v = parseRupees(t);
-            _flow.update(
-              (x) => v == null
-                  ? x.copyWith(clearExpenses: true)
-                  : x.copyWith(expenses: v),
-              field: 'monthly_expenses',
-            );
-          },
-        ),
-        if (estimate != null) ...[Gap.s20, _EstimateCard(estimate: estimate)],
+        if (estimate != null) ...[Gap.s16, _EstimateCard(estimate: estimate)],
       ],
     );
   }
@@ -859,7 +936,6 @@ class _MoneyField extends StatelessWidget {
     required this.controller,
     required this.onChanged,
     this.focusNode,
-    this.hint,
     this.error,
   });
 
@@ -867,7 +943,6 @@ class _MoneyField extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final FocusNode? focusNode;
-  final String? hint;
   final String? error;
 
   @override
@@ -876,7 +951,6 @@ class _MoneyField extends StatelessWidget {
     controller: controller,
     focusNode: focusNode,
     prefixText: 'Rs. ',
-    hint: hint,
     error: error,
     keyboardType: TextInputType.number,
     textInputAction: TextInputAction.next,
@@ -889,7 +963,7 @@ class _MoneyField extends StatelessWidget {
   );
 }
 
-/// `POST /estimate`, always labelled as an estimate.
+/// `POST /estimate`, shown as the canvas's provisional limit.
 class _EstimateCard extends StatelessWidget {
   const new({required this.estimate});
 
@@ -897,8 +971,6 @@ class _EstimateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.text;
-    final c = context.colors;
     final e = estimate.value;
     if (e == null) {
       return estimate.hasError
@@ -908,40 +980,10 @@ class _EstimateCard extends StatelessWidget {
               child: SkeletonCard(height: 120),
             );
     }
-    return AppCard(
-      color: c.primarySoft,
-      borderColor: c.primaryLine,
-      semanticLabel:
-          'Estimated purchase limit ${rsSpoken(e.estimatedLimit)}, up to '
-          '${rsSpoken(e.estimatedMaxInstalment)} a month. An estimate; '
-          'final figures are set by our team after the risk assessment.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'ESTIMATED PURCHASE LIMIT',
-            style: t.tiny.copyWith(
-              color: c.primary,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-            ),
-          ),
-          Gap.s6,
-          Text(rs(e.estimatedLimit), style: t.h1b),
-          Gap.s4,
-          Text(
-            'Up to ${rs(e.estimatedMaxInstalment)} a month · 30% of '
-            'income',
-            style: t.small.copyWith(color: c.ink),
-          ),
-          Gap.s8,
-          Text(
-            'An estimate from your income. Final figures are set by our team '
-            'after the risk assessment.',
-            style: t.small,
-          ),
-        ],
-      ),
+    return ProvisionalLimitCard(
+      label: 'Provisional purchase limit',
+      limit: e.estimatedLimit,
+      monthlyCap: e.estimatedMaxInstalment,
     );
   }
 }
@@ -1004,6 +1046,11 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
     ].join(' · ');
 
     Widget section(String title, int step, Widget body) => AppCard(
+      // Canvas `.card.u-pad-row`.
+      padding: const EdgeInsets.symmetric(
+        horizontal: Space.s18,
+        vertical: Space.s16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -1012,7 +1059,7 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
             action: 'Edit',
             onAction: () => context.push(Routes.applicationEdit(step)),
           ),
-          Gap.s8,
+          Gap.s12,
           body,
         ],
       ),
@@ -1036,10 +1083,9 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
         ),
         children: [
           const _StepHeader(
-            step: 4,
             title: 'Review & submit',
             lead:
-                'Check everything once. You can jump back to any step to '
+                'Check everything once — you can jump back to any step to '
                 'change it.',
           ),
           section(
@@ -1060,7 +1106,7 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
               KeyValue('Address', d.address),
             ]),
           ),
-          Gap.s14,
+          Gap.s12,
           section(
             'Identity documents',
             2,
@@ -1072,7 +1118,6 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
                   if (d.hasPhoto(doc))
                     AppBadge.green(
                       doc == CaptureDoc.selfie ? 'Selfie' : doc.title,
-                      icon: Icons.check,
                     )
                   else
                     AppBadge.rose(
@@ -1081,7 +1126,7 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
               ],
             ),
           ),
-          Gap.s14,
+          Gap.s12,
           section(
             'Income & financials',
             3,
@@ -1105,7 +1150,7 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
             ]),
           ),
           if (verifiedChange) ...[
-            Gap.s14,
+            Gap.s12,
             const Note(
               tone: NoteTone.amber,
               text:
@@ -1114,7 +1159,7 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
                   'meanwhile.',
             ),
           ],
-          Gap.s16,
+          Gap.s12,
           ConsentRow(
             value: _declared,
             onChanged: status.busy

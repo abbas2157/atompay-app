@@ -18,7 +18,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 /// Brand on the left; notifications (with an unread dot) and the account
-/// avatar on the right.
+/// avatar on the right. White with a hairline under it, behind the status
+/// bar too (canvas `.topw`).
 class HomeHeader extends StatelessWidget {
   const new({required this.unread, required this.initials, super.key});
 
@@ -28,75 +29,92 @@ class HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Space.gutter,
-        Space.s8,
-        Space.s10,
-        Space.s12,
+    final t = context.text;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: c.white,
+        border: Border(bottom: BorderSide(color: c.line)),
       ),
-      // The brand lockup and the initials are logos: they don't grow with
-      // the text size (the buttons keep their labels for screen readers).
-      child: Row(
-        children: [
-          Flexible(
-            child: MediaQuery.withNoTextScaling(
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: FittedBox(child: BrandHeader()),
-              ),
-            ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            Space.gutter,
+            0,
+            Space.s10,
+            Space.s12,
           ),
-          const SizedBox(width: Space.s8),
-          Stack(
+          // The brand lockup and the initials are logos: they don't grow with
+          // the text size (the buttons keep their labels for screen readers).
+          child: Row(
             children: [
-              AppIconButton(
-                icon: Icons.notifications_none_rounded,
-                label: unread == 0
-                    ? 'Notifications'
-                    : 'Notifications, $unread unread',
-                onPressed: () => context.pushOnce(Routes.notifications),
+              Flexible(
+                child: MediaQuery.withNoTextScaling(
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(child: BrandHeader()),
+                  ),
+                ),
               ),
-              if (unread > 0)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: IgnorePointer(
+              const SizedBox(width: Space.s4),
+              Stack(
+                children: [
+                  AppIconButton(
+                    icon: Icons.notifications_none_rounded,
+                    size: 22,
+                    label: unread == 0
+                        ? 'Notifications'
+                        : 'Notifications, $unread unread',
+                    onPressed: () => context.pushOnce(Routes.notifications),
+                  ),
+                  if (unread > 0)
+                    Positioned(
+                      top: 9,
+                      right: 10,
+                      child: IgnorePointer(
+                        child: Container(
+                          width: 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            color: c.apayCoral,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: c.white, width: 2),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: Space.s4),
+              Pressable(
+                onTap: () => context.go(Routes.account),
+                semanticLabel: 'Account',
+                excludeChildSemantics: true,
+                child: Center(
+                  child: MediaQuery.withNoTextScaling(
                     child: Container(
-                      width: 9,
-                      height: 9,
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: c.apayCoral,
+                        color: c.primarySoft,
                         shape: BoxShape.circle,
-                        border: Border.all(color: c.white, width: 2),
+                      ),
+                      child: Text(
+                        initials,
+                        style: t.base.copyWith(
+                          color: c.primary,
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                        ),
                       ),
                     ),
                   ),
                 ),
+              ),
             ],
           ),
-          const SizedBox(width: Space.s4),
-          Pressable(
-            onTap: () => context.go(Routes.account),
-            semanticLabel: 'Account',
-            excludeChildSemantics: true,
-            child: Center(
-              child: MediaQuery.withNoTextScaling(
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: c.primarySoft,
-                  child: Text(
-                    initials,
-                    style: context.text.small.copyWith(
-                      color: c.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -118,6 +136,7 @@ class ApplyHero extends StatelessWidget {
     final c = context.colors;
     final t = context.text;
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(Space.s20),
       decoration: BoxDecoration(
         gradient: c.apayGradient,
@@ -126,6 +145,7 @@ class ApplyHero extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Solid ink on the gradient (brief §4), not the canvas's muted.
           Text(
             'NO LIMIT YET',
             style: t.tiny.copyWith(
@@ -134,18 +154,17 @@ class ApplyHero extends StatelessWidget {
               letterSpacing: 1.2,
             ),
           ),
-          Gap.s8,
-          Text('Get your AtomPay limit', style: t.h2),
-          Gap.s8,
+          Gap.s10,
+          Text('Get your AtomPay limit', style: t.h1b.copyWith(height: 1.15)),
+          Gap.s10,
           Text(
             'About five minutes. Your limit is set from your income, once we '
             'have verified your identity and address.',
             style: t.base.copyWith(color: c.ink),
           ),
-          Gap.s16,
+          Gap.s14,
           AppButton.dark(
             'Apply for your limit',
-            block: true,
             onPressed: () => context.pushOnce(Routes.applicationStep(1)),
           ),
         ],
@@ -201,17 +220,33 @@ class StagesCard extends StatelessWidget {
   final List<Stage> stages;
 
   @override
-  Widget build(BuildContext context) => AppCard(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Where you are', style: context.text.h4),
-        Text('Six stages', style: context.text.small),
-        Gap.s16,
-        StagesTrack(stages: stages),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final t = context.text;
+    return AppCard(
+      padding: const EdgeInsets.all(Space.s18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text('Where you are', style: t.h4),
+                ),
+              ),
+              const SizedBox(width: Space.s12),
+              Text('Six stages', style: t.tiny),
+            ],
+          ),
+          Gap.s14,
+          StagesTrack(stages: stages),
+        ],
+      ),
+    );
+  }
 }
 
 /// The six stages from the server as a stepper.
@@ -264,25 +299,36 @@ class NextPaymentCard extends StatelessWidget {
       _ => AppBadge.grey('Due ${dayMonth(due.dueDate)}'),
     };
     void open() => context.pushOnce(Routes.plan(due.orderId));
-    final details = [
-      ?which,
-      ?due.productTitle,
-      ?due.orderReference,
-    ].join(' · ');
+    // Canvas: "2nd of 3 · OXY 3218L Android" left, the reference right.
+    final what = [?which, ?due.productTitle].join(' · ');
+    final reference = due.orderReference;
+    final details = [if (what.isNotEmpty) what, ?reference].join(' · ');
     final body = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: Text('Next payment', style: t.small)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Eyebrow('Next payment'),
+                  Gap.s6,
+                  Semantics(
+                    label: rsSpoken(due.amount),
+                    excludeSemantics: true,
+                    child: Text(
+                      rs(due.amount),
+                      style: t.h1.copyWith(height: 1.05),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: Space.s12),
             badge,
           ],
-        ),
-        Gap.s4,
-        Semantics(
-          label: rsSpoken(due.amount),
-          excludeSemantics: true,
-          child: Text(rs(due.amount), style: t.h1b),
         ),
         if (ofThree) ...[
           Gap.s12,
@@ -296,8 +342,19 @@ class NextPaymentCard extends StatelessWidget {
                 MonthState.upcoming,
           ]),
         ],
-        Gap.s8,
-        Text(details, style: t.small),
+        if (details.isNotEmpty) ...[
+          Gap.s12,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: Text(what, style: t.small)),
+              if (reference != null) ...[
+                const SizedBox(width: Space.s12),
+                Text(reference, style: t.small),
+              ],
+            ],
+          ),
+        ],
         if (withButton) ...[
           Gap.s14,
           AppButton.ghost('See the plan', block: true, onPressed: open),
@@ -348,9 +405,13 @@ class WithinLimitSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = products.value;
+    final c = context.colors;
+    final t = context.text;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // The link's 48 dp target already adds the canvas's extra space
+        // around the heading.
         SectionHeader(
           'Within your limit',
           action: linkLabel,
@@ -361,28 +422,51 @@ class WithinLimitSection extends StatelessWidget {
           AppCard(
             child: Text(
               "We couldn't load products. Pull down to try again.",
-              style: context.text.small,
+              style: t.small,
             ),
           )
         else if (list == null)
-          const LoadingShape(
+          LoadingShape(
             label: 'Loading products',
-            child: SkeletonCard(height: 220),
+            child: _Grid(
+              columns: columns,
+              children: [
+                for (var i = 0; i < columns; i++) const ProductCardSkeleton(),
+              ],
+            ),
           )
         else if (list.isEmpty)
+          // The canvas starts with "The lowest-priced eligible product is
+          // Rs. …": that needs a figure from the API (brief §2).
           AppCard(
+            padding: const EdgeInsets.all(Space.s22),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: c.greySoft,
+                    borderRadius: BorderRadius.circular(Radii.note),
+                  ),
+                  child: Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 22,
+                    color: c.body,
+                  ),
+                ),
+                Gap.s8,
                 Text(
                   'Nothing fits ${rs(available)} right now',
-                  style: context.text.h4,
+                  style: t.body.copyWith(fontWeight: FontWeight.w700),
+                  textAlign: TextAlign.center,
                 ),
-                Gap.s4,
+                Gap.s8,
                 Text(
                   'Your limit has to cover the whole price, because nothing '
                   'is paid up front.',
-                  style: context.text.small,
+                  style: t.small,
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -451,44 +535,62 @@ class HowToBuyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.text;
     final c = context.colors;
-    Widget step(int n, String text) => Padding(
-      padding: const EdgeInsets.only(bottom: Space.s12),
+    final bold = TextStyle(color: c.ink, fontWeight: FontWeight.w700);
+    Widget step(int n, List<InlineSpan> text, {bool last = false}) => Padding(
+      padding: EdgeInsets.only(bottom: last ? 0 : Space.s12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 13,
-            backgroundColor: c.primarySoft,
+          Container(
+            width: 26,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: c.primarySoft,
+              shape: BoxShape.circle,
+            ),
             child: Text(
               '$n',
               style: t.small.copyWith(
                 color: c.primary,
                 fontWeight: FontWeight.w800,
+                height: 1,
               ),
             ),
           ),
           const SizedBox(width: Space.s12),
-          Expanded(child: Text(text, style: t.base)),
+          Expanded(
+            child: Text.rich(TextSpan(style: t.base, children: text)),
+          ),
         ],
       ),
     );
     return AppCard(
+      padding: const EdgeInsets.all(Space.s18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('How to buy with AtomPay', style: t.h4),
+          Semantics(
+            header: true,
+            child: Text('How to buy with AtomPay', style: t.h4),
+          ),
           Gap.s14,
-          step(
-            1,
-            'Find a product with the AtomPay eligible badge on Atomshop.pk.',
-          ),
-          step(2, 'Choose AtomPay at checkout. Nothing is paid up front.'),
-          step(
-            3,
-            'Pay the cash price in three equal months, the last one taking '
-            'the rounding.',
-          ),
-          Gap.s4,
+          step(1, [
+            const TextSpan(text: 'Find a product with the '),
+            TextSpan(text: 'AtomPay eligible', style: bold),
+            const TextSpan(text: ' badge on Atomshop.pk.'),
+          ]),
+          step(2, [
+            const TextSpan(text: 'Choose '),
+            TextSpan(text: 'AtomPay', style: bold),
+            const TextSpan(text: ' at checkout. Nothing is paid up front.'),
+          ]),
+          step(3, last: true, [
+            const TextSpan(text: 'Pay the cash price in '),
+            TextSpan(text: 'three equal months', style: bold),
+            const TextSpan(text: ', the last one taking the rounding.'),
+          ]),
+          Gap.s16,
           AppButton.dark(
             'Shop on Atomshop.pk',
             block: true,
@@ -502,7 +604,8 @@ class HowToBuyCard extends StatelessWidget {
   }
 }
 
-/// A card that opens Ask Atom with a suggested question.
+/// A card that opens Ask Atom with a suggested question (canvas: apay
+/// wash, rose chevron).
 class AskAtomCard extends StatelessWidget {
   const new({required this.question, super.key});
 
@@ -511,12 +614,19 @@ class AskAtomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.text;
+    final c = context.colors;
     return AppCard(
+      color: c.apayWash,
+      borderColor: c.apayLine,
+      padding: const EdgeInsets.symmetric(
+        horizontal: Space.s16,
+        vertical: Space.s14,
+      ),
       onTap: () => context.pushOnce(Routes.atom),
       semanticLabel: 'Ask Atom: "$question"',
       child: Row(
         children: [
-          const AtomAvatar(size: 40),
+          const AtomAvatar(),
           const SizedBox(width: Space.s12),
           Expanded(
             child: Column(
@@ -524,40 +634,82 @@ class AskAtomCard extends StatelessWidget {
               children: [
                 Text(
                   'Ask Atom',
-                  style: t.label.copyWith(fontWeight: FontWeight.w800),
+                  style: t.body.copyWith(fontWeight: FontWeight.w700),
                 ),
-                Text('"$question"', style: t.small),
+                Text('"$question"', style: t.small.copyWith(color: c.body)),
               ],
             ),
           ),
-          Icon(Icons.chevron_right, color: context.colors.glyph),
+          const SizedBox(width: Space.s8),
+          Icon(Icons.chevron_right, size: 20, color: c.rose),
         ],
       ),
     );
   }
 }
 
-/// Home's loading skeleton, in its own shape.
+/// Home's loading skeleton, in the shape of the repaying home (canvas
+/// HomeRepaying, loading).
 class HomeSkeleton extends StatelessWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) => const LoadingShape(
-    label: 'Loading your home',
-    child: Padding(
-      padding: EdgeInsets.all(Space.gutter),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Skeleton(width: 140, height: 22),
-          Gap.s16,
-          SkeletonCard(height: 150),
-          Gap.s14,
-          SkeletonCard(),
-          Gap.s14,
-          SkeletonCard(height: 220),
-        ],
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    Widget line(double widthFactor, double height, {double? radius}) =>
+        FractionallySizedBox(
+          alignment: Alignment.centerLeft,
+          widthFactor: widthFactor,
+          child: Skeleton(height: height, radius: radius ?? Radii.pill),
+        );
+    return LoadingShape(
+      label: 'Loading your home',
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(Space.gutter),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            line(0.46, 26, radius: 10),
+            Gap.s14,
+            const Skeleton(height: 160, radius: Radii.card),
+            Gap.s14,
+            Container(
+              padding: const EdgeInsets.all(Space.s18),
+              decoration: BoxDecoration(
+                color: c.white,
+                borderRadius: BorderRadius.circular(Radii.card),
+                border: Border.all(color: c.line),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  line(0.34, 10),
+                  Gap.s12,
+                  line(0.52, 24, radius: Space.s8),
+                  Gap.s12,
+                  line(0.7, 12),
+                  Gap.s12,
+                  line(1, 8),
+                ],
+              ),
+            ),
+            Gap.s14,
+            Row(
+              children: [
+                Expanded(child: line(0.8, 18, radius: Space.s8)),
+                const Spacer(),
+                const Skeleton(width: 64),
+              ],
+            ),
+            Gap.s14,
+            const _Grid(
+              columns: 2,
+              children: [ProductCardSkeleton(), ProductCardSkeleton()],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

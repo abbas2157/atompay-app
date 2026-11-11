@@ -112,7 +112,7 @@ Future<void> tapText(WidgetTester tester, String text) async {
   await settle(tester);
 }
 
-Future<void> tapLabel(WidgetTester tester, String label) async {
+Future<void> tapLabel(WidgetTester tester, Pattern label) async {
   final f = find.bySemanticsLabel(label).last;
   await tester.ensureVisible(f);
   await tester.tap(f);
@@ -156,7 +156,7 @@ void main() {
         'Request a limit review': Routes.applicationStep(3),
         'Estimate a plan': Routes.calculator,
         'Settings': Routes.settings,
-        'Help': Routes.help,
+        'Help and Ask Atom': Routes.help,
         'Our ecosystem': Routes.ecosystem,
         'Raise a complaint': Routes.complaint,
         'Rate AtomPay': Routes.rate,
@@ -192,8 +192,12 @@ void main() {
         'Active sessions': Routes.devices,
         'Permissions': Routes.permissions,
         'Delete account': Routes.deleteAccount,
-        'Help': Routes.help,
       });
+      // "Ask through Help": one tappable paragraph.
+      h.container.read(routerProvider).go(Routes.settings);
+      await settle(tester);
+      await tapLabel(tester, RegExp('^Need a copy of your data'));
+      expect(location(h), Routes.help);
       await expectRows(tester, h, Routes.security, {
         'Password': Routes.password,
         'Signed-in devices': Routes.devices,
@@ -369,7 +373,7 @@ void main() {
 
     testWidgets('Ecosystem: missing store links say "soon"', (tester) async {
       await at(tester, Routes.ecosystem);
-      expect(find.text('YOU ARE HERE'), findsOneWidget);
+      expect(find.text('You are here'), findsOneWidget);
       expect(find.text('Android soon'), findsNWidgets(4));
       expect(find.text('iOS soon'), findsNWidgets(4));
       expect(find.text('Smart Seller'), findsOneWidget);

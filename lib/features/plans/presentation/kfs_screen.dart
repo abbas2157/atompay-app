@@ -93,10 +93,7 @@ class _KfsScreenState extends ConsumerState<KfsScreen> {
     return SecureScreen(
       child: Scaffold(
         backgroundColor: context.colors.surface,
-        appBar: const AppTopBar(
-          title: 'Key Fact Statement',
-          bottomBorder: true,
-        ),
+        appBar: const AppTopBar(title: 'Key Fact Statement'),
         body: AsyncBody(
           value: kfs,
           loading: const LoadingShape(
@@ -108,35 +105,36 @@ class _KfsScreenState extends ConsumerState<KfsScreen> {
           ),
           onRetry: () => ref.invalidate(kfsProvider(widget.orderId)),
           notFound: "We can't find this order",
-          data: (k) => FormPage(
-            footer: Builder(
-              builder: (context) => Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppButton.primary(
-                    'Email or SMS me a copy',
-                    block: true,
-                    busy: _sending,
-                    onPressed: _sending ? null : _send,
-                  ),
-                  Gap.s8,
-                  AppButton.ghost(
-                    'Share',
-                    block: true,
-                    icon: Icons.ios_share,
-                    onPressed: () {
-                      final box = context.findRenderObject() as RenderBox?;
-                      final origin = box == null
-                          ? Rect.zero
-                          : box.localToGlobal(Offset.zero) & box.size;
-                      unawaited(_share(k, origin));
-                    },
-                  ),
-                ],
+          notFoundBody:
+              'It may belong to another account, or the link is out of date.',
+          data: (k) => ListView(
+            padding: const EdgeInsets.all(Space.gutter),
+            children: [
+              KfsCard(kfs: k),
+              Gap.s14,
+              const _CheckoutNote(),
+              Gap.s14,
+              AppButton.primary(
+                'Email or SMS me a copy',
+                block: true,
+                busy: _sending,
+                onPressed: _sending ? null : _send,
               ),
-            ),
-            children: [KfsCard(kfs: k)],
+              Gap.s14,
+              Builder(
+                builder: (context) => AppButton.ghost(
+                  'Share',
+                  block: true,
+                  onPressed: () {
+                    final box = context.findRenderObject() as RenderBox?;
+                    final origin = box == null
+                        ? Rect.zero
+                        : box.localToGlobal(Offset.zero) & box.size;
+                    unawaited(_share(k, origin));
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -144,7 +142,33 @@ class _KfsScreenState extends ConsumerState<KfsScreen> {
   }
 }
 
-/// The statement's rows. Null facts render as visible placeholders.
+/// "These terms must be shown and accepted at Atomshop checkout…".
+class _CheckoutNote extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Note(
+      tone: NoteTone.blue,
+      spans: [
+        const TextSpan(
+          text:
+              'These terms must be shown and accepted at Atomshop checkout '
+              'before the order is approved ',
+        ),
+        TextSpan(
+          text: '[not built yet]',
+          style: TextStyle(color: c.rose, fontWeight: FontWeight.w700),
+        ),
+        const TextSpan(text: '. This copy stays here for you.'),
+      ],
+    );
+  }
+}
+
+/// The statement's rows. Null facts render as visible placeholders, in
+/// rose, inline with the fact they belong to.
 class KfsCard extends StatelessWidget {
   const new({required this.kfs, super.key});
 
@@ -153,94 +177,210 @@ class KfsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.text;
+    final c = context.colors;
     final k = kfs;
     final lender = k.lender;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    final value = t.base.copyWith(color: c.ink, fontWeight: FontWeight.w700);
+    final tbd = value.copyWith(color: c.rose);
+
+    Widget text(String s, {bool placeholder = false}) =>
+        Text(s, style: placeholder ? tbd : value);
+
+    // A value with its rose note after it, on the same line when it fits.
+    Widget withPending(Widget v, String pending) => Wrap(
+      spacing: Space.s4,
       children: [
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        v,
+        Text(pending, style: tbd),
+      ],
+    );
+
+    final rows = <_KfsRow>[
+      _KfsRow(
+        'Lender',
+        Text.rich(
+          TextSpan(
+            style: value,
             children: [
-              Text('Order ${k.orderNumber}', style: t.h4),
-              if (k.product != null) Text(k.product!, style: t.small),
-              Gap.s12,
-              KeyValueList([
-                KeyValue(
-                  'Lender',
-                  '${lender.name ?? KfsPlaceholders.lender} · SECP licence '
-                      '${lender.licence ?? KfsPlaceholders.licence}',
-                  placeholder: lender.name == null || lender.licence == null,
-                ),
-                if (lender.address != null)
-                  KeyValue('Address', lender.address!),
-                const KeyValue('Product', 'AtomPay instalment plan'),
-                KeyValue(
-                  'Amount financed',
-                  '${rs(k.amountFinanced)} (cash price)',
-                  spoken: '${rsSpoken(k.amountFinanced)}, the cash price',
-                ),
-                KeyValue('Advance', rs(k.advance), spoken: rsSpoken(k.advance)),
-                KeyValue('Markup', '${k.markupPercent}%'),
-                KeyValue(
-                  'Processing fee',
-                  '${k.processingFeePercent}% · ${rs(k.processingFee)}',
-                  spoken:
-                      '${k.processingFeePercent} percent, '
-                      '${rsSpoken(k.processingFee)}',
-                  pending: KfsPlaceholders.feeCharged,
-                ),
-                KeyValue(
-                  'Annual percentage rate (APR)',
-                  k.aprPercent == null
-                      ? '[APR]'
-                      : '${k.aprPercent}% including the fee',
-                  placeholder: k.aprPercent == null,
-                  pending: KfsPlaceholders.aprIfNoFee,
-                ),
-                KeyValue('Tenor', '${k.months} months'),
-                for (final i in k.instalments)
-                  KeyValue(
-                    i.number == 1 ? 'Instalments' : '',
-                    '${dayMonthYear(i.dueDate)} · ${rs(i.amount)}',
-                    spoken:
-                        'Instalment ${i.number}, ${dayMonthYear(i.dueDate)}, '
-                        '${rsSpoken(i.amount)}',
-                  ),
-                KeyValue(
-                  'Total you repay',
-                  '${rs(k.totalRepayable)} in instalments',
-                  spoken: rsSpoken(k.totalRepayable),
-                ),
-                const KeyValue('Delivery', 'Charges apply, shown at checkout'),
-                KeyValue(
-                  'Late payment',
-                  k.latePayment ?? KfsPlaceholders.late,
-                  placeholder: k.latePayment == null,
-                ),
-                KeyValue(
-                  'Paying early',
-                  k.earlySettlement ?? KfsPlaceholders.early,
-                  placeholder: k.earlySettlement == null,
-                ),
-                KeyValue(
-                  'Complaints',
-                  k.complaints ??
-                      'In the app: Help › Complaints. Then the SECP.',
-                ),
-              ]),
+              TextSpan(
+                text: lender.name ?? KfsPlaceholders.lender,
+                style: lender.name == null ? tbd : null,
+              ),
+              const TextSpan(text: ' · SECP licence '),
+              TextSpan(
+                text: lender.licence ?? KfsPlaceholders.licence,
+                style: lender.licence == null ? tbd : null,
+              ),
             ],
           ),
         ),
-        Gap.s14,
-        if (k.issuedAt != null)
-          Text('Issued ${dayMonthYear(k.issuedAt!)}.', style: t.small),
-      ],
+      ),
+      if (lender.address != null) _KfsRow('Address', text(lender.address!)),
+      _KfsRow('Product', text('AtomPay instalment plan')),
+      _KfsRow(
+        'Amount financed',
+        text('${rs(k.amountFinanced)} (cash price)'),
+        spoken: '${rsSpoken(k.amountFinanced)}, the cash price',
+      ),
+      _KfsRow('Advance', text(rs(k.advance)), spoken: rsSpoken(k.advance)),
+      _KfsRow('Markup', text('${k.markupPercent}%')),
+      _KfsRow(
+        'Processing fee',
+        withPending(
+          text('${k.processingFeePercent}% · ${rs(k.processingFee)}'),
+          KfsPlaceholders.feeCharged,
+        ),
+        spoken:
+            '${k.processingFeePercent} percent, '
+            '${rsSpoken(k.processingFee)}, ${KfsPlaceholders.feeCharged}',
+      ),
+      _KfsRow(
+        'Annual percentage rate (APR)',
+        withPending(
+          k.aprPercent == null
+              ? text('[APR]', placeholder: true)
+              : text('${k.aprPercent}% including the fee'),
+          KfsPlaceholders.aprIfNoFee,
+        ),
+      ),
+      _KfsRow('Tenor', text('${k.months} months')),
+      if (k.instalments.isNotEmpty)
+        _KfsRow(
+          'Instalments',
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final i in k.instalments)
+                text('${dayMonthYear(i.dueDate)} · ${rs(i.amount)}'),
+            ],
+          ),
+          spoken: [
+            for (final i in k.instalments)
+              [
+                'Instalment ${i.number}',
+                dayMonthYear(i.dueDate),
+                rsSpoken(i.amount),
+              ].join(', '),
+          ].join('. '),
+        ),
+      _KfsRow(
+        'Total you repay',
+        text('${rs(k.totalRepayable)} in instalments'),
+        spoken: '${rsSpoken(k.totalRepayable)} in instalments',
+      ),
+      _KfsRow('Delivery', text('Charges apply, shown at checkout')),
+      _KfsRow(
+        'Late payment',
+        text(
+          k.latePayment ?? KfsPlaceholders.late,
+          placeholder: k.latePayment == null,
+        ),
+      ),
+      _KfsRow(
+        'Paying early',
+        text(
+          k.earlySettlement ?? KfsPlaceholders.early,
+          placeholder: k.earlySettlement == null,
+        ),
+      ),
+      _KfsRow(
+        'Complaints',
+        text(k.complaints ?? 'In the app: Help › Complaints. Then the SECP.'),
+      ),
+    ];
+
+    return AppCard(
+      padding: const EdgeInsets.all(Space.s18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text('Order ${k.orderNumber}', style: t.h4),
+                ),
+              ),
+              if (k.product != null) ...[
+                const SizedBox(width: Space.s12),
+                Flexible(
+                  child: Text(
+                    k.product!,
+                    style: t.tiny,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          Gap.s12,
+          for (var i = 0; i < rows.length; i++)
+            _KfsRowView(row: rows[i], first: i == 0),
+        ],
+      ),
     );
   }
 }
 
-/// The statement as plain text for the share sheet, placeholders kept.
+/// One fact: its name and its value.
+class _KfsRow {
+  const new(this.label, this.value, {this.spoken});
+
+  final String label;
+  final Widget value;
+
+  /// What a screen reader says for the value ("Rupees 47,000").
+  final String? spoken;
+}
+
+/// Canvas `.kfs`: a 42 / 58 grid, the name muted in sentence case, the
+/// value left-aligned, a hairline between rows.
+class _KfsRowView extends StatelessWidget {
+  const new({required this.row, required this.first});
+
+  final _KfsRow row;
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = context.text;
+    return MergeSemantics(
+      child: Container(
+        padding: EdgeInsets.only(top: first ? 0 : Space.s10, bottom: Space.s10),
+        decoration: BoxDecoration(
+          border: first ? null : Border(top: BorderSide(color: c.line)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 42,
+              child: Text(
+                row.label,
+                style: t.small.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            const SizedBox(width: Space.s10),
+            Expanded(
+              flex: 58,
+              child: Semantics(
+                label: row.spoken,
+                excludeSemantics: row.spoken != null,
+                child: row.value,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// The statement as plain text for the share sheet, placeholders kept.
 String kfsText(Kfs k) {
   final l = k.lender;
   const complaints = 'In the app: Help › Complaints. Then the SECP.';
