@@ -134,7 +134,10 @@ void main() {
 
   testWidgets('signing out removes the token from the server', (tester) async {
     final (h, push) = await _start(tester);
-    await h.container.read(sessionProvider.notifier).signOut();
+    // Real async: the sign-out awaits the fake server's responses.
+    await tester.runAsync(
+      () => h.container.read(sessionProvider.notifier).signOut(),
+    );
     await settle(tester);
     expect(_devices(h, 'DELETE').single['fcm_token'], 'token-1');
     expect(push.deleted, 1);

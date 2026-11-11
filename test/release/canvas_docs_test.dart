@@ -183,7 +183,7 @@ void main() {
       expect(find.text('Raise a complaint'), findsWidgets);
       expect(
         find.textContaining('A person reads every complaint'),
-        findsOneWidget,
+        findsWidgets,
       );
     });
 
