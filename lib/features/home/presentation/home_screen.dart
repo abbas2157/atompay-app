@@ -30,9 +30,25 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scroll = ScrollController();
 
+  /// Reloads Home when the customer comes back to the app: a limit
+  /// decided or changed meanwhile, or an Atomshop checkout, shows up
+  /// without pulling to refresh (push isn't always there to say so).
+  late final AppLifecycleListener _lifecycle;
+  DateTime _loadedAt = DateTime.now();
+
+  /// A quick hop to another app and back doesn't reload.
+  static const _resumeGap = Duration(seconds: 30);
+
   @override
   void initState() {
     super.initState();
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        if (DateTime.now().difference(_loadedAt) >= _resumeGap) {
+          unawaited(_refresh());
+        }
+      },
+    );
     // After sign-in, never at launch's first frame (brief §10).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) unawaited(maybeAskForNotifications(context, ref));
@@ -41,11 +57,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    _lifecycle.dispose();
     _scroll.dispose();
     super.dispose();
   }
 
   Future<void> _refresh() async {
+    _loadedAt = DateTime.now();
     ref
       ..invalidate(plansProvider)
       ..invalidate(productsWithinLimitProvider)
