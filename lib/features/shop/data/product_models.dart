@@ -75,3 +75,22 @@ abstract class PlanPreview with _$PlanPreview {
   factory PlanPreview.fromJson(Map<String, dynamic> json) =>
       _$PlanPreviewFromJson(json);
 }
+
+/// `POST /orders` (docs/api/orders.md): what "Order placed" shows. Atomshop
+/// placed it; the dates come when it is delivered.
+@freezed
+abstract class PlacedOrder with _$PlacedOrder {
+  const factory PlacedOrder({
+    required int orderId,
+    required String orderNumber,
+    required int total,
+    @Default([]) List<int> instalments,
+    String? product,
+    String? area,
+    @Default(0) int advance,
+    @Default(3) int months,
+  }) = _PlacedOrder;
+
+  factory PlacedOrder.fromJson(Map<String, dynamic> json) =>
+      _$PlacedOrderFromJson(json);
+}

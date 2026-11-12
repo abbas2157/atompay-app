@@ -54,6 +54,7 @@ Every error is JSON, even if you forget `Accept`.
 |---|---|---|
 | `profile_required` | `POST /application` | No identity profile has been submitted yet. Send the customer to the profile form first. |
 | `nothing_changed` | `POST /application` | A limit is already in force and the figures sent are the ones on file. Show `message`; nothing was submitted. |
+| `orders_unavailable`, `limit_required`, `over_limit`, `over_cap`, `address_required`, `order_in_progress` | `GET /products/{id}/kfs`, `POST /orders` | See [orders.md](orders.md). Nothing was ordered. |
 | `outstanding_balance` | `POST /me/delete` | Unpaid instalments, or an order waiting for approval. Show `message`. The account is not deleted. |
 
 ## Rate limits
@@ -67,6 +68,7 @@ Every error is JSON, even if you forget `Accept`.
 | `POST /profile`, `POST /application` | 10/min | account |
 | `GET /profile/documents/*` | 60/min | account |
 | `POST /me/delete` | 5/min | account |
+| `POST /orders` | 5/min | account |
 | `POST /quote` | 60/min | IP |
 | `POST /estimate` | 10/min and 40/hour | IP |
 | `/app-config`, `/options`, `/calculator` | 600/min | IP |

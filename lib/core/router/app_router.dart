@@ -187,11 +187,29 @@ List<RouteBase> buildRoutes(GlobalKey<NavigatorState> root) {
               builder: (_, _) => const ShopScreen(),
               routes: [
                 GoRoute(
+                  path: 'placed/:orderId',
+                  redirect: (_, s) =>
+                      intParam(s, 'orderId') == null ? Routes.shop : null,
+                  builder: (_, s) => OrderPlacedScreen(
+                    orderId: intParam(s, 'orderId')!,
+                    number: s.uri.queryParameters['n'] ?? '',
+                    first:
+                        int.tryParse(s.uri.queryParameters['first'] ?? '') ?? 0,
+                  ),
+                ),
+                GoRoute(
                   path: ':productId',
                   redirect: (_, s) =>
                       intParam(s, 'productId') == null ? Routes.shop : null,
                   builder: (_, s) =>
                       ProductScreen(productId: intParam(s, 'productId')!),
+                  routes: [
+                    GoRoute(
+                      path: 'buy',
+                      builder: (_, s) =>
+                          BuyScreen(productId: intParam(s, 'productId')!),
+                    ),
+                  ],
                 ),
               ],
             ),

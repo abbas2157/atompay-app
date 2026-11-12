@@ -99,15 +99,18 @@ abstract class Plan with _$Plan {
   factory Plan.fromJson(Map<String, dynamic> json) => _$PlanFromJson(json);
 }
 
-/// `GET /plans/{order}/kfs` (brief §7.2): the Key Fact Statement. Null
-/// fields are facts the business hasn't supplied: shown as placeholders.
+/// `GET /plans/{order}/kfs` (brief §7.2), or `GET /products/{id}/kfs`
+/// before an order exists: the Key Fact Statement. Null fields are facts
+/// the business hasn't supplied: shown as placeholders.
 @freezed
 abstract class Kfs with _$Kfs {
   const factory Kfs({
-    required String orderNumber,
     required int amountFinanced,
     required int months,
     required int totalRepayable,
+
+    /// Null before the order exists (`GET /products/{id}/kfs`).
+    String? orderNumber,
     String? product,
     @Default(KfsLender()) KfsLender lender,
     @Default(0) int advance,
@@ -142,8 +145,10 @@ abstract class KfsLender with _$KfsLender {
 abstract class KfsInstalment with _$KfsInstalment {
   const factory KfsInstalment({
     required int number,
-    required DateTime dueDate,
     required int amount,
+
+    /// Null until Atomshop delivers the order and sets the dates.
+    DateTime? dueDate,
   }) = _KfsInstalment;
 
   factory KfsInstalment.fromJson(Map<String, dynamic> json) =>

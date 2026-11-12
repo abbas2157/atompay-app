@@ -19,6 +19,7 @@ export 'package:atompay_mobile/features/launch/presentation/onboarding_screen.da
 export 'package:atompay_mobile/features/notifications/presentation/notifications_screen.dart';
 export 'package:atompay_mobile/features/plans/presentation/kfs_screen.dart';
 export 'package:atompay_mobile/features/plans/presentation/orders_screens.dart';
+export 'package:atompay_mobile/features/shop/presentation/buy_screens.dart';
 export 'package:atompay_mobile/features/shop/presentation/shop_screens.dart';
 
 export 'pending_screens.dart';

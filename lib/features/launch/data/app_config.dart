@@ -86,6 +86,10 @@ abstract class Features with _$Features {
 
     /// Hide the Ask Atom mic when false.
     @Default(true) bool voice,
+
+    /// "Buy with AtomPay" in the app (docs/api/orders.md). Off: the product
+    /// page keeps "Buy on Atomshop.pk" only.
+    @Default(false) bool inAppOrders,
   }) = _Features;
 
   factory Features.fromJson(Map<String, dynamic> json) =>

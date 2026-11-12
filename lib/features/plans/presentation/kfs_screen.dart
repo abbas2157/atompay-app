@@ -85,7 +85,7 @@ class _KfsScreenState extends ConsumerState<KfsScreen> {
   Future<void> _share(Kfs k, Rect origin) => SharePlus.instance.share(
     ShareParams(
       text: kfsText(k),
-      subject: 'AtomPay Key Fact Statement · ${k.orderNumber}',
+      subject: 'AtomPay Key Fact Statement · ${kfsTitle(k)}',
       sharePositionOrigin: origin,
     ),
   );
@@ -160,7 +160,7 @@ class _CheckoutNote extends StatelessWidget {
         tone: NoteTone.green,
         icon: Icons.verified_outlined,
         text:
-            'You accepted these terms at Atomshop checkout on '
+            'You accepted these terms when you ordered, on '
             '${dayMonthYear(at)}. This copy stays here for you.',
       );
     }
@@ -255,14 +255,14 @@ class KfsCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (final i in k.instalments)
-                text('${dayMonthYear(i.dueDate)} · ${rs(i.amount)}'),
+                text('${kfsDue(i)} · ${rs(i.amount)}'),
             ],
           ),
           spoken: [
             for (final i in k.instalments)
               [
                 'Instalment ${i.number}',
-                dayMonthYear(i.dueDate),
+                kfsDue(i),
                 rsSpoken(i.amount),
               ].join(', '),
           ].join('. '),
@@ -272,7 +272,7 @@ class KfsCard extends StatelessWidget {
         text('${rs(k.totalRepayable)} in instalments'),
         spoken: '${rsSpoken(k.totalRepayable)} in instalments',
       ),
-      _KfsRow('Delivery', text('Charges apply, shown at checkout')),
+      _KfsRow('Delivery', text('Charges apply, in addition to this plan')),
       _KfsRow(
         'Late payment',
         text(
@@ -287,10 +287,7 @@ class KfsCard extends StatelessWidget {
           placeholder: k.earlySettlement == null,
         ),
       ),
-      _KfsRow(
-        'Complaints',
-        text(k.complaints ?? _complaints),
-      ),
+      _KfsRow('Complaints', text(k.complaints ?? _complaints)),
     ];
 
     return AppCard(
@@ -305,7 +302,7 @@ class KfsCard extends StatelessWidget {
               Expanded(
                 child: Semantics(
                   header: true,
-                  child: Text('Order ${k.orderNumber}', style: t.h4),
+                  child: Text(kfsTitle(k), style: t.h4),
                 ),
               ),
               if (k.product != null) ...[
@@ -396,7 +393,7 @@ String kfsText(Kfs k) {
   final seller = 'Sold by: ${l.name ?? KfsPlaceholders.company}';
   return [
     'AtomPay Key Fact Statement',
-    'Order ${k.orderNumber}${k.product == null ? '' : ' · ${k.product}'}',
+    '${kfsTitle(k)}${k.product == null ? '' : ' · ${k.product}'}',
     seller,
     'Amount financed: ${rs(k.amountFinanced)} (cash price)',
     'Advance: ${rs(k.advance)}',
@@ -405,9 +402,9 @@ String kfsText(Kfs k) {
     apr,
     'Tenor: ${k.months} months',
     for (final i in k.instalments)
-      'Instalment ${i.number}: ${dayMonthYear(i.dueDate)} · ${rs(i.amount)}',
+      'Instalment ${i.number}: ${kfsDue(i)} · ${rs(i.amount)}',
     'Total you repay: ${rs(k.totalRepayable)}',
-    'Delivery: charges apply, shown at checkout',
+    'Delivery: charges apply, in addition to this plan',
     'Late payment: ${k.latePayment ?? KfsPlaceholders.late}',
     'Paying early: ${k.earlySettlement ?? KfsPlaceholders.early}',
     'Complaints: ${k.complaints ?? _complaints}',
@@ -415,3 +412,12 @@ String kfsText(Kfs k) {
 }
 
 const _complaints = 'In the app: Help › Complaints.';
+
+/// "Order AS-01280", or "Before you order" for a product's statement.
+String kfsTitle(Kfs k) =>
+    k.orderNumber == null ? 'Before you order' : 'Order ${k.orderNumber}';
+
+/// The date, or when it will be set: Atomshop dates the months on delivery.
+String kfsDue(KfsInstalment i) => i.dueDate == null
+    ? 'Month ${i.number} · set on delivery'
+    : dayMonthYear(i.dueDate!);

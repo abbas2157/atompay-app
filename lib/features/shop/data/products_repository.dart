@@ -1,4 +1,5 @@
 import 'package:atompay_mobile/core/network/api_client.dart';
+import 'package:atompay_mobile/features/plans/data/plan_models.dart';
 import 'package:atompay_mobile/features/shop/data/product_models.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -52,6 +53,33 @@ class ProductsRepository {
       queryParameters: {'price': price},
     );
     return PlanPreview.fromJson(dataOf(r));
+  });
+
+  /// The Key Fact Statement for buying [productId] now: no order number,
+  /// no dates. 409 (Conflict, with a code) when the customer can't order it.
+  Future<Kfs> kfs(int productId) => guard(() async {
+    final r = await _dio.get<dynamic>('/products/$productId/kfs');
+    return Kfs.fromJson(dataOf(r));
+  });
+
+  /// Atomshop places the order. [kfsAmount] is the statement's
+  /// `amount_financed`; a changed price comes back as a 422 on `order`.
+  /// Never retried by itself: a timeout may still have placed it.
+  Future<PlacedOrder> placeOrder({
+    required int productId,
+    required int kfsAmount,
+  }) => guard(() async {
+    final r = await _dio.post<dynamic>(
+      '/orders',
+      data: {
+        'product_id': productId,
+        'kfs_amount': kfsAmount,
+        'accept_kfs': true,
+      },
+      // Atomshop places it while we wait; the server allows it 60 s.
+      options: Options(receiveTimeout: const Duration(seconds: 90)),
+    );
+    return PlacedOrder.fromJson(dataOf(r));
   });
 
   /// 404 when the product isn't eligible.

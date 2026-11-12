@@ -17,6 +17,7 @@ import 'package:atompay_mobile/core/widgets/product_card.dart';
 import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
+import 'package:atompay_mobile/features/launch/application/launch_controller.dart';
 import 'package:atompay_mobile/features/shop/application/shop_controller.dart';
 import 'package:atompay_mobile/features/shop/data/product_models.dart';
 import 'package:atompay_mobile/features/shop/presentation/plan_widgets.dart';
@@ -490,6 +491,12 @@ class _ProductBody extends ConsumerWidget {
     final c = context.colors;
     final preview = ref.watch(planPreviewProvider(product.price));
     final limit = ref.watch(dashboardProvider).value?.data.limit;
+    // In the app once the server takes orders and there is a limit; the
+    // server still says no (409) when this product doesn't fit.
+    final buyInApp =
+        ref.watch(appConfigProvider).features.inAppOrders &&
+        (limit?.hasLimit ?? false) &&
+        (preview.value?.fitsLimit ?? false);
     final image = product.imageUrl == null
         ? Icon(Icons.image_outlined, size: 56, color: c.glyph)
         : NetImage(
@@ -579,27 +586,56 @@ class _ProductBody extends ConsumerWidget {
                 ),
               },
               Gap.s14,
-              AppButton.dark(
-                'Buy on Atomshop.pk',
-                large: true,
-                block: true,
-                trailingIcon: Icons.north_east,
-                semanticLabel: 'Buy on Atomshop.pk, opens outside the app',
-                onPressed: () => Links.open(product.url),
-              ),
-              Gap.s14,
-              AppButton.ghost(
-                'Ask Atom about this plan',
-                block: true,
-                onPressed: () => context.pushOnce(Routes.atom),
-              ),
-              Gap.s14,
-              Text(
-                'You place the order on Atomshop.pk and choose AtomPay at '
-                'checkout.',
-                style: t.tiny,
-                textAlign: TextAlign.center,
-              ),
+              if (buyInApp) ...[
+                AppButton.primary(
+                  'Buy with AtomPay',
+                  large: true,
+                  block: true,
+                  onPressed: () => context.pushOnce(Routes.buy(product.id)),
+                ),
+                Gap.s14,
+                AppButton.ghost(
+                  'Ask Atom about this plan',
+                  block: true,
+                  onPressed: () => context.pushOnce(Routes.atom),
+                ),
+                Gap.s4,
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () => Links.open(product.url),
+                    iconAlignment: IconAlignment.end,
+                    icon: const Icon(Icons.north_east, size: 16),
+                    label: Semantics(
+                      label:
+                          'Buy on Atomshop.pk instead, opens outside the app',
+                      excludeSemantics: true,
+                      child: const Text('Buy on Atomshop.pk instead'),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                AppButton.dark(
+                  'Buy on Atomshop.pk',
+                  large: true,
+                  block: true,
+                  trailingIcon: Icons.north_east,
+                  semanticLabel: 'Buy on Atomshop.pk, opens outside the app',
+                  onPressed: () => Links.open(product.url),
+                ),
+                Gap.s14,
+                AppButton.ghost(
+                  'Ask Atom about this plan',
+                  block: true,
+                  onPressed: () => context.pushOnce(Routes.atom),
+                ),
+                Gap.s14,
+                Text(
+                  'You place the order on Atomshop.pk and choose AtomPay at '
+                  'checkout.',
+                  style: t.tiny,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),

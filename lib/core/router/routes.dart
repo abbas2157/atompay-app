@@ -36,6 +36,17 @@ abstract final class Routes {
   // Shop
   static const shop = '/shop';
   static String product(int id) => '/shop/$id';
+
+  /// "Buy with AtomPay": delivery, then review & accept (docs/api/orders.md).
+  static String buy(int productId) => '/shop/$productId/buy';
+
+  /// The order number and first instalment are not personal data.
+  static String orderPlaced(
+    int orderId, {
+    required String number,
+    int first = 0,
+  }) =>
+      '/shop/placed/$orderId?n=${Uri.encodeQueryComponent(number)}&first=$first';
   static const calculator = '/calculator';
 
   // Ask Atom
