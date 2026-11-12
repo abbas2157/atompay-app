@@ -635,6 +635,38 @@
    "w": 390,
    "h": 844,
    "title": "Ask Atom · microphone permission"
+  },
+  "ProductBuy.dc.html": {
+   "x": 2820,
+   "y": 6084,
+   "w": 390,
+   "h": 1100,
+   "title": "Product · buy with AtomPay (proposed)",
+   "is_interactive": true
+  },
+  "CheckoutDelivery.dc.html": {
+   "x": 3290,
+   "y": 6084,
+   "w": 390,
+   "h": 1120,
+   "title": "Buy 1 · Delivery (proposed)",
+   "is_interactive": true
+  },
+  "CheckoutReview.dc.html": {
+   "x": 3760,
+   "y": 6084,
+   "w": 390,
+   "h": 1460,
+   "title": "Buy 2 · Review & accept (proposed)",
+   "is_interactive": true
+  },
+  "OrderPlaced.dc.html": {
+   "x": 4230,
+   "y": 6084,
+   "w": 390,
+   "h": 900,
+   "title": "Success · order placed (proposed)",
+   "is_interactive": true
   }
  },
  "order": [
@@ -670,6 +702,10 @@
   "Calculator.dc.html",
   "Plans.dc.html",
   "PlanDetail.dc.html",
+  "ProductBuy.dc.html",
+  "CheckoutDelivery.dc.html",
+  "CheckoutReview.dc.html",
+  "OrderPlaced.dc.html",
   "AskAtom.dc.html",
   "AskAtomConvo.dc.html",
   "AskAtomMic.dc.html",
@@ -749,7 +785,7 @@
    "y": 5804,
    "text": "Shop and repay",
    "kind": "title1",
-   "maxW": 2270
+   "maxW": 4620
   },
   "rowHelp": {
    "x": 0,
@@ -841,6 +877,20 @@
    "text": "States on real screens: loading, error, empty, offline, success",
    "kind": "title1",
    "maxW": 2740
+  },
+  "stickyCheckout": {
+   "x": 4700,
+   "y": 6084,
+   "w": 360,
+   "fill": "red",
+   "text": "Server first: in-app ordering needs POST /api/v1/orders (product_id, delivery address, accepted KFS version; re-checks stock, limit and cap), a quote with delivery charge and the schedule dates, and the KFS before an order exists (today it is per order). Until then the product page keeps 'Buy on Atomshop.pk'. Decide: is delivery paid in cash to the rider or added to the plan?"
+  },
+  "stickyCheckoutCopy": {
+   "x": 4700,
+   "y": 6600,
+   "w": 360,
+   "fill": "blue",
+   "text": "Wording: Atomshop sells on instalments. No lender, no licence, no loan. The existing KFS board still says 'Lender … SECP licence' and needs the same fix before it ships."
   }
  },
  "designSystems": []
