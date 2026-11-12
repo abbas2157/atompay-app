@@ -65,10 +65,24 @@ class ApplicationRepository {
 
   /// Multipart. Photos are sent from memory and never touch the disk;
   /// omit one to keep the copy on file.
+  ///
+  /// Throws [CheckUnavailable] when the server couldn't scan a photo just
+  /// now (see [scanErrors]).
   Future<Profile> saveProfile(
     ProfileInput input, {
     Map<CaptureDoc, Uint8List> photos = const {},
-  }) => guard(() async {
+  }) async {
+    try {
+      return await _saveProfile(input, photos);
+    } on Validation catch (e) {
+      throw scanErrors(e);
+    }
+  }
+
+  Future<Profile> _saveProfile(
+    ProfileInput input,
+    Map<CaptureDoc, Uint8List> photos,
+  ) => guard(() async {
     final form = FormData.fromMap({
       'full_name': input.fullName.trim(),
       'cnic': input.cnic,
@@ -87,7 +101,12 @@ class ApplicationRepository {
     final r = await _dio.post<dynamic>(
       '/profile',
       data: form,
-      options: Options(sendTimeout: const Duration(minutes: 2)),
+      // The server virus-scans each photo before answering, so allow well
+      // over the 60 s the contract asks for, both ways.
+      options: Options(
+        sendTimeout: const Duration(minutes: 2),
+        receiveTimeout: const Duration(seconds: 90),
+      ),
     );
     return Profile.fromJson(dataOf(r));
   });
@@ -150,6 +169,45 @@ class ApplicationRepository {
     return Estimate.fromJson(dataOf(r));
   });
 }
+
+/// Sorts the photo errors of a `POST /profile` 422 (`docs/api/profile.md`).
+/// The server scans each photo and answers on `cnic_front`, `cnic_back`
+/// or `selfie` with one of:
+///
+/// - "This file can't be accepted…": the photo was refused. It stays a
+///   field error, shown under that photo, and the customer retakes it.
+/// - "We couldn't check this file just now…": the scanner was down.
+///   Nothing is wrong with the photo, so it's no field error at all: when
+///   it's the only problem this returns [CheckUnavailable]; next to real
+///   field errors it's dropped, and the resubmit after fixing them scans
+///   again.
+///
+/// This is the one place that reads these messages; screens switch on the
+/// type.
+ApiException scanErrors(Validation error) {
+  String? unavailable;
+  final rest = <String, List<String>>{};
+  for (final MapEntry(:key, :value) in error.fieldErrors.entries) {
+    final kept = CaptureDoc.parse(key) == null
+        ? value
+        : [
+            for (final m in value)
+              if (!_isScanUnavailable(m)) m,
+          ];
+    if (kept.length < value.length) {
+      unavailable ??= value.firstWhere(_isScanUnavailable);
+    }
+    if (kept.isNotEmpty) rest[key] = kept;
+  }
+  if (unavailable == null) return error;
+  if (rest.isEmpty) return CheckUnavailable(unavailable);
+  return Validation(error.message, fieldErrors: rest);
+}
+
+bool _isScanUnavailable(String message) => message
+    .replaceAll('\u2019', "'") // a curly apostrophe counts too
+    .toLowerCase()
+    .startsWith("we couldn't check this file");
 
 @Riverpod(keepAlive: true)
 ApplicationRepository applicationRepository(Ref ref) =>

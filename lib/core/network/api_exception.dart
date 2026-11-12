@@ -53,6 +53,14 @@ final class Validation extends ApiException {
       Validation(message, fieldErrors: Map.of(fieldErrors)..remove(field));
 }
 
+/// A 422 for a check the server couldn't run just now: the virus scan on a
+/// `POST /profile` photo. Nothing is wrong with what was sent, so keep the
+/// form and photos as they are and offer Try again. [message] is the
+/// server's text.
+final class CheckUnavailable extends ApiException {
+  const new(super.message);
+}
+
 /// 429: disable the button and count down from [retryAfter].
 final class RateLimited extends ApiException {
   const new(super.message, {required this.retryAfter});

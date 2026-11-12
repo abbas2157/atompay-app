@@ -252,6 +252,20 @@ class ApplyFlow extends Notifier<ApplyDraft> {
     field: doc.key,
   );
 
+  /// The server refused these photos ("This file can't be accepted…"):
+  /// forget the bytes so the customer retakes them instead of sending the
+  /// same file again. A copy already on file is untouched.
+  void dropPhotos(Iterable<String> fields) {
+    final refused = fields.map(CaptureDoc.parse).nonNulls.toSet();
+    if (!state.photos.keys.any(refused.contains)) return;
+    state = state.copyWith(
+      photos: {
+        for (final e in state.photos.entries)
+          if (!refused.contains(e.key)) e.key: e.value,
+      },
+    );
+  }
+
   void setErrors(Map<String, String> errors) =>
       state = state.copyWith(errors: errors);
 
@@ -366,11 +380,16 @@ class SubmitApplicationForm extends FormController {
     });
     if (ok == null) {
       final error = state.error;
+      // CheckUnavailable (the server couldn't scan a photo just now) falls
+      // through to `failed`: everything stays as it is, and the button
+      // offers Try again.
       if (error is Validation) {
-        flow.setErrors({
-          for (final e in error.fieldErrors.entries)
-            if (e.value.isNotEmpty) e.key: e.value.first,
-        });
+        flow
+          ..dropPhotos(error.fieldErrors.keys)
+          ..setErrors({
+            for (final e in error.fieldErrors.entries)
+              if (e.value.isNotEmpty) e.key: e.value.first,
+          });
         final steps = error.fieldErrors.keys.map(ApplyFields.stepOf);
         if (steps.isEmpty) return SubmitOutcome.failed;
         return switch (steps.reduce((a, b) => a < b ? a : b)) {

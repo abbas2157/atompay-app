@@ -4,6 +4,7 @@ import 'package:atompay_mobile/core/format/dates.dart';
 import 'package:atompay_mobile/core/format/input_formatters.dart';
 import 'package:atompay_mobile/core/format/money.dart';
 import 'package:atompay_mobile/core/format/pk.dart';
+import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
 import 'package:atompay_mobile/core/utils/app_clock.dart';
@@ -630,15 +631,16 @@ class _DocTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = context.text;
-    final done = taken || onFile;
     final hasError = error != null;
-    final summary = taken
+    // A photo with an error (say the server refused it) isn't done.
+    final done = (taken || onFile) && !hasError;
+    final summary = !done
+        ? (doc == CaptureDoc.selfie
+              ? 'Hold your CNIC next to your face'
+              : 'Tap to take a photo')
+        : taken
         ? 'Taken · tap to retake'
-        : onFile
-        ? 'On file · tap to replace'
-        : doc == CaptureDoc.selfie
-        ? 'Hold your CNIC next to your face'
-        : 'Tap to take a photo';
+        : 'On file · tap to replace';
     final radius = BorderRadius.circular(Radii.note);
     // Dashed while empty; a solid edge once taken or when in error.
     final solid = done || hasError;
@@ -1074,6 +1076,10 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
         footer: SubmitSection(
           label: !_declared
               ? 'Tick the declaration to submit'
+              // The server couldn't scan a photo just now: same form, same
+              // photos, its message in the note above.
+              : status.error is CheckUnavailable
+              ? 'Try again'
               : (d.isReview ? 'Request limit review' : 'Submit application'),
           status: status,
           offline: offline,

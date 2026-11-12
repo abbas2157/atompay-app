@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:atompay_mobile/core/storage/prefs.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,6 +45,8 @@ abstract class CameraSession {
 
   /// Takes a JPEG into memory. The plugin's temporary file is deleted at
   /// once: identity photos are never left on the phone.
+  ///
+  /// Always JPEG: the server refuses HEIC, which is what iPhones shoot.
   Future<Uint8List> take();
   Future<void> dispose();
 }
@@ -132,7 +135,7 @@ class _PluginSession implements CameraSession {
   Future<Uint8List> take() async {
     final file = await _c.takePicture();
     try {
-      final bytes = await file.readAsBytes();
+      final bytes = await compressPhoto(await file.readAsBytes());
       if (bytes.length > maxPhotoBytes) throw const PhotoTooLarge();
       return bytes;
     } finally {
@@ -151,3 +154,17 @@ class _PluginSession implements CameraSession {
   @override
   Future<void> dispose() => _c.dispose();
 }
+
+/// Re-encodes a camera photo as JPEG at quality 85 (`docs/api/profile.md`):
+/// the server refuses HEIC, and an iPhone can hand back HEIC whatever the
+/// camera was asked for. The camera already shoots 1080p, which the
+/// plugin's default 1920 × 1080 floor leaves unscaled. EXIF (location,
+/// device) is dropped after the photo is turned upright.
+Future<Uint8List> compressPhoto(Uint8List bytes) =>
+    FlutterImageCompress.compressWithList(
+      bytes,
+      quality: 85,
+      // The default, said out loud: JPEG is the whole point.
+      // ignore: avoid_redundant_argument_values
+      format: CompressFormat.jpeg,
+    );

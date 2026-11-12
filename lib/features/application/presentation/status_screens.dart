@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:atompay_mobile/core/format/dates.dart';
 import 'package:atompay_mobile/core/format/money.dart';
 import 'package:atompay_mobile/core/format/pk.dart';
+import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/core/router/navigation.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
@@ -986,24 +987,48 @@ class DocumentViewerScreen extends ConsumerStatefulWidget {
 class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
   bool _busy = false;
 
+  /// Why the last upload failed, shown above the buttons.
+  String? _problem;
+
+  /// A photo that didn't go through for a reason other than the photo
+  /// itself (the scan was down, no connection): kept for Try again so the
+  /// customer needn't retake it.
+  Uint8List? _pending;
+
   Future<void> _replace() async {
     final bytes = await context.push<Uint8List>(Routes.capture(widget.doc.key));
     if (bytes == null || !mounted) return;
-    setState(() => _busy = true);
+    await _upload(bytes);
+  }
+
+  Future<void> _upload(Uint8List bytes) async {
+    setState(() {
+      _busy = true;
+      _problem = null;
+      _pending = null;
+    });
     final flow = ref.read(applyFlowProvider.notifier);
     try {
       await flow.load();
       flow.setPhoto(widget.doc, bytes);
       await flow.saveProfileIfChanged();
-      flow.clear();
       ref
         ..invalidate(profileProvider)
         ..invalidate(documentProvider(widget.doc))
         ..invalidate(dashboardProvider);
       showToast('Photo replaced. We will verify it again.');
+    } on CheckUnavailable catch (e) {
+      _problem = e.message;
+      _pending = bytes;
+    } on Validation catch (e) {
+      // Refused ("This file can't be accepted…"): a new photo is needed.
+      _problem = e.first(widget.doc.key) ?? e.message;
     } on Object {
-      showToast("We couldn't upload the photo. Try again.", error: true);
+      _problem = "We couldn't upload the photo. Please try again.";
+      _pending = bytes;
     } finally {
+      // The draft only carried this one photo; never keep it there.
+      flow.clear();
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -1146,11 +1171,36 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
                           ],
                         ),
                       ),
+                      if (_problem != null) ...[
+                        Gap.s12,
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _problem!,
+                            textAlign: TextAlign.center,
+                            style: t.small.copyWith(
+                              color: c.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (_pending != null) ...[
+                        Gap.s12,
+                        AppButton.primary(
+                          'Try again',
+                          block: true,
+                          busy: _busy,
+                          onPressed: _busy ? null : () => _upload(_pending!),
+                        ),
+                      ],
                       Gap.s12,
                       AppButton.ghost(
-                        'Replace this photo',
+                        _pending != null || _problem == null
+                            ? 'Replace this photo'
+                            : 'Take a new photo',
                         block: true,
-                        busy: _busy,
+                        busy: _busy && _pending == null,
                         onPressed: _busy ? null : _replace,
                       ),
                       Gap.s12,
