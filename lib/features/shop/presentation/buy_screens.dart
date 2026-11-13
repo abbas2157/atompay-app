@@ -241,7 +241,9 @@ class _DeliveryStep extends ConsumerWidget {
         const Note(
           tone: NoteTone.wash,
           icon: Icons.local_shipping_outlined,
-          text: 'Delivery charges apply, in addition to this plan.',
+          text:
+              'Delivery charges apply, in addition to this plan. Atomshop '
+              'tells you the amount when it calls to confirm your order.',
         ),
       ],
     );
@@ -408,9 +410,31 @@ class _ReviewStep extends ConsumerWidget {
               spoken: rsSpoken(kfs.amountFinanced),
             ),
             KeyValue('Advance', rs(kfs.advance), spoken: rsSpoken(kfs.advance)),
+            // Both from the statement, never worked out here.
+            if (kfs.processingFee > 0)
+              KeyValue(
+                'Processing fee',
+                '${kfs.processingFeePercent}% · ${rs(kfs.processingFee)}',
+                spoken:
+                    '${kfs.processingFeePercent} percent, '
+                    '${rsSpoken(kfs.processingFee)}',
+              ),
+            const KeyValue('Delivery charges', 'Apply'),
             if (profile != null)
               KeyValue('Deliver to', profile.residentialAddress ?? ''),
           ]),
+        ),
+        Gap.s12,
+        Note(
+          tone: NoteTone.amber,
+          icon: Icons.info_outline,
+          text: kfs.processingFee > 0
+              ? 'The ${kfs.processingFeePercent}% processing fee and the '
+                    'delivery charges are not part of your instalments. Want '
+                    'to discuss the processing fee? Talk to Atomshop when it '
+                    'calls to confirm your order.'
+              : 'Delivery charges are not part of your instalments. Atomshop '
+                    'tells you the amount when it calls to confirm your order.',
         ),
         Gap.s12,
         AppCard(
@@ -484,7 +508,9 @@ class _ReviewStep extends ConsumerWidget {
           child: Text(
             'I have read the Key Fact Statement. I am buying this from '
             'Atomshop on instalments and agree to pay '
-            '${rs(kfs.totalRepayable)} in ${kfs.months} monthly instalments.',
+            '${rs(kfs.totalRepayable)} in ${kfs.months} monthly instalments, '
+            'plus ${kfs.processingFee > 0 ? 'the processing fee and ' : ''}'
+            'delivery charges.',
             style: t.base,
           ),
         ),
