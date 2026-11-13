@@ -272,7 +272,30 @@ class ApplyFlow extends Notifier<ApplyDraft> {
   /// Client checks for one step, mirroring the server's rules. Returns
   /// the errors, also stored on the draft.
   Map<String, String> check(int step, {required bool cityHasAreas}) {
-    final d = state;
+    final e = _errors(state, step, cityHasAreas: cityHasAreas);
+    final keep = {
+      for (final x in state.errors.entries)
+        if (ApplyFields.stepOf(x.key) != step) x.key: x.value,
+    };
+    state = state.copyWith(errors: {...keep, ...e});
+    return e;
+  }
+
+  /// The first step that isn't complete yet (4, Review, when all are).
+  /// Nothing is marked on the draft. Areas aren't known here, so a missing
+  /// area is left to step 1's own check.
+  int firstIncompleteStep() {
+    for (final step in [1, 2, 3]) {
+      if (_errors(state, step, cityHasAreas: false).isNotEmpty) return step;
+    }
+    return 4;
+  }
+
+  static Map<String, String> _errors(
+    ApplyDraft d,
+    int step, {
+    required bool cityHasAreas,
+  }) {
     final e = <String, String>{};
     if (step == 1) {
       if (d.fullName.trim().isEmpty) {
@@ -318,11 +341,6 @@ class ApplyFlow extends Notifier<ApplyDraft> {
         e['monthly_income'] = 'Enter a monthly income up to Rs. 100,000,000.';
       }
     }
-    final keep = {
-      for (final x in state.errors.entries)
-        if (ApplyFields.stepOf(x.key) != step) x.key: x.value,
-    };
-    state = state.copyWith(errors: {...keep, ...e});
     return e;
   }
 

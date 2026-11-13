@@ -19,6 +19,7 @@ import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/account/application/account_controllers.dart';
 import 'package:atompay_mobile/features/account/data/device_permissions.dart';
 import 'package:atompay_mobile/features/application/data/camera_service.dart';
+import 'package:atompay_mobile/features/application/data/kyc_status.dart';
 import 'package:atompay_mobile/features/auth/application/session_controller.dart';
 import 'package:atompay_mobile/features/auth/data/auth_models.dart';
 import 'package:atompay_mobile/features/auth/data/auth_repository.dart';
@@ -79,7 +80,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Personal details',
                 summary: 'Name, CNIC, mobile, city and area',
                 icon: Icons.person_outline,
-                badge: user?.kycStatus == 'verified'
+                badge: user?.kyc == KycStatus.verified
                     ? const AppBadge.green('Verified')
                     : null,
                 onTap: () => context.pushOnce(Routes.applicationStatus),
@@ -1187,7 +1188,7 @@ class _DeleteBlocked extends ConsumerWidget {
     final t = context.text;
     final owing = [
       for (final p in ref.watch(plansProvider).value?.data ?? const <Plan>[])
-        if (p.state != 'completed' && p.state != 'cancelled') p,
+        if (!p.status.isClosed) p,
     ];
     return Scaffold(
       backgroundColor: c.white,

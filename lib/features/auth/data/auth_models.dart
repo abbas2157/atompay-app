@@ -1,6 +1,7 @@
 // freezed needs the classic `factory Name(...)` form.
 // ignore_for_file: unnecessary_type_name_in_constructor
 
+import 'package:atompay_mobile/features/application/data/kyc_status.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'auth_models.freezed.dart';
@@ -26,6 +27,8 @@ abstract class User with _$User {
   }) = _User;
 
   const User._();
+
+  KycStatus get kyc => KycStatus.parse(kycStatus);
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

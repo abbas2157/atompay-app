@@ -154,3 +154,54 @@ abstract class KfsInstalment with _$KfsInstalment {
   factory KfsInstalment.fromJson(Map<String, dynamic> json) =>
       _$KfsInstalmentFromJson(json);
 }
+
+/// `Instalment.state`. Anything unknown reads as [upcoming].
+enum InstalmentState {
+  paid,
+  late,
+  due,
+  upcoming;
+
+  static InstalmentState parse(String value) => switch (value) {
+    'paid' => paid,
+    'late' => late,
+    'due' => due,
+    _ => upcoming,
+  };
+}
+
+extension InstalmentX on Instalment {
+  InstalmentState get status => InstalmentState.parse(state);
+}
+
+/// `Plan.state`. Anything unknown reads as [onTrack].
+enum PlanState {
+  pending,
+  processing,
+  onTrack,
+  late,
+  completed,
+  cancelled;
+
+  static PlanState parse(String value) => switch (value) {
+    'pending' => pending,
+    'processing' => processing,
+    'late' => late,
+    'completed' => completed,
+    'cancelled' => cancelled,
+    _ => onTrack,
+  };
+
+  /// Nothing more is owed on it.
+  bool get isClosed => this == completed || this == cancelled;
+}
+
+extension PlanX on Plan {
+  PlanState get status => PlanState.parse(state);
+}
+
+extension PlanOrderX on PlanOrder {
+  /// Atomshop's own order status, spelled as the server sends it.
+  bool get inVerification => status == 'Varification';
+  bool get delivered => status == 'Delivered';
+}

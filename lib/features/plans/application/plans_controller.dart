@@ -34,15 +34,15 @@ enum OrderBadge {
 
   final String label;
 
-  static OrderBadge of(Plan p) => switch (p.state) {
-    'pending' when p.order.status == 'Varification' => verification,
-    'pending' => awaitingApproval,
-    'processing' when p.order.status == 'Delivered' => delivered,
-    'processing' => processing,
-    'late' => late,
-    'completed' => completed,
-    'cancelled' => cancelled,
-    _ => repaying,
+  static OrderBadge of(Plan p) => switch (p.status) {
+    PlanState.pending when p.order.inVerification => verification,
+    PlanState.pending => awaitingApproval,
+    PlanState.processing when p.order.delivered => delivered,
+    PlanState.processing => processing,
+    PlanState.late => late,
+    PlanState.completed => completed,
+    PlanState.cancelled => cancelled,
+    PlanState.onTrack => repaying,
   };
 
   /// Only these open a schedule.

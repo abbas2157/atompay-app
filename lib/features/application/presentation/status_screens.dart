@@ -15,7 +15,9 @@ import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
+import 'package:atompay_mobile/features/application/data/application_repository.dart';
 import 'package:atompay_mobile/features/application/data/capture_doc.dart';
+import 'package:atompay_mobile/features/application/data/kyc_status.dart';
 import 'package:atompay_mobile/features/application/presentation/application_widgets.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
 import 'package:atompay_mobile/features/home/presentation/home_widgets.dart';
@@ -96,22 +98,20 @@ class VerificationScreen extends ConsumerWidget {
       ) => AsyncError<(Profile, ApplicationInfo)>(error, stackTrace),
       _ => const AsyncLoading<(Profile, ApplicationInfo)>(),
     };
-    final latest = info.value?.latest;
-    final active = info.value?.active;
-    final title = switch (latest) {
-      Assessment(status: 'pending') when active != null => 'Limit review',
-      Assessment(status: 'rejected') when active == null => 'Your application',
-      _ => 'KYC & verification',
+    final view = applicationView(
+      info.value?.latest,
+      active: info.value?.active,
+    );
+    final title = switch (view) {
+      ApplicationView.review => 'Limit review',
+      ApplicationView.rejected => 'Your application',
+      ApplicationView.standard => 'KYC & verification',
     };
     // Canvas: the review and rejection boards carry their status in the bar.
-    final barBadge = switch (latest) {
-      Assessment(status: 'pending') when active != null => const AppBadge.amber(
-        'Under review',
-      ),
-      Assessment(status: 'rejected') when active == null => const AppBadge.rose(
-        'Not approved',
-      ),
-      _ => null,
+    final barBadge = switch (view) {
+      ApplicationView.review => const AppBadge.amber('Under review'),
+      ApplicationView.rejected => const AppBadge.rose('Not approved'),
+      ApplicationView.standard => null,
     };
     return _BackToHome(
       child: Scaffold(
@@ -128,18 +128,14 @@ class VerificationScreen extends ConsumerWidget {
           data: (pair) {
             final (p, i) = pair;
             final latest = i.latest;
-            Widget body;
-            if (latest != null &&
-                latest.status == 'rejected' &&
-                i.active == null) {
-              body = _RejectedView(a: latest);
-            } else if (latest != null &&
-                latest.status == 'pending' &&
-                i.active != null) {
-              body = _ReviewPendingView(a: latest, active: i.active!);
-            } else {
-              body = _KycView(profile: p, info: i);
-            }
+            final body = switch (applicationView(latest, active: i.active)) {
+              ApplicationView.rejected => _RejectedView(a: latest!),
+              ApplicationView.review => _ReviewPendingView(
+                a: latest!,
+                active: i.active!,
+              ),
+              ApplicationView.standard => _KycView(profile: p, info: i),
+            };
             return RefreshIndicator(
               onRefresh: () => _refresh(ref),
               child: ListView(
@@ -165,17 +161,17 @@ class _KycView extends ConsumerWidget {
     final t = context.text;
     final stages = ref.watch(dashboardProvider).value?.data.stages ?? [];
     final latest = info.latest;
-    final verified = profile.status == 'verified';
+    final verified = profile.kyc == KycStatus.verified;
     final masked = verified;
-    final note = switch (latest?.status) {
-      'pending' => const Note(
+    final note = switch (latest?.decision) {
+      AssessmentStatus.pending => const Note(
         tone: NoteTone.green,
         icon: Icons.check,
         text:
             'Application received. Our team will verify your address and '
             'confirm your limit.',
       ),
-      'approved' || 'conditional' => Note(
+      AssessmentStatus.approved || AssessmentStatus.conditional => Note(
         tone: NoteTone.green,
         icon: Icons.check,
         text: latest!.approvedLimit == null
@@ -192,11 +188,11 @@ class _KycView extends ConsumerWidget {
       ),
       _ => null,
     };
-    final badge = switch (profile.status) {
-      'verified' => const AppBadge.green('Verified'),
-      'rejected' => const AppBadge.rose('Not verified'),
-      'pending' => const AppBadge.amber('Under review'),
-      _ => const AppBadge.grey('Not started'),
+    final badge = switch (profile.kyc) {
+      KycStatus.verified => const AppBadge.green('Verified'),
+      KycStatus.rejected => const AppBadge.rose('Not verified'),
+      KycStatus.pending => const AppBadge.amber('Under review'),
+      KycStatus.notStarted => const AppBadge.grey('Not started'),
     };
     String cnic() {
       final f = Pk.formatCnic(profile.cnic ?? '');
@@ -793,12 +789,12 @@ String kindOf(List<Assessment> newestFirst, int i) {
   return older.any((a) => a.isUsable) ? 'Limit review' : 'Application';
 }
 
-Widget statusBadge(Assessment a) => switch (a.status) {
-  'pending' => const AppBadge.amber('Under review'),
-  'approved' => const AppBadge.green('Approved'),
-  'conditional' => AppBadge.green(a.statusLabel ?? 'Approved'),
-  'rejected' => const AppBadge.rose('Not approved'),
-  _ => AppBadge.grey(a.statusLabel ?? a.status),
+Widget statusBadge(Assessment a) => switch (a.decision) {
+  AssessmentStatus.pending => const AppBadge.amber('Under review'),
+  AssessmentStatus.approved => const AppBadge.green('Approved'),
+  AssessmentStatus.conditional => AppBadge.green(a.statusLabel ?? 'Approved'),
+  AssessmentStatus.rejected => const AppBadge.rose('Not approved'),
+  AssessmentStatus.unknown => AppBadge.grey(a.statusLabel ?? a.status),
 };
 
 class _HistoryCard extends StatelessWidget {
@@ -816,10 +812,11 @@ class _HistoryCard extends StatelessWidget {
       padding: _uPadRow,
       onTap: () => context.pushOnce(Routes.applicationDetail(a.id)),
       semanticLabel:
-          '$kind, ${switch (a.status) {
-            'pending' => 'under review',
-            'rejected' => 'not approved',
-            _ => 'approved',
+          '$kind, ${switch (a.decision) {
+            AssessmentStatus.pending => 'under review',
+            AssessmentStatus.rejected => 'not approved',
+            AssessmentStatus.approved || AssessmentStatus.conditional => 'approved',
+            AssessmentStatus.unknown => (a.statusLabel ?? a.status).toLowerCase(),
           }}. Application ${a.id}${inForce ? ', in force' : ''}.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -906,10 +903,11 @@ class ApplicationDetailScreen extends ConsumerWidget {
             );
           }
           final active = info?.active;
+          final view = applicationView(a, active: active, inHistory: true);
           final Widget body;
-          if (a.status == 'pending' && active != null && active.id != a.id) {
-            body = _ReviewPendingView(a: a, active: active);
-          } else if (a.status == 'rejected') {
+          if (view == ApplicationView.review) {
+            body = _ReviewPendingView(a: a, active: active!);
+          } else if (view == ApplicationView.rejected) {
             body = _RejectedView(a: a);
           } else {
             body = Column(
@@ -1007,11 +1005,16 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
       _problem = null;
       _pending = null;
     });
-    final flow = ref.read(applyFlowProvider.notifier);
+    // Straight to the profile, never through the apply draft: a draft the
+    // customer has open elsewhere keeps its edits and isn't sent.
     try {
-      await flow.load();
-      flow.setPhoto(widget.doc, bytes);
-      await flow.saveProfileIfChanged();
+      final profile = await ref.read(profileProvider.future);
+      await ref
+          .read(applicationRepositoryProvider)
+          .saveProfile(
+            profileInputOnFile(profile),
+            photos: {widget.doc: bytes},
+          );
       ref
         ..invalidate(profileProvider)
         ..invalidate(documentProvider(widget.doc))
@@ -1027,8 +1030,6 @@ class _DocumentViewerScreenState extends ConsumerState<DocumentViewerScreen> {
       _problem = "We couldn't upload the photo. Please try again.";
       _pending = bytes;
     } finally {
-      // The draft only carried this one photo; never keep it there.
-      flow.clear();
       if (mounted) setState(() => _busy = false);
     }
   }

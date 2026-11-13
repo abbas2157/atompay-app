@@ -696,9 +696,15 @@ class _Detail extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.text;
     final o = plan.order;
-    final late = plan.instalments.where((i) => i.state == 'late').toList();
+    final late = plan.instalments
+        .where((i) => i.status == InstalmentState.late)
+        .toList();
     final upcoming = plan.instalments
-        .where((i) => i.state == 'due' || i.state == 'upcoming')
+        .where(
+          (i) =>
+              i.status == InstalmentState.due ||
+              i.status == InstalmentState.upcoming,
+        )
         .toList();
 
     // Canvas "Payment late": only what was missed and how to sort it out.
@@ -969,15 +975,23 @@ class _InstalmentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.text;
     final c = context.colors;
-    final (badge, icon, tone) = switch (i.state) {
-      'paid' => (const AppBadge.green('Paid'), Icons.check, TileTone.green),
-      'late' => (
+    final (badge, icon, tone) = switch (i.status) {
+      InstalmentState.paid => (
+        const AppBadge.green('Paid'),
+        Icons.check,
+        TileTone.green,
+      ),
+      InstalmentState.late => (
         const AppBadge.rose('Late'),
         Icons.error_outline,
         TileTone.rose,
       ),
-      'due' => (const AppBadge.amber('Due'), Icons.schedule, TileTone.amber),
-      _ => (
+      InstalmentState.due => (
+        const AppBadge.amber('Due'),
+        Icons.schedule,
+        TileTone.amber,
+      ),
+      InstalmentState.upcoming => (
         const AppBadge.grey('Upcoming'),
         Icons.calendar_today_outlined,
         TileTone.grey,
@@ -1000,7 +1014,7 @@ class _InstalmentRow extends StatelessWidget {
       summary: when,
       semanticLabel:
           '${i.label}, ${rsSpoken(i.amount)}, $when, '
-          '${i.state == 'upcoming' ? 'upcoming' : i.state}',
+          '${i.status.name}',
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
@@ -1015,7 +1029,7 @@ class _InstalmentRow extends StatelessWidget {
       ),
     );
     // Canvas: the month that is due sits on an amber wash.
-    if (i.state != 'due') return row;
+    if (i.status != InstalmentState.due) return row;
     return ColoredBox(color: c.amberWash, child: row);
   }
 }

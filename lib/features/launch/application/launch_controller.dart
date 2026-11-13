@@ -69,9 +69,10 @@ class Launch extends _$Launch {
   }
 
   /// Maintenance's Try again: re-runs app-config, and continues if it's
-  /// over.
+  /// over. `maintenance` stays true until the answer is in: clearing it
+  /// first would let the guards leave the Maintenance screen mid-check,
+  /// then bounce back if the server is still down. Offline keeps it too.
   Future<void> retry() async {
-    state = state.copyWith(maintenance: false);
     await _loadConfig();
     if (!state.maintenance && ref.read(sessionProvider) is SessionUnknown) {
       await ref.read(sessionProvider.notifier).restore();

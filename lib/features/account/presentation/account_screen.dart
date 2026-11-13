@@ -12,6 +12,7 @@ import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/account/application/account_controllers.dart';
 import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
+import 'package:atompay_mobile/features/application/data/kyc_status.dart';
 import 'package:atompay_mobile/features/auth/application/session_controller.dart';
 import 'package:atompay_mobile/features/auth/data/auth_models.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
@@ -59,7 +60,7 @@ class AccountScreen extends ConsumerWidget {
             children: [
               ListRow(
                 title: 'KYC & verification',
-                summary: _kycSummary(user?.kycStatus),
+                summary: _kycSummary(user?.kyc),
                 icon: Icons.verified_user_outlined,
                 tileTone: TileTone.green,
                 onTap: () => context.pushOnce(Routes.applicationStatus),
@@ -171,11 +172,11 @@ class AccountScreen extends ConsumerWidget {
     );
   }
 
-  static String _kycSummary(String? status) => switch (status) {
-    'verified' => 'Identity and address verified',
-    'pending' => 'Under review',
-    'rejected' => 'Needs attention',
-    _ => 'Not started',
+  static String _kycSummary(KycStatus? status) => switch (status) {
+    KycStatus.verified => 'Identity and address verified',
+    KycStatus.pending => 'Under review',
+    KycStatus.rejected => 'Needs attention',
+    KycStatus.notStarted || null => 'Not started',
   };
 
   /// "1 approved · 1 under review", from the server's own labels.
@@ -202,11 +203,11 @@ class _ProfileCard extends StatelessWidget {
     final c = context.colors;
     final t = context.text;
     final line = [?user.phoneFormatted ?? user.phone, ?city].join(' · ');
-    final badge = switch (user.kycStatus) {
-      'verified' => const AppBadge.green('Verified'),
-      'pending' => const AppBadge.amber('Under review'),
-      'rejected' => const AppBadge.rose('Needs attention'),
-      _ => null,
+    final badge = switch (user.kyc) {
+      KycStatus.verified => const AppBadge.green('Verified'),
+      KycStatus.pending => const AppBadge.amber('Under review'),
+      KycStatus.rejected => const AppBadge.rose('Needs attention'),
+      KycStatus.notStarted => null,
     };
     return AppCard(
       padding: const EdgeInsets.symmetric(

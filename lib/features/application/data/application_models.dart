@@ -1,6 +1,7 @@
 // freezed needs the classic `factory Name(...)` form.
 // ignore_for_file: unnecessary_type_name_in_constructor
 
+import 'package:atompay_mobile/features/application/data/kyc_status.dart';
 import 'package:atompay_mobile/features/launch/data/app_config.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -39,7 +40,8 @@ abstract class Profile with _$Profile {
 }
 
 extension ProfileX on Profile {
-  bool get submitted => status != 'not_started';
+  KycStatus get kyc => KycStatus.parse(status);
+  bool get submitted => kyc != KycStatus.notStarted;
   bool uploaded(String doc) => documents[doc]?.uploaded ?? false;
 }
 
@@ -84,6 +86,40 @@ abstract class Assessment with _$Assessment {
 
   factory Assessment.fromJson(Map<String, dynamic> json) =>
       _$AssessmentFromJson(json);
+}
+
+extension AssessmentX on Assessment {
+  AssessmentStatus get decision => AssessmentStatus.parse(status);
+}
+
+/// Which board an application is shown on.
+enum ApplicationView {
+  /// The KYC and verification board (or, in the history, the decision).
+  standard,
+
+  /// A pending limit review while another limit is in force.
+  review,
+
+  /// Not approved.
+  rejected,
+}
+
+/// The one rule for picking [ApplicationView]. On the status hub a
+/// rejected *review* leaves the limit in force, so the hub stays on the
+/// KYC board; the history ([inHistory]) shows every rejection as such.
+ApplicationView applicationView(
+  Assessment? a, {
+  Assessment? active,
+  bool inHistory = false,
+}) {
+  if (a == null) return ApplicationView.standard;
+  return switch (a.decision) {
+    AssessmentStatus.pending when active != null && active.id != a.id =>
+      ApplicationView.review,
+    AssessmentStatus.rejected when inHistory || active == null =>
+      ApplicationView.rejected,
+    _ => ApplicationView.standard,
+  };
 }
 
 /// `GET /application`.

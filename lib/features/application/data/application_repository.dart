@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:atompay_mobile/core/format/pk.dart';
 import 'package:atompay_mobile/core/network/api_client.dart';
 import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
@@ -32,6 +33,18 @@ class ProfileInput {
   final int? cityId;
   final int? areaId;
 }
+
+/// The details already on file, unchanged: for replacing a photo without
+/// going through the application draft.
+ProfileInput profileInputOnFile(Profile p) => ProfileInput(
+  fullName: p.fullName ?? '',
+  cnic: Pk.digits(p.cnic ?? ''),
+  mobile: Pk.normaliseMobile(p.mobile ?? '') ?? Pk.digits(p.mobile ?? ''),
+  dateOfBirth: p.dateOfBirth ?? '',
+  residentialAddress: p.residentialAddress ?? '',
+  cityId: p.city?.id,
+  areaId: p.area?.id,
+);
 
 /// What `POST /application` sends.
 class IncomeInput {

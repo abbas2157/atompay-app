@@ -93,3 +93,22 @@ abstract class PlansSummary with _$PlansSummary {
   factory PlansSummary.fromJson(Map<String, dynamic> json) =>
       _$PlansSummaryFromJson(json);
 }
+
+/// `Stage.state`. Anything unknown reads as [upcoming].
+enum StageState {
+  done,
+  current,
+  upcoming,
+  blocked;
+
+  static StageState parse(String value) => switch (value) {
+    'done' => done,
+    'current' => current,
+    'blocked' => blocked,
+    _ => upcoming,
+  };
+}
+
+extension StageX on Stage {
+  StageState get status => StageState.parse(state);
+}

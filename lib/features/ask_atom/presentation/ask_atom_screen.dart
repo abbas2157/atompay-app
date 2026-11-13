@@ -41,6 +41,10 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
 
   // Voice.
   bool _listening = false;
+
+  /// Between the mic tap and listening (permission checks): a second tap
+  /// is ignored.
+  bool _micStarting = false;
   String _heard = '';
   int _seconds = 0;
   Timer? _clock;
@@ -115,7 +119,16 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
   // ---- voice ----------------------------------------------------------------
 
   Future<void> _micTap() async {
-    if (_listening) return;
+    if (_listening || _micStarting) return;
+    _micStarting = true;
+    try {
+      await _startMic();
+    } finally {
+      _micStarting = false;
+    }
+  }
+
+  Future<void> _startMic() async {
     final voice = _voice;
     var status = await voice.status();
     if (!mounted) return;
@@ -253,6 +266,12 @@ class _AskAtomScreenState extends ConsumerState<AskAtomScreen> {
     if (heard.trim().isEmpty) {
       // A pause with nothing heard: say so rather than just closing.
       showToast("I didn't catch that. Try again, or type your question.");
+      return;
+    }
+    if (ref.read(askAtomProvider.notifier).busy) {
+      // Another answer is on its way: keep the words in the box to send
+      // next, rather than dropping them.
+      _input.text = heard;
       return;
     }
     unawaited(_send(heard));

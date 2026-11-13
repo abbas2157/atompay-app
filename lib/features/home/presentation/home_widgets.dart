@@ -261,11 +261,11 @@ class StagesTrack extends StatelessWidget {
       TrackStep(
         title: s.title,
         hint: s.hint,
-        state: switch (s.state) {
-          'done' => TrackState.done,
-          'current' => TrackState.now,
-          'blocked' => TrackState.stop,
-          _ => TrackState.upcoming,
+        state: switch (s.status) {
+          StageState.done => TrackState.done,
+          StageState.current => TrackState.now,
+          StageState.blocked => TrackState.stop,
+          StageState.upcoming => TrackState.upcoming,
         },
       ),
   ]);
@@ -293,9 +293,10 @@ class NextPaymentCard extends StatelessWidget {
     final which = p == null || p.totalCount == 0
         ? null
         : '${ordinal(p.paidCount + 1)} of ${p.totalCount}';
-    final badge = switch (due.state) {
-      'late' => const AppBadge.rose('Late'),
-      'due' => AppBadge.amber('Due ${dayMonth(due.dueDate)}'),
+    final isLate = due.status == InstalmentState.late;
+    final badge = switch (due.status) {
+      InstalmentState.late => const AppBadge.rose('Late'),
+      InstalmentState.due => AppBadge.amber('Due ${dayMonth(due.dueDate)}'),
       _ => AppBadge.grey('Due ${dayMonth(due.dueDate)}'),
     };
     void open() => context.pushOnce(Routes.plan(due.orderId));
@@ -361,9 +362,9 @@ class NextPaymentCard extends StatelessWidget {
         ],
       ],
     );
-    final when = due.state == 'late' ? 'late' : 'due ${dayMonth(due.dueDate)}';
+    final when = isLate ? 'late' : 'due ${dayMonth(due.dueDate)}';
     return AppCard(
-      borderColor: due.state == 'late' ? c.roseLine : null,
+      borderColor: isLate ? c.roseLine : null,
       onTap: withButton ? null : open,
       semanticLabel: withButton
           ? null

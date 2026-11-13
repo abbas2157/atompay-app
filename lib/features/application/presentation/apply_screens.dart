@@ -19,6 +19,7 @@ import 'package:atompay_mobile/core/widgets/ui.dart';
 import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/application_models.dart';
 import 'package:atompay_mobile/features/application/data/capture_doc.dart';
+import 'package:atompay_mobile/features/application/data/kyc_status.dart';
 import 'package:atompay_mobile/features/application/presentation/application_widgets.dart';
 import 'package:atompay_mobile/features/launch/data/app_config.dart';
 import 'package:atompay_mobile/features/launch/data/config_repository.dart';
@@ -44,6 +45,10 @@ class ApplyScreen extends ConsumerStatefulWidget {
 class _ApplyScreenState extends ConsumerState<ApplyScreen> {
   Object? _loadError;
 
+  /// Opened on a later step than the draft supports: on the way to the
+  /// first incomplete one.
+  bool _redirecting = false;
+
   @override
   void initState() {
     super.initState();
@@ -52,10 +57,20 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
 
   Future<void> _load() async {
     setState(() => _loadError = null);
+    final flow = ref.read(applyFlowProvider.notifier);
     try {
-      await ref.read(applyFlowProvider.notifier).load();
+      await flow.load();
     } on Object catch (e) {
       if (mounted) setState(() => _loadError = e);
+      return;
+    }
+    if (!mounted || widget.edit) return;
+    // A link can open any step ("apply", Account's income row). Steps are
+    // only reachable in order, so start at the first one not done yet.
+    final first = flow.firstIncompleteStep();
+    if (first < widget.step.clamp(1, 4)) {
+      setState(() => _redirecting = true);
+      unawaited(context.replace(Routes.applicationStep(first)));
     }
   }
 
@@ -69,7 +84,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     Widget body;
     if (_loadError != null) {
       body = ErrorStateView(error: _loadError!, onRetry: _load);
-    } else if (!draft.loaded) {
+    } else if (!draft.loaded || _redirecting) {
       body = const LoadingShape(
         label: 'Loading your details',
         child: Padding(
@@ -1067,7 +1082,8 @@ class _ReviewStepState extends ConsumerState<_ReviewStep> {
       ),
     );
 
-    final verifiedChange = d.profile?.status == 'verified' && d.identityChanged;
+    final verifiedChange =
+        d.profile?.kyc == KycStatus.verified && d.identityChanged;
 
     return FormExitGuard(
       dirty: false,

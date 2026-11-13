@@ -183,11 +183,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
               problem: _problem,
               onTake: _take,
               onFlash: _toggleFlash,
-              onRetake: () => setState(() {
-                _photo = null;
-                _problem = null;
-                _stage = _session == null ? _Stage.failed : _Stage.live;
-              }),
+              onRetake: () {
+                setState(() {
+                  _photo = null;
+                  _problem = null;
+                  if (_session != null) _stage = _Stage.live;
+                });
+                // The camera was closed while reviewing (the app went to
+                // the background): open it again rather than failing.
+                if (_session == null) unawaited(_startCamera());
+              },
               onUse: _use,
               onRetry: _startCamera,
             ),
