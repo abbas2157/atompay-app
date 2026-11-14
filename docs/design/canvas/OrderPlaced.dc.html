@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Order placed</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.refbox{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:300px;padding:14px 16px;border:1px dashed var(--line-3);border-radius:16px;background:var(--surface)}
+.refbox b{font-size:var(--fs-h4);font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.copy{min-height:48px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--white);font:inherit;font-size:var(--fs-md);font-weight:700;color:var(--primary);cursor:pointer}
+.copy:active{background:var(--primary-soft)}
+.next{width:100%;max-width:300px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.next div{display:flex;gap:12px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--body);line-height:1.5}
+.next i{width:24px;height:24px;flex:none;border-radius:50%;background:var(--primary-soft);color:var(--primary);font-style:normal;font-size:12px;font-weight:800;display:grid;place-items:center}
+</style>
+</helmet>
+<div class="scr white" style="height: 900px">
+  <div class="safe"></div>
+  <div class="content state" role="status" aria-live="polite">
+    <span class="ico green"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+    <h1 class="h2">Order placed</h1>
+    <p class="small">OXY 3218L Android, on 3 monthly instalments. Nothing to pay today.</p>
+    <div class="refbox"><span class="u-grow" style="text-align: left"><span class="tiny u-block">Your order</span><b>AS-01280</b></span><button class="copy" aria-label="Copy order number">Copy</button></div>
+    <div class="next">
+      <div><i>1</i><span>Atomshop confirms the order and calls you on 0300 1234567.</span></div>
+      <div><i>2</i><span>The rider delivers to Johar Town, Lahore. Delivery Rs. 500 in cash.</span></div>
+      <div><i>3</i><span>First instalment <b class="num u-ink">Rs. 15,666</b> on 10 Dec 2026. We remind you before.</span></div>
+    </div>
+    <div class="acts">
+      <a href="PlanDetail.dc.html" class="btn btn-p btn-block">See your order</a>
+      <a href="HomeRepaying.dc.html" class="btn btn-g btn-block">Go to Home</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  // Success screen, reached with go(): Back goes to the product list, not to
+  // the checkout. The order is already in Orders (status "placed" until
+  // Atomshop confirms) and Home shows the smaller available limit.
+  // The KFS copy is emailed to the customer when the order is placed.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

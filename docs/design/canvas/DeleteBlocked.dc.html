@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Can't delete yet</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div class="appbar"><a href="DeleteAccount.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a></div>
+  <div class="content" style="justify-content: center; gap: 20px">
+    <span class="ico amber" style="width: 72px; height: 72px; border-radius: 22px; align-self: center"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+    <div class="u-center"><h1 class="h2">You can delete once it's repaid</h1><p class="lead u-mt8">Your account is still open. Nothing has been deleted.</p></div>
+    <a href="PlanDetail.dc.html" class="card" style="padding: 16px 18px; text-decoration: none; color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 12px">
+      <span><b class="u-block u-fs-body">OXY 3218L Android</b><span class="small num">AS-01279 · 2 payments left</span></span>
+      <span class="num" style="font-size: 17px; font-weight: 800">Rs. 31,334</span>
+    </a>
+    <p class="small u-center">When the last payment is recorded, come back here and it will go through.</p>
+  </div>
+  <div class="actionbar"><a href="Account.dc.html" class="btn btn-g btn-lg">Back to account</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // POST /me/delete -> 409 outstanding_balance. Real figures: Ayesha's order.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

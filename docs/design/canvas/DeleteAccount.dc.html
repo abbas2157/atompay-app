@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Delete your account</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.lst{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:600;color:var(--body);line-height:1.5}
+.danger{background:var(--rose);color:var(--white)}
+.danger:hover{color:var(--white)}
+</style>
+</helmet>
+<div class="scr" style="height: 1120px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Settings.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Delete your account</span></div>
+  </div>
+  <div class="content u-gap14">
+    <div class="note rose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>This closes your <b>Atomshop.pk account too</b>. AtomPay and Atomshop share one account. It can't be undone.</span></div>
+    <div class="card u-pad">
+      <h2 class="h3" style="margin-bottom: 10px">Before you can delete</h2>
+      <p class="small u-body">Every instalment plan must be fully repaid, and no order can be waiting for approval.</p>
+    </div>
+    <div class="card u-pad">
+      <h2 class="h3" style="margin-bottom: 10px">Deleted straight away</h2>
+      <ul class="lst">
+        <li>Your sign-ins on every phone and browser, and push tokens.</li>
+        <li>Your CNIC number, date of birth, address, CNIC photos and selfie.</li>
+        <li>Your inbox, preferences and any codes.</li>
+        <li>Your name, email, mobile and password on the Atomshop account.</li>
+      </ul>
+    </div>
+    <div class="card u-pad">
+      <h2 class="h3" style="margin-bottom: 10px">What we keep, and why</h2>
+      <p class="small u-body">The law requires us to keep financial records. Past orders, schedules and payments stay, linked only to an anonymous closed account. Nothing left in them names you.</p>
+    </div>
+    <div class="field"><label for="dp">Enter your password to confirm</label><div class="input"><input id="dp" type="password" value="password12"></div></div>
+    <label class="consent"><input type="checkbox" checked="{{ok}}" onChange="{{toggle}}"><span>I understand this deletes my AtomPay and Atomshop.pk account.</span></label>
+    <sc-if value="{{ok}}" hint-placeholder-val="{{ false }}"><a href="DeleteBlocked.dc.html" class="btn btn-lg btn-block danger">Delete my account</a></sc-if>
+    <sc-if value="{{notOk}}" hint-placeholder-val="{{ true }}"><button class="btn btn-lg btn-block" disabled>Delete my account</button></sc-if>
+    <p class="tiny u-center u-lh">Can't sign in? Delete on the web at atompay.shop/delete-account.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  // Copy follows AccountDeletionService and the website's delete-account page.
+  // POST /me/delete; 409 outstanding_balance -> the "still owed" screen.
+  constructor(props) { super(props); this.state = { ok: false }; }
+  renderVals() { const ok = this.state.ok; return { ok, notOk: !ok, toggle: () => this.setState({ ok: !ok }) }; }
+}
+</script>
+</body>
+</html>

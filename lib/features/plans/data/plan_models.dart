@@ -1,32 +1,35 @@
-// freezed needs the classic `factory Name(...)` form; fields follow the API's
-// JSON order rather than required-first.
+// freezed needs the classic `factory Name(...)` form.
 // ignore_for_file: unnecessary_type_name_in_constructor
-// ignore_for_file: always_put_required_named_parameters_first
 
-import 'package:atompay_mobile/core/models/instalment.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'plan_models.freezed.dart';
 part 'plan_models.g.dart';
 
-/// One AtomShop order paid in instalments (handbook §8.10b). The detail
-/// endpoint adds [instalments].
+/// One monthly payment (`docs/api/plans.md`). `state` is `paid`, `late`,
+/// `due` (within 14 days) or `upcoming`.
 @freezed
-abstract class Plan with _$Plan {
-  const factory Plan({
-    required PlanOrder order,
-
-    /// Null when the product was removed from AtomShop.
-    PlanProduct? product,
-
-    /// `on_track` · `late` · `completed`.
+abstract class Instalment with _$Instalment {
+  const factory Instalment({
+    required int id,
+    required int orderId,
+    required String label,
+    required DateTime dueDate,
+    required int amount,
     required String state,
-    required PlanProgress progress,
-    Instalment? nextDue,
-    @Default([]) List<Instalment> instalments,
-  }) = _Plan;
+    int? paidAmount,
+    DateTime? paidOn,
 
-  factory Plan.fromJson(Map<String, dynamic> json) => _$PlanFromJson(json);
+    /// How it was paid ("JazzCash"). Proposed API field.
+    String? paidVia,
+
+    /// Only on `next_due` objects.
+    String? orderReference,
+    String? productTitle,
+  }) = _Instalment;
+
+  factory Instalment.fromJson(Map<String, dynamic> json) =>
+      _$InstalmentFromJson(json);
 }
 
 @freezed
@@ -34,10 +37,13 @@ abstract class PlanOrder with _$PlanOrder {
   const factory PlanOrder({
     required int id,
     required String reference,
-    required String status,
-    required String statusLabel,
+    required int totalPrice,
+    String? status,
+    String? statusLabel,
     DateTime? orderedAt,
-    @Default(0) int totalPrice,
+
+    /// When AtomShop marked it delivered. Proposed API field.
+    DateTime? deliveredAt,
     @Default(0) int advance,
     @Default(0) int financed,
     int? tenure,
@@ -52,8 +58,6 @@ abstract class PlanProduct with _$PlanProduct {
   const factory PlanProduct({
     required int id,
     required String title,
-
-    /// Public AtomShop image: no auth header, fine to cache.
     String? pictureUrl,
     String? shopUrl,
   }) = _PlanProduct;
@@ -75,4 +79,129 @@ abstract class PlanProgress with _$PlanProgress {
 
   factory PlanProgress.fromJson(Map<String, dynamic> json) =>
       _$PlanProgressFromJson(json);
+}
+
+/// An order and its plan. `state`: `pending` · `processing` · `on_track` ·
+/// `late` · `completed` · `cancelled`.
+@freezed
+abstract class Plan with _$Plan {
+  const factory Plan({
+    required PlanOrder order,
+    required String state,
+    @Default(PlanProgress()) PlanProgress progress,
+    PlanProduct? product,
+    Instalment? nextDue,
+
+    /// Only on `GET /plans/{order}`.
+    @Default([]) List<Instalment> instalments,
+  }) = _Plan;
+
+  factory Plan.fromJson(Map<String, dynamic> json) => _$PlanFromJson(json);
+}
+
+/// `GET /plans/{order}/kfs` (brief §7.2), or `GET /products/{id}/kfs`
+/// before an order exists: the Key Fact Statement. Null fields are facts
+/// the business hasn't supplied: shown as placeholders.
+@freezed
+abstract class Kfs with _$Kfs {
+  const factory Kfs({
+    required int amountFinanced,
+    required int months,
+    required int totalRepayable,
+
+    /// Null before the order exists (`GET /products/{id}/kfs`).
+    String? orderNumber,
+    String? product,
+    @Default(KfsLender()) KfsLender lender,
+    @Default(0) int advance,
+    @Default(0) num markupPercent,
+    @Default(0) num processingFeePercent,
+    @Default(0) int processingFee,
+    num? aprPercent,
+    @Default([]) List<KfsInstalment> instalments,
+    String? latePayment,
+    String? earlySettlement,
+    String? complaints,
+    DateTime? issuedAt,
+
+    /// When the customer accepted these terms at Atomshop checkout. Null
+    /// until checkout records it (docs/backend/SERVER_RELEASE_PROMPT.md §8).
+    DateTime? acceptedAt,
+  }) = _Kfs;
+
+  factory Kfs.fromJson(Map<String, dynamic> json) => _$KfsFromJson(json);
+}
+
+@freezed
+abstract class KfsLender with _$KfsLender {
+  const factory KfsLender({String? name, String? licence, String? address}) =
+      _KfsLender;
+
+  factory KfsLender.fromJson(Map<String, dynamic> json) =>
+      _$KfsLenderFromJson(json);
+}
+
+@freezed
+abstract class KfsInstalment with _$KfsInstalment {
+  const factory KfsInstalment({
+    required int number,
+    required int amount,
+
+    /// Null until Atomshop delivers the order and sets the dates.
+    DateTime? dueDate,
+  }) = _KfsInstalment;
+
+  factory KfsInstalment.fromJson(Map<String, dynamic> json) =>
+      _$KfsInstalmentFromJson(json);
+}
+
+/// `Instalment.state`. Anything unknown reads as [upcoming].
+enum InstalmentState {
+  paid,
+  late,
+  due,
+  upcoming;
+
+  static InstalmentState parse(String value) => switch (value) {
+    'paid' => paid,
+    'late' => late,
+    'due' => due,
+    _ => upcoming,
+  };
+}
+
+extension InstalmentX on Instalment {
+  InstalmentState get status => InstalmentState.parse(state);
+}
+
+/// `Plan.state`. Anything unknown reads as [onTrack].
+enum PlanState {
+  pending,
+  processing,
+  onTrack,
+  late,
+  completed,
+  cancelled;
+
+  static PlanState parse(String value) => switch (value) {
+    'pending' => pending,
+    'processing' => processing,
+    'late' => late,
+    'completed' => completed,
+    'cancelled' => cancelled,
+    _ => onTrack,
+  };
+
+  /// Nothing more is owed on it.
+  bool get isClosed => this == completed || this == cancelled;
+}
+
+extension PlanX on Plan {
+  PlanState get status => PlanState.parse(state);
+}
+
+extension PlanOrderX on PlanOrder {
+  /// Atomshop's own order status, spelled as the server sends it.
+  bool get inVerification => status == 'Varification';
+  bool get delivered => status == 'Delivered';
 }

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Style guide</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.sg h2{margin:0 0 14px;font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted)}
+
+
+.swatch{display:flex;flex-direction:column;gap:4px}
+.swatch i{display:block;height:44px;border-radius:12px;border:1px solid var(--line)}
+.swatch b{font-size:12px;font-weight:700}
+.swatch span{font-size:11px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.col{display:flex;flex-direction:column;gap:12px}
+</style>
+</helmet>
+<div class="sg" style="width: 1360px; height: 900px; box-sizing: border-box; padding: 44px 52px; background: var(--white); font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: var(--ink); display: flex; flex-direction: column; gap: 32px">
+  <div style="display: flex; align-items: center; gap: 16px">
+    <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="" style="width: 52px; height: 52px; border-radius: 14px">
+    <div class="u-grow"><div style="font-size: 24px; font-weight: 800; letter-spacing: -.6px">Style guide</div><div class="tiny">Same tokens as atompay.shop v2 · Plus Jakarta Sans · 48 px controls · 24 px cards · pill buttons</div></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px">
+    <div>
+      <h2>Colour</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+        <div class="swatch"><i style="background: var(--ink)"></i><b>Ink</b><span>#14213D</span></div>
+        <div class="swatch"><i style="background: var(--primary)"></i><b>Primary</b><span>#2747C7</span></div>
+        <div class="swatch"><i style="background: var(--body)"></i><b>Body</b><span>#4F5B76</span></div>
+        <div class="swatch"><i style="background: var(--muted)"></i><b>Muted</b><span>#656F88</span></div>
+        <div class="swatch"><i style="background: var(--surface)"></i><b>Surface</b><span>#F5F7FB</span></div>
+        <div class="swatch"><i style="background: var(--green)"></i><b>Paid</b><span>#18794A</span></div>
+        <div class="swatch"><i style="background: var(--amber)"></i><b>Due (fill)</b><span>#F7A928</span></div>
+        <div class="swatch"><i style="background: var(--rose)"></i><b>Late · text</b><span>#B0283F</span></div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center; margin-top: 14px">
+        <i style="display: block; width: 120px; height: 40px; border-radius: 12px; background: var(--apay-grad)"></i>
+        <span class="tiny" style="line-height: 1.5">AtomPay amber → coral. Fills the limit card only. Coral and amber are never text.</span>
+      </div>
+    </div>
+    <div class="col">
+      <h2 class="u-m0">Type · Plus Jakarta Sans</h2>
+      <div><span class="tiny">Display 38 / 800</span><div class="num" style="font-size: 38px; font-weight: 800; letter-spacing: -1.3px; line-height: 1.1">Rs. 28,666</div></div>
+      <div><span class="tiny">Title 30 / 800</span><div class="h1">Your limit</div></div>
+      <div><span class="tiny">Heading 22 / 800</span><div class="h2">Your plans</div></div>
+      <div><span class="tiny">Section 17 / 800</span><div class="h3">Where you are</div></div>
+      <div><span class="tiny">Body 15 / 500</span><p class="lead">Pay for it in three equal months, with nothing up front.</p></div>
+      <span class="tiny">Scale, in tokens: 11 · 12 · 13 · 14 · 15 · 17 · 20 · 22 · 24 · 30 · 38. Nothing else.</span>
+      <div style="display: flex; gap: 22px"><span class="eyebrow">Eyebrow 12 / 800</span><span class="eyebrow ap">AtomPay eyebrow</span></div>
+    </div>
+    <div class="col">
+      <h2 class="u-m0">Status</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span class="badge b-green">Paid</span><span class="badge b-green">Verified</span><span class="badge b-amber">Due</span><span class="badge b-amber">Under review</span><span class="badge b-rose">Late</span><span class="badge b-rose">AtomPay eligible</span><span class="badge b-blue">Now</span><span class="badge b-grey">Upcoming</span>
+      </div>
+      <div class="note green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span>Your Rs. 60,000 limit stays active while we review.</span></div>
+      <div class="note rose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><span>Some details need attention — we've opened the step that has them.</span></div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px">
+    <div class="col">
+      <h2 class="u-m0">Buttons · 48 high, pill</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <a href="#" class="btn btn-p">Get a limit</a>
+        <a href="#" class="btn btn-d">Shop on Atomshop.pk</a>
+        <a href="#" class="btn btn-g">Back</a>
+        <a href="#" class="btn btn-a">See the plan</a>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <button class="btn btn-p" style="min-width: 168px" aria-label="Submitting"><span class="spin"></span></button>
+        <button class="btn" disabled>Tick the declaration</button>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap"><a href="#" class="btn btn-p is-focus">Focus</a><a href="#" class="btn btn-p is-press">Pressed</a><a href="#" class="btn btn-g is-focus">Focus</a></div>
+      <span class="tiny">Focus: 3 px royal ring, 2 px gap, on every control. Pressed: darker fill and 98% scale.</span>
+      <span class="tiny">Busy: the label becomes a spinner in its own colour, width kept, not dimmed.</span>
+    </div>
+    <div class="col">
+      <h2 class="u-m0">Fields</h2>
+      <div class="two">
+        <div class="field">CNIC number<div class="input focus"><input aria-label="CNIC number" value="42101-9876543-2"></div></div>
+        <div class="field">Area<button class="input picker" disabled><span class="ph">Choose a city first</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
+      </div>
+      <div class="two">
+        <div class="field">Mobile<div class="input invalid"><input aria-label="Mobile" value="021 1234567"></div><span class="err">That looks like a landline.</span></div>
+        <div class="field">Disposable income<div class="input ro num">Rs. 120,000</div></div>
+      </div>
+    </div>
+    <div class="col">
+      <h2 class="u-m0">Limit card</h2>
+      <div class="spend">
+        <div class="lbl">Available to spend</div>
+        <div class="amt">Rs. 28,666</div>
+        <div class="bar"><i style="width: 52%"></i></div>
+        <div class="row"><span>Limit Rs. 60,000</span><span>In use Rs. 31,334</span></div>
+      </div>
+      <span class="tiny">Solid ink on the gradient: 4.69:1 on coral, 7.99:1 on amber.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1360,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

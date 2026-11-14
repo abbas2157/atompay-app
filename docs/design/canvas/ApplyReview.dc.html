@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Apply · review and submit</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.rh a{font-size:14px;font-weight:700;text-decoration:none;min-height:48px;display:flex;align-items:center;padding:0 4px}
+</style>
+</helmet>
+<div class="scr" style="height: 1160px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar">
+      <a href="ApplyIncome.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+      <span class="t">Apply for your limit</span>
+    </div>
+    <div style="padding: 0 16px 14px">
+      <div class="wsteps"><i class="done"></i><i class="done"></i><i class="done"></i><i class="on"></i></div>
+      <div style="display: flex; justify-content: space-between; margin-top: 8px"><span class="tiny">Step 4 of 4</span><span class="tiny" style="color: var(--ink); font-weight: 800">Review &amp; submit</span></div>
+    </div>
+  </div>
+  <div class="content" style="gap: 12px">
+    <div>
+      <h1 class="h2">Review &amp; submit</h1>
+      <p class="small u-mt6">Check everything once — you can jump back to any step to change it.</p>
+    </div>
+    <div class="card u-pad-row">
+      <div class="rh"><span class="h3">Personal details</span><a href="ApplyPersonal.dc.html">Edit</a></div>
+      <dl class="kv">
+        <div><dt>Name</dt><dd>Ayesha Khan</dd></div>
+        <div><dt>CNIC</dt><dd class="num">42101-9876543-2</dd></div>
+        <div><dt>Mobile</dt><dd class="num">0300 7013707</dd></div>
+        <div><dt>Born</dt><dd>12 Apr 1995</dd></div>
+        <div><dt>City · Area</dt><dd>Lahore · Johar Town</dd></div>
+        <div><dt>Address</dt><dd>House 14, Street 7, Block E</dd></div>
+      </dl>
+    </div>
+    <div class="card u-pad-row">
+      <div class="rh"><span class="h3">Identity documents</span><a href="ApplyDocuments.dc.html">Edit</a></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px"><span class="badge b-green">CNIC front</span><span class="badge b-green">CNIC back</span><span class="badge b-green">Selfie</span></div>
+    </div>
+    <div class="card u-pad-row">
+      <div class="rh"><span class="h3">Income &amp; financials</span><a href="ApplyIncome.dc.html">Edit</a></div>
+      <dl class="kv">
+        <div><dt>Work</dt><dd>Salaried · Cubic Reach (Pvt) Ltd</dd></div>
+        <div><dt>Income</dt><dd class="num">Rs. 200,000 · salary</dd></div>
+        <div><dt>Outgoings</dt><dd class="num">Rs. 80,000</dd></div>
+        <div><dt>Disposable</dt><dd class="num">Rs. 120,000</dd></div>
+      </dl>
+    </div>
+    <label class="consent">
+      <input type="checkbox" checked="{{agreed}}" onChange="{{toggle}}">
+      <span>I confirm these details are accurate and I authorise AtomPay to verify them, including a one-time visit to my residential address, for the purpose of setting my purchase limit.</span>
+    </label>
+  </div>
+  <div class="actionbar">
+    <sc-if value="{{agreed}}" hint-placeholder-val="{{ false }}"><a href="Verification.dc.html" class="btn btn-p btn-lg">Submit application</a></sc-if>
+    <sc-if value="{{waiting}}" hint-placeholder-val="{{ true }}"><button class="btn btn-lg" disabled>Tick the declaration to submit</button></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1160}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { agreed: false }; }
+  renderVals() {
+    const a = this.state.agreed;
+    return { agreed: a, waiting: !a, toggle: () => this.setState({ agreed: !a }) };
+  }
+}
+</script>
+</body>
+</html>

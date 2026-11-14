@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My applications</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.ap{display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--ink)}
+.ap .r{display:flex;justify-content:space-between;align-items:center;gap:10px}
+</style>
+</helmet>
+<div class="scr" style="height: 900px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Account.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">My applications</span></div>
+  </div>
+  <div class="content">
+    <a href="AppReview.dc.html" class="card ap u-pad-row">
+      <div class="r"><b class="u-fs-body">Limit review</b><span class="badge b-amber">Under review</span></div>
+      <dl class="kv">
+        <div><dt>Submitted</dt><dd>9 Nov 2026</dd></div>
+        <div><dt>Declared income</dt><dd class="num">Rs. 260,000</dd></div>
+      </dl>
+      <span class="tiny num">Application #939</span>
+    </a>
+    <div class="card ap u-pad-row">
+      <div class="r"><b class="u-fs-body">First application</b><span class="badge b-green">Approved</span></div>
+      <dl class="kv">
+        <div><dt>Decided</dt><dd>9 Nov 2026</dd></div>
+        <div><dt>Limit</dt><dd class="num">Rs. 60,000</dd></div>
+        <div><dt>Monthly cap</dt><dd class="num">Rs. 20,000</dd></div>
+      </dl>
+      <span class="tiny num">Application #938 · in force</span>
+    </div>
+    <p class="tiny" style="text-align: center; line-height: 1.5; padding: 4px 16px">Every application you have made, newest first.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  // GET /application/history. Real rows: assessments #939 and #938.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

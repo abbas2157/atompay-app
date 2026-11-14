@@ -1,0 +1,351 @@
+/* AtomPay App v2 - the shared look for every phone screen.
+   Tokens are atompay.shop's v2: Atomshop storefront v2 (site.css) plus
+   AtomPay's own layer (atompay.css). Coral and amber fill graphics; coral
+   TEXT is always #B0283F. Muted is #656F88 (v2's #69738C fails AA on surface). */
+
+:root{
+  --ink:#14213D;
+  --ink-2:#1C2740;
+  --ink-3:#22305A;
+  --cam:#0B1220;
+  --primary:#2747C7;
+  --primary-dark:#1D3AA6;
+  --primary-soft:#EEF2FD;
+  --primary-line:#CFD9F7;
+  --body:#4F5B76;
+  --muted:#656F88;
+  --on-dark:#D7DEEC;
+  --on-dark-2:#B9C2D6;
+  --white:#FFFFFF;
+  --surface:#F5F7FB;
+  --surface-2:#F8FAFE;
+  --field:#FBFCFE;
+  --line:#E3E8F1;
+  --line-2:#DCE2EC;
+  --line-3:#C9D2E3;
+  --grey-soft:#EEF1F6;
+  --skel:#E9EDF4;
+  --glyph:#AAB5C8;
+  --amber:#F7A928;
+  --amber-soft:#FFF5E0;
+  --amber-ink:#8A5A00;
+  --amber-wash:#FFFBF2;
+  --green:#18794A;
+  --green-soft:#E8F7EF;
+  --green-line:#B7E2C8;
+  --green-wash:#F3FBF6;
+  --green-on-dark:#7BE3B9;
+  --rose:#B0283F;
+  --rose-soft:#FDEEF1;
+  --rose-line:#F3C9D1;
+  --danger:#D23C4E;
+  --danger-wash:#FFF7F8;
+  --apay-coral:#F05465;
+  --apay-amber:#FAA53A;
+  --apay-wash:#FFF6EE;
+  --apay-line:#F6DFD2;
+  --apay-grad:linear-gradient(135deg,#FAA53A,#F05465);
+  --radius:24px;
+  /* type scale: the only sizes in use */
+  --fs-xs:11px;
+  --fs-sm:12px;
+  --fs-md:13px;
+  --fs-base:14px;
+  --fs-body:15px;
+  --fs-h4:17px;
+  --fs-h3:20px;
+  --fs-h2:22px;
+  --fs-h1b:24px;
+  --fs-h1:30px;
+  --fs-display:38px;
+}
+.scr{width:390px;min-height:844px;box-sizing:border-box;background:var(--surface);font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);display:flex;flex-direction:column;position:relative;overflow:hidden;-webkit-font-smoothing:antialiased}
+.scr *{box-sizing:border-box}
+.scr p{margin:0}
+.safe{flex:none;height:44px}
+.white{background:var(--white)}
+
+/* bars */
+.appbar{display:flex;align-items:center;gap:6px;height:56px;padding:0 8px;flex:none}
+.appbar .t{flex:1;min-width:0;font-size:17px;font-weight:800;letter-spacing:-.2px}
+.topw{background:var(--white);border-bottom:1px solid var(--line);flex:none}
+.icon-btn{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:var(--ink);background:transparent;border:0;cursor:pointer;flex:none;text-decoration:none}
+.icon-btn:hover{background:var(--grey-soft);color:var(--ink)}
+.content{padding:16px;display:flex;flex-direction:column;gap:16px;flex:1}
+
+/* type */
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--primary)}
+.eyebrow.ap{color:var(--rose)}
+.h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.08}
+.h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1.15}
+.h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-.2px}
+.lead{font-size:15px;line-height:1.6;color:var(--body);font-weight:500}
+.small{font-size:13px;font-weight:600;color:var(--muted);line-height:1.5}
+.tiny{font-size:12px;font-weight:600;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.sec-h h2{margin:0;font-size:17px;font-weight:800;letter-spacing:-.2px}
+.sec-h a{font-size:13px;font-weight:700;text-decoration:none}
+
+/* surfaces */
+.card{background:var(--white);border:1px solid var(--line);border-radius:24px;padding:20px}
+.list{background:var(--white);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.li{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:60px;color:var(--ink);text-decoration:none;font-weight:500;background:var(--white);width:100%;border:0;font-family:inherit;text-align:left}
+.li + .li{border-top:1px solid var(--line)}
+a.li:hover{background:var(--surface-2);color:var(--ink)}
+.li b{display:block;font-size:15px;font-weight:700}
+.li .d{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:1px}
+.li .amt{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--primary-soft);color:var(--primary)}
+.ico.green{background:var(--green-soft);color:var(--green)}
+.ico.amber{background:var(--amber-soft);color:var(--amber-ink)}
+.ico.rose{background:var(--rose-soft);color:var(--rose)}
+.ico.grey{background:var(--grey-soft);color:var(--body)}
+.ico.wash{background:var(--apay-wash);color:var(--rose)}
+
+/* buttons: pill, 48 high */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:999px;font-family:inherit;font-weight:700;font-size:15px;border:0;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn-lg{min-height:54px;font-size:17px}
+.btn-block{width:100%}
+.btn-p{background:var(--primary);color:var(--white)}.btn-p:hover{background:var(--primary-dark);color:var(--white)}
+.btn-d{background:var(--ink);color:var(--white)}.btn-d:hover{color:var(--white)}
+.btn-g{background:var(--white);color:var(--ink);border:1px solid var(--line-2)}.btn-g:hover{color:var(--ink);border-color:var(--primary)}
+.btn-a{background:var(--amber);color:var(--ink)}.btn-a:hover{color:var(--ink)}
+.btn[disabled]{background:var(--line);color:var(--muted);cursor:not-allowed;border:0}
+.btn .spin{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent}
+
+/* badges: soft background, strong text */
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.6px;padding:4px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.b-green{background:var(--green-soft);color:var(--green)}
+.b-amber{background:var(--amber-soft);color:var(--amber-ink)}
+.b-rose{background:var(--rose-soft);color:var(--rose)}
+.b-blue{background:var(--primary-soft);color:var(--primary)}
+.b-grey{background:var(--grey-soft);color:var(--body)}
+
+/* notes */
+.note{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;font-size:14px;font-weight:600;line-height:1.5}
+.note svg{flex:none;margin-top:2px}
+.note.blue{background:var(--primary-soft);color:var(--primary-dark)}
+.note.green{background:var(--green-soft);color:var(--green)}
+.note.rose{background:var(--rose-soft);color:var(--rose)}
+.note.wash{background:var(--apay-wash);color:var(--body);border:1px solid var(--apay-line)}
+
+/* the limit: amber-to-coral, SOLID ink text (ink at 72% failed AA over coral) */
+.spend{background:var(--apay-grad);border-radius:20px;padding:20px;color:var(--ink)}
+.spend .lbl{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase}
+.spend .amt{font-size:38px;font-weight:800;letter-spacing:-1.3px;margin-top:6px;line-height:1.05;font-variant-numeric:tabular-nums}
+.spend .bar{height:8px;border-radius:99px;background:rgba(20,33,61,.18);margin-top:14px;overflow:hidden}
+.spend .bar i{display:block;height:100%;background:var(--ink);border-radius:99px}
+.spend .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 14px;margin-top:12px;font-size:13px;font-weight:700}
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:7px;font-size:14px;font-weight:600;color:var(--ink)}
+.field .hint{font-size:12px;font-weight:500;color:var(--muted)}
+.field .err{font-size:13px;font-weight:600;color:var(--rose)}
+.input{display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--field);color:var(--ink);font-size:15px;font-weight:500;width:100%;font-family:inherit;text-align:left}
+.input input{border:0;outline:0;background:transparent;font:inherit;color:inherit;flex:1;min-width:0;height:46px;padding:0}
+.input.focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);background:var(--white)}
+.input.invalid{border-color:var(--danger);background:var(--danger-wash)}
+.input.ro{background:var(--surface);font-weight:800;font-size:17px}
+.picker{cursor:pointer;justify-content:space-between}
+.picker .ph{color:var(--muted)}
+.picker[disabled]{background:var(--surface);color:var(--muted);cursor:not-allowed}
+.form{display:flex;flex-direction:column;gap:14px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+
+/* wizard progress */
+.wsteps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.wsteps i{display:block;height:6px;border-radius:99px;background:var(--line)}
+.wsteps i.done{background:var(--green)}
+.wsteps i.on{background:var(--primary)}
+
+/* the process track (vertical on phones) */
+.track{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.track li{display:flex;gap:14px;position:relative;padding-bottom:18px}
+.track li:last-child{padding-bottom:0}
+.track li::after{content:"";position:absolute;left:11px;top:27px;bottom:3px;width:2px;background:var(--line)}
+.track li:last-child::after{display:none}
+.track li.done::after{background:var(--green)}
+.track .d{width:24px;height:24px;flex:none;border-radius:50%;border:2px solid var(--line-3);background:var(--white);display:grid;place-items:center;color:var(--white)}
+.track li.done .d{background:var(--green);border-color:var(--green)}
+.track li.now .d{border:7px solid var(--primary)}
+.track li.stop .d{border-color:var(--rose);background:var(--rose-soft)}
+.track b{display:block;font-size:14px;font-weight:700;color:var(--muted)}
+.track li.done b{color:var(--ink)}
+.track li.now b{color:var(--primary)}
+.track li.stop b{color:var(--rose)}
+.track small{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.track li.done small{color:var(--green)}
+
+/* key / value */
+.kv{margin:0;display:flex;flex-direction:column}
+.kv div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:11px 0;border-top:1px solid var(--line)}
+.kv div:first-child{border-top:0;padding-top:0}
+.kv dt{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);flex:none}
+.kv dd{margin:0;font-size:14px;font-weight:700;color:var(--ink);text-align:right}
+
+/* product card: badge pinned top-left, never in the image's flow */
+.pgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.p-card{background:var(--white);border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:var(--ink);font-weight:500}
+.p-card:hover{border-color:var(--apay-coral);color:var(--ink)}
+.p-img{position:relative;height:150px;background:var(--surface);display:grid;place-items:center}
+.p-img .slot{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted);text-align:center;padding:0 12px}
+.p-img .slot svg{color:var(--glyph)}
+.p-flag{position:absolute;left:10px;top:10px}
+.p-off{position:absolute;right:10px;top:10px}
+.p-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:3px;flex:1}
+.p-brand{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.p-title{font-size:14px;font-weight:700;line-height:1.35}
+.p-monthly{margin-top:auto;padding-top:6px;font-size:20px;font-weight:800;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.p-term{font-size:12px;font-weight:600;color:var(--muted)}
+.p-cash{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* documents */
+.docs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.doc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:150px;padding:16px;border:1.5px dashed var(--line-3);border-radius:14px;background:var(--surface-2);text-align:center;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
+.doc small{font-size:12px;font-weight:500;color:var(--muted)}
+.doc.filled{border-style:solid;border-color:var(--green-line);background:var(--green-wash)}
+.doc.wide{grid-column:1/-1}
+.doc .pic{width:44px;height:44px;border-radius:12px;background:var(--white);display:grid;place-items:center;color:var(--body)}
+.doc.filled .pic{color:var(--green)}
+
+/* declaration: the whole row is the target */
+.consent{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:14px;font-weight:600;color:var(--body);cursor:pointer;line-height:1.5}
+.consent input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--primary);flex:none}
+
+/* Ask Atom question chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:48px;padding:8px 14px;border-radius:999px;border:1px solid var(--primary-line);background:var(--primary-soft);color:var(--primary-dark);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-align:left}
+
+/* home header */
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:var(--ink)}
+.brand img{width:36px;height:36px;border-radius:10px}
+.brand b{display:block;font-size:17px;font-weight:800;letter-spacing:-.4px;line-height:1.1}
+.brand small{display:block;font-size:11px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;color:var(--muted)}
+.avatar{width:40px;height:40px;border-radius:50%;background:var(--primary-soft);color:var(--primary);font-weight:800;font-size:14px;display:grid;place-items:center;text-decoration:none;flex:none}
+
+/* bottom actions */
+.actionbar{margin-top:auto;display:flex;gap:10px;padding:12px 16px 28px;background:var(--white);border-top:1px solid var(--line);flex:none}
+.actionbar .btn{flex:1}
+
+/* tab bar: Ask Atom in the middle */
+.tabbar{margin-top:auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;background:var(--white);border-top:1px solid var(--line);padding:6px 4px 24px;flex:none}
+.tabbar a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;font-size:11px;font-weight:700;color:var(--muted);text-decoration:none}
+.tabbar a:hover{color:var(--ink)}
+.tabbar a.on{color:var(--primary)}
+.tabbar a.atom{margin-top:-22px;gap:4px}
+/* Ask Atom's icon in the Atom apps is the Atomshop app icon (atomshop-mark.png),
+   shown on a plain white disc - the same as the Atom Seller app. */
+.tabbar .ring{width:60px;height:60px;border-radius:50%;background:var(--white);display:grid;place-items:center;border:1px solid var(--line);box-shadow:0 8px 20px rgba(20,33,61,.18)}
+.tabbar .ring img{width:48px !important;height:48px !important}
+.atom-av{width:44px;height:44px;border-radius:50%;background:var(--white);display:inline-grid;place-items:center;flex:none}
+
+/* switches */
+.sw{width:50px;height:30px;border-radius:99px;border:0;padding:3px;cursor:pointer;flex:none;display:flex}
+.sw i{display:block;width:24px;height:24px;border-radius:50%;background:var(--white);box-shadow:0 1px 3px rgba(20,33,61,.25)}
+.sw.on{background:var(--primary);justify-content:flex-end}
+.sw.off{background:var(--line-3);justify-content:flex-start}
+
+/* a fact the business has not supplied yet - never invented */
+.tbd{color:var(--rose);font-weight:700}
+
+/* segmented control (language, filters) */
+.segc{display:inline-flex;background:var(--grey-soft);border-radius:999px;padding:4px;gap:4px}
+.segc button{min-height:44px;padding:0 16px;border-radius:999px;border:0;background:transparent;font-family:inherit;font-size:14px;font-weight:700;color:var(--body);cursor:pointer}
+.segc button.on{background:var(--white);color:var(--ink);box-shadow:0 1px 3px rgba(20,33,61,.12)}
+
+/* dialogs, skeletons, offline banner */
+.dlg{background:var(--white);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px;box-shadow:0 24px 60px rgba(20,33,61,.25)}
+.skel{background:var(--skel);border-radius:10px}
+.offline{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--ink);color:var(--white);font-size:13px;font-weight:700;flex:none}
+
+/* camera capture (camera only - lending apps may not open the gallery) */
+.cam{background:var(--cam);color:var(--white)}
+.shutter{width:76px;height:76px;border-radius:50%;border:4px solid var(--white);background:transparent;display:grid;place-items:center;cursor:pointer;padding:0}
+.shutter i{display:block;width:60px;height:60px;border-radius:50%;background:var(--white)}
+
+/* bullet lists with icons */
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.ticks li{display:flex;gap:12px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--body);line-height:1.5}
+.ticks li b{color:var(--ink)}
+.ticks svg{flex:none;margin-top:2px}
+
+/* bottom sheet */
+.scrim{position:absolute;inset:0;background:rgba(20,33,61,.45)}
+.sheet{position:absolute;left:0;right:0;bottom:0;top:96px;background:var(--white);border-radius:24px 24px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.grab{width:40px;height:5px;border-radius:99px;background:var(--line-2);margin:10px auto 4px;flex:none}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:0 20px;border:0;background:var(--white);font-family:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
+.opt + .opt{border-top:1px solid var(--grey-soft)}
+.opt.sel{color:var(--primary);font-weight:800}
+
+/* ==== Review pass: states, targets and shared components ====================
+   Focus: every interactive element shows a 3px royal ring for keyboard and
+   switch-access users. Pressed: a visible response on touch. Targets: 48 dp,
+   the handbook's floor; small controls get an invisible hit area instead of
+   a bigger look. */
+.scr :focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.cam :focus-visible{outline-color:var(--white)}
+.input:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);background:var(--white)}
+.btn:active{transform:scale(.98)}
+.btn-p:active{background:var(--primary-dark)}
+a.li:active,button.li:active,.opt:active,.chip:active{background:var(--primary-soft)}
+.icon-btn:active{background:var(--grey-soft)}
+.btn[disabled]:active{transform:none}
+.sw,.fbx{position:relative}
+.sw::before,.fbx::before{content:"";position:absolute;inset:-9px -4px}
+
+/* Shared pieces that had been copied into individual screens */
+.lbl{font-size:var(--fs-sm);font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.chev{color:var(--glyph);flex:none}
+.otp{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.otp span{height:58px;border:1px solid var(--line-2);border-radius:14px;background:var(--field);display:grid;place-items:center;font-size:var(--fs-h1b);font-weight:800;font-variant-numeric:tabular-nums}
+.otp span.on{border:2px solid var(--primary);box-shadow:0 0 0 3px var(--primary-soft);background:var(--white)}
+.mini3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.mini3 i{display:block;height:8px;border-radius:99px;background:var(--line)}
+.mini3 i.paid{background:var(--green)}
+.mini3 i.next{background:var(--amber)}
+
+@media (prefers-reduced-motion:reduce){.btn:active{transform:none}}
+
+
+/* Design-only samples of states that only show on interaction */
+.is-focus{outline:3px solid var(--primary);outline-offset:2px}
+.btn-p.is-press{background:var(--primary-dark);transform:scale(.98)}
+
+/* Utilities: the spacing and text rules screens reuse most, kept on the 2/4/6/8 rhythm */
+.u-grow{flex:1;min-width:0}.u-block{display:block}.u-top{align-items:flex-start}
+.u-pad{padding:18px}.u-pad-row{padding:16px 18px}.u-pl8{padding-left:8px}
+.u-m0{margin:0}.u-mt4{margin-top:4px}.u-mt6{margin-top:6px}.u-mt8{margin-top:8px}.u-mt14{margin-top:14px}.u-mb12{margin-bottom:12px}.u-mr8{margin-right:8px}
+.u-gap14{gap:14px}
+.u-body{color:var(--body)}.u-ink{color:var(--ink)}.u-center{text-align:center}.u-lh{line-height:1.5}.u-plain{text-decoration:none}
+.u-fs-body{font-size:var(--fs-body)}
+
+/* ==== Adaptive layout ======================================================
+   compact  under 600 dp : bottom bar, one column (every phone board)
+   medium   600-839 dp   : navigation rail, two columns
+   expanded 840 dp and up: rail, two columns, 3-up product grid, content max 1040
+   Same tokens, components and order of content at every size. */
+.scr.tab{width:834px;flex-direction:row}
+.rail{width:88px;flex:none;background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 0}
+.rail a{width:72px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:16px;font-size:var(--fs-xs);font-weight:700;color:var(--muted);text-decoration:none}
+.rail a.on{color:var(--primary);background:var(--primary-soft)}
+.rail a:active{background:var(--grey-soft)}
+.rail .ring{width:52px;height:52px;border-radius:50%;background:var(--white);display:grid;place-items:center;border:1px solid var(--line);box-shadow:0 6px 16px rgba(20,33,61,.14)}
+.tab-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.tab-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding:8px 28px 32px;align-items:start}
+.tab-cols > div{display:flex;flex-direction:column;gap:16px}
+
+/* ==== Screen states ==========================================================
+   Every data screen has: ready · loading (skeleton) · error · empty · offline.
+   Skeletons copy the real layout so nothing jumps when data arrives. */
+@keyframes skel-shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.skel{background:linear-gradient(90deg,var(--skel) 25%,var(--grey-soft) 50%,var(--skel) 75%);background-size:200% 100%;animation:skel-shimmer 1.4s ease-in-out infinite}
+.sk-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:12px}
+.sk-row{display:flex;align-items:center;gap:12px}
+.sk-line{height:12px;border-radius:99px}
+.state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:40px 28px}
+.state .ico{width:72px;height:72px;border-radius:22px}
+.state p{max-width:290px;margin:0}
+.state .acts{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;margin-top:8px}
+.state .ref{font-size:var(--fs-sm);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}

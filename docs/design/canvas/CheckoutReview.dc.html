@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buy with AtomPay · review and accept</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.wsteps.two-step{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.rh a{font-size:14px;font-weight:700;text-decoration:none;min-height:48px;display:flex;align-items:center;padding:0 4px}
+.sched{display:flex;flex-direction:column}
+.sched div{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line);font-size:15px;font-weight:600;color:var(--body)}
+.sched div:first-child{border-top:0;padding-top:0}
+.sched b{font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.now{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:14px 16px;border-radius:14px;background:var(--green-soft);color:var(--green);font-size:15px;font-weight:800}
+.kfs-link{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:0 16px;border:1px solid var(--line-2);border-radius:14px;background:var(--white);text-decoration:none;font-size:15px;font-weight:700;color:var(--ink)}
+.kfs-link svg{color:var(--primary)}
+</style>
+</helmet>
+<div class="scr" style="height: 1460px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="CheckoutDelivery.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Buy with AtomPay</span></div>
+    <div style="padding: 0 16px 14px">
+      <div class="wsteps two-step"><i class="done"></i><i class="on"></i></div>
+      <div style="display: flex; justify-content: space-between; margin-top: 8px"><span class="tiny">Step 2 of 2</span><span class="tiny" style="color: var(--ink); font-weight: 800">Review &amp; accept</span></div>
+    </div>
+  </div>
+  <div class="content" style="gap: 12px">
+    <div>
+      <h1 class="h2">Review your order</h1>
+      <p class="small u-mt6">Nothing is charged today. Check the terms, then place the order.</p>
+    </div>
+    <div class="card u-pad-row">
+      <div class="rh"><span class="h3">Order</span><a href="ProductBuy.dc.html">Change</a></div>
+      <dl class="kv">
+        <div><dt>Product</dt><dd>OXY 3218L Android</dd></div>
+        <div><dt>Cash price</dt><dd class="num">Rs. 47,000</dd></div>
+        <div><dt>Delivery</dt><dd class="num">Rs. 500 · cash to rider</dd></div>
+        <div><dt>Deliver to</dt><dd>House 12, Street 5, Block E, Johar Town, Lahore</dd></div>
+      </dl>
+    </div>
+    <div class="card u-pad-row">
+      <div class="rh"><span class="h3">You repay Atomshop</span></div>
+      <div class="sched">
+        <div><span>10 Dec 2026</span><b>Rs. 15,666</b></div>
+        <div><span>10 Jan 2027</span><b>Rs. 15,666</b></div>
+        <div><span>10 Feb 2027</span><b>Rs. 15,668</b></div>
+      </div>
+      <div class="now"><span>Pay today</span><span class="num">Rs. 0</span></div>
+      <p class="tiny u-mt6">Total Rs. 47,000 · 0% markup · no advance.</p>
+    </div>
+    <div class="note wash"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>After this order, Rs. 28,000 of your Rs. 75,000 limit stays available <span class="tbd">[from server]</span>.</span></div>
+    <a href="KeyFactStatement.dc.html" class="kfs-link"><span>Read the Key Fact Statement</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></a>
+    <label class="consent">
+      <input type="checkbox" checked="{{agreed}}" onChange="{{toggle}}">
+      <span>I have read the Key Fact Statement. I am buying this from Atomshop on instalments and agree to pay Rs. 47,000 in 3 monthly instalments on the dates above.</span>
+    </label>
+  </div>
+  <div class="actionbar">
+    <sc-if value="{{agreed}}" hint-placeholder-val="{{ false }}"><a href="OrderPlaced.dc.html" class="btn btn-p btn-lg">Place order</a></sc-if>
+    <sc-if value="{{waiting}}" hint-placeholder-val="{{ true }}"><button class="btn btn-lg" disabled>Tick to accept the terms</button></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1460}}'>
+class Component extends DCLogic {
+  // Every figure is the server's quote for this order: schedule dates,
+  // delivery, the limit left afterwards. The app adds nothing up.
+  // POST /orders sends the KFS version the customer accepted; the server
+  // re-checks stock, limit and cap. A refusal brings the customer back here
+  // with the server's reason in a rose note above the button.
+  // Wording: Atomshop sells on instalments. No lender, no licence claims.
+  // "Place order" is busy while sending and never sends twice.
+  constructor(props) { super(props); this.state = { agreed: false }; }
+  renderVals() {
+    const a = this.state.agreed;
+    return { agreed: a, waiting: !a, toggle: () => this.setState({ agreed: !a }) };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account security</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.dlg-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:5}
+.dlg-wrap .dlg{position:relative;width:100%}
+</style>
+</helmet>
+<div class="scr" style="height: 1000px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Settings.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Account security</span></div>
+  </div>
+  <div class="content" style="gap: 20px">
+    <div class="note green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>One account for AtomPay and Atomshop.pk. Changes here apply to both.</span></div>
+
+    <section aria-labelledby="a1">
+      <h2 class="lbl" id="a1">Sign-in</h2>
+      <div class="list">
+        <a href="ChangePassword.dc.html" class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="u-grow"><b>Password</b><span class="d">Change it, or reset with a code</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <div class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span><span class="u-grow"><b>Email and mobile</b><span class="d num">Email on file · 0300 •••3707</span></span></div>
+      </div>
+      <p class="tiny u-mt8 u-lh">Email and mobile are changed on Atomshop.pk, where the account lives.</p>
+    </section>
+
+    <section aria-labelledby="a2">
+      <h2 class="lbl" id="a2">Sessions</h2>
+      <div class="list">
+        <a href="Devices.dc.html" class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></span><span class="u-grow"><b>Signed-in devices</b><span class="d">This phone and 1 other</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <button class="li" onClick="{{ask}}" style="width: 100%; border: 0; background: var(--white); font: inherit; text-align: left; cursor: pointer"><span class="ico rose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></span><span class="u-grow"><b style="color: var(--rose)">Sign out everywhere</b><span class="d">Every device, this one too</span></span></button>
+      </div>
+    </section>
+
+    <section aria-labelledby="a3">
+      <h2 class="lbl" id="a3">On this phone</h2>
+      <div class="card u-pad-row">
+        <ul class="ticks">
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--green)"><path d="M5 12l5 5L20 7"/></svg><span>Your sign-in is kept in the phone's secure storage, never in plain files.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--green)"><path d="M5 12l5 5L20 7"/></svg><span>CNIC and selfie screens can't be screenshotted or shown in the app switcher.</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <sc-if value="{{asking}}" hint-placeholder-val="{{ false }}">
+    <div class="scrim" style="z-index: 4"></div>
+    <div class="dlg-wrap"><div class="dlg" role="alertdialog" aria-labelledby="se-t" aria-describedby="se-d">
+      <b id="se-t" style="font-size: var(--fs-h4)">Sign out everywhere?</b>
+      <span id="se-d" class="small u-body">Every phone and browser signed in to your AtomShop account is signed out, including this one, and their notifications stop.</span>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px">
+        <button class="btn btn-g btn-block" onClick="{{stay}}">Cancel</button>
+        <a href="SignIn.dc.html" class="btn btn-block" style="background: var(--rose); color: var(--white)">Sign out everywhere</a>
+      </div>
+    </div></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  // POST /auth/logout-all deletes every token and device (this one too), so
+  // the app then go()es to Sign in. One device at a time: Signed-in devices.
+  // Email/mobile are masked; they are edited on Atomshop.pk.
+  constructor(props) { super(props); this.state = { asking: false }; }
+  renderVals() { return { asking: this.state.asking, ask: () => this.setState({ asking: true }), stay: () => this.setState({ asking: false }) }; }
+}
+</script>
+</body>
+</html>

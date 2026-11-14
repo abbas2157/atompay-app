@@ -37,6 +37,32 @@ password can be changed only through [forgot password](auth.md#forgot-password-o
 `uuid` is deliberately **not** returned. AtomShop's own `/password/reset/{uuid}` page resets
 a password with nothing but the uuid, so it must never reach the app.
 
+## `POST /me/delete`
+
+Deletes the signed-in customer's account, here **and** on AtomShop.pk. Both stores require this to be possible inside the app.
+
+```json
+{ "password": "the-current-password" }
+```
+
+| Status | Body | When |
+|---|---|---|
+| `204` | – | Deleted. Clear the stored token and go to sign-in. |
+| `422` | `{"message": "...", "errors": {"password": ["That password isn't right."]}}` | Missing or wrong password (checked exactly as `POST /auth/login` checks it). |
+| `409` | `{"message": "You still have instalments to pay. You can delete your account once every plan is repaid.", "code": "outstanding_balance"}` | An order in `Processing`, `Delivered` or `Instalments` still has unpaid instalments, or an order is waiting for approval (its message then says so). Show `message` as-is. |
+| `429` | `Too Many Attempts.` + `Retry-After` | More than 5 tries a minute on this account. |
+
+On `204` the server has:
+
+- revoked every AtomPay token and push registration, and AtomShop's own app tokens, web sessions and push tokens;
+- deleted the identity profile and the CNIC/selfie files, the inbox, preferences, and reset/sign-up records. Income answers
+  are deleted too if the customer never placed an order;
+- blocked the AtomShop account and overwritten its name, email, mobile, password and customer details, so the
+  same email and number can register again;
+- kept orders, instalment schedules, payments and the credit decision behind any order (without the employer name),
+  attached only to the anonymised account;
+- emailed a confirmation to the account's real email address, if it had one.
+
 ## `GET /me/preferences`
 
 ```json

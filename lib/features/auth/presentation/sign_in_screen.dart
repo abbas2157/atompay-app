@@ -1,18 +1,23 @@
 import 'dart:async';
 
-import 'package:atompay_mobile/core/forms/submit_section.dart';
-import 'package:atompay_mobile/core/forms/validators.dart';
-import 'package:atompay_mobile/core/network/api_exception.dart';
+import 'package:atompay_mobile/core/router/navigation.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
-import 'package:atompay_mobile/core/widgets/app_text_field.dart';
+import 'package:atompay_mobile/core/widgets/buttons.dart';
+import 'package:atompay_mobile/core/widgets/dialogs.dart';
+import 'package:atompay_mobile/core/widgets/fields.dart';
+import 'package:atompay_mobile/core/widgets/form_parts.dart';
+import 'package:atompay_mobile/core/widgets/states.dart';
 import 'package:atompay_mobile/core/widgets/ui.dart';
-import 'package:atompay_mobile/features/auth/domain/auth_controller.dart';
-import 'package:atompay_mobile/features/auth/domain/auth_flows.dart';
+import 'package:atompay_mobile/features/auth/application/auth_forms.dart';
+import 'package:atompay_mobile/features/auth/application/session_controller.dart';
+import 'package:atompay_mobile/features/auth/presentation/code_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show TextInput;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+/// Sign in with the AtomShop account (canvas "Sign in").
 class SignInScreen extends ConsumerStatefulWidget {
   const new({super.key});
 
@@ -23,138 +28,158 @@ class SignInScreen extends ConsumerStatefulWidget {
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _login = TextEditingController();
   final _password = TextEditingController();
-  Map<String, String?> _local = const {};
+  final _loginFocus = FocusNode();
+  final _passwordFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    // A 403 that ended the previous session (handbook §3.4).
-    WidgetsBinding.instance.addPostFrameCallback((_) => _showEndedMessage());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showReason());
+  }
+
+  /// "You've been signed out" after a 401, or the 403's message.
+  Future<void> _showReason() async {
+    final s = ref.read(sessionProvider);
+    if (s is! SignedOut || s.reason == null || !mounted) return;
+    ref.read(sessionProvider.notifier).consumeReason();
+    final is401 = s.reason == "You've been signed out";
+    await showAppDialog(
+      context: context,
+      title: is401 ? "You've been signed out" : "Can't sign in here",
+      body: is401 ? 'For your security, please sign in again.' : s.reason,
+      confirm: is401 ? 'Sign in' : 'OK',
+    );
   }
 
   @override
   void dispose() {
     _login.dispose();
     _password.dispose();
+    _loginFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
-  Future<void> _showEndedMessage() async {
-    final auth = ref.read(authControllerProvider);
-    if (auth case SignedOut(message: final m?) when m.isNotEmpty && mounted) {
-      ref.read(authControllerProvider.notifier).clearMessage();
-      await showMessageDialog(
-        context,
-        title: context.l10n.signInBlockedTitle,
-        message: m,
-      );
-    }
-  }
-
   Future<void> _submit() async {
-    final v = Validators(context.l10n);
-    setState(() {
-      _local = {
-        'login': v.login(_login.text),
-        'password': v.required(_password.text),
-      };
-    });
-    if (_local.values.any((e) => e != null)) return;
-    FocusScope.of(context).unfocus();
-    await ref
-        .read(signInControllerProvider.notifier)
-        .submit(login: _login.text, password: _password.text);
-    // Success: the router leaves this screen when auth state changes.
+    final form = ref.read(signInFormProvider.notifier);
+    final login = _login.text.trim();
+    if (login.isEmpty || _password.text.isEmpty) {
+      form.fail({
+        if (login.isEmpty) 'login': 'Enter your email or mobile number.',
+        if (_password.text.isEmpty) 'password': 'Enter your password.',
+      });
+      focusFirstError(ref.read(signInFormProvider), {
+        'login': _loginFocus,
+        'password': _passwordFocus,
+      });
+      return;
+    }
+    TextInput.finishAutofillContext();
+    final ok = await form.submit(login: login, password: _password.text);
+    if (!ok && mounted) {
+      focusFirstError(ref.read(signInFormProvider), {
+        'login': _loginFocus,
+        'password': _passwordFocus,
+      });
+    }
+    // On success the router's guard moves on (to `from`, or Home).
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final status = ref.watch(signInControllerProvider);
-    final controller = ref.read(signInControllerProvider.notifier);
-
-    ref.listen(signInControllerProvider, (_, next) {
-      if (next.error case final Forbidden f) {
-        controller.clearError();
-        unawaited(
-          showMessageDialog(
-            context,
-            title: l10n.signInBlockedTitle,
-            message: f.message,
+    final status = ref.watch(signInFormProvider);
+    final offline = ref.watch(isOfflineProvider);
+    return FormExitGuard(
+      dirty: false,
+      busy: status.busy,
+      child: Scaffold(
+        backgroundColor: context.colors.white,
+        appBar: AppTopBar(
+          white: true,
+          onLeading: () =>
+              context.canPop() ? context.pop() : context.go(Routes.welcome),
+        ),
+        body: AutofillGroup(
+          child: AuthPage(
+            bottom: AuthFooterLink(
+              lead: 'New to AtomPay? ',
+              link: 'Create an account',
+              onPressed: () => context.go(Routes.register),
+            ),
+            children: [
+              const PageIntro(
+                eyebrow: 'Welcome back',
+                title: 'Sign in with your AtomShop account',
+                lead:
+                    'The same email or mobile and password you use on '
+                    'Atomshop.pk.',
+              ),
+              AuthGap.form,
+              AppTextField(
+                label: 'Email or mobile number',
+                controller: _login,
+                focusNode: _loginFocus,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [
+                  AutofillHints.username,
+                  AutofillHints.email,
+                  AutofillHints.telephoneNumber,
+                ],
+                hint: 'A mobile number signs you in the same as your email.',
+                error: status.field('login'),
+                onChanged: (_) =>
+                    ref.read(signInFormProvider.notifier).clearField('login'),
+                onSubmitted: (_) => _passwordFocus.requestFocus(),
+              ),
+              AuthGap.field,
+              PasswordField(
+                label: 'Password',
+                controller: _password,
+                focusNode: _passwordFocus,
+                textInputAction: TextInputAction.done,
+                error: status.field('password'),
+                onChanged: (_) => ref
+                    .read(signInFormProvider.notifier)
+                    .clearField('password'),
+                onSubmitted: (_) => _submit(),
+              ),
+              AuthGap.field,
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextLink(
+                  'Forgot password?',
+                  onPressed: () => context.pushOnce(Routes.forgot),
+                ),
+              ),
+              AuthGap.form,
+              SubmitSection(
+                label: 'Sign in',
+                status: status,
+                offline: offline,
+                fieldsOnScreen: const {'login', 'password'},
+                onSubmit: _submit,
+                onRetryReady: () => setState(() {}),
+              ),
+              AuthGap.form,
+              const Note(
+                tone: NoteTone.wash,
+                icon: Icons.shield_outlined,
+                spans: [
+                  TextSpan(
+                    text:
+                        'AtomPay is offered on eligible products: always 3 '
+                        'months, no advance, 0% markup. A 3% processing fee '
+                        'is shown with every plan, and delivery charges '
+                        'apply.',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ],
           ),
-        );
-      }
-    });
-
-    return AuthScaffold(
-      // Opened from the guest tray: offer the way back.
-      showBack: context.canPop(),
-      headline: l10n.signInHeadline,
-      intro: l10n.signInTitle,
-      children: [
-        LoginField(
-          label: l10n.loginLabel,
-          hintText: l10n.loginHint,
-          controller: _login,
-          errorText: _local['login'] ?? status.field('login'),
-          onChanged: (_) {
-            controller.clearField('login');
-            if (_local['login'] != null) setState(() => _local = const {});
-          },
         ),
-        const SizedBox(height: Space.x16),
-        AppTextField(
-          label: l10n.passwordLabel,
-          controller: _password,
-          obscure: true,
-          showPasswordLabel: l10n.showPassword,
-          hidePasswordLabel: l10n.hidePassword,
-          autofillHints: const [AutofillHints.password],
-          textInputAction: TextInputAction.done,
-          errorText: _local['password'] ?? status.field('password'),
-          onChanged: (_) => controller.clearField('password'),
-          onSubmitted: (_) => _submit(),
-        ),
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: TextButton(
-            onPressed: () => context.push(Routes.forgot),
-            child: Text(l10n.forgotPasswordLink),
-          ),
-        ),
-        const SizedBox(height: Space.x8),
-        SubmitSection(
-          status: status,
-          label: l10n.signInButton,
-          onPressed: _submit,
-        ),
-        const SizedBox(height: Space.x24),
-        Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(l10n.noAccountPrompt, style: context.text.bodySmall),
-            TextButton(
-              onPressed: () => context.push(Routes.register),
-              child: Text(l10n.createAccountLink),
-            ),
-          ],
-        ),
-        // Public tools, usable before signing up.
-        Wrap(
-          alignment: WrapAlignment.center,
-          children: [
-            TextButton(
-              onPressed: () => context.push(Routes.estimate),
-              child: Text(l10n.estimatorLink),
-            ),
-            TextButton(
-              onPressed: () => context.push(Routes.calculator),
-              child: Text(l10n.calculatorTitle),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }

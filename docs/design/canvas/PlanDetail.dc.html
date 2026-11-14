@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Order AS-01279</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.sum div{background:var(--surface);border-radius:14px;padding:12px 10px}
+.sum b{display:block;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.sum span{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-top:2px}
+.pbar{height:8px;border-radius:99px;background:var(--line);margin-top:14px;overflow:hidden}
+.pbar i{display:block;height:100%;width:33.3%;background:var(--green);border-radius:99px}
+.chain{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--green)}
+.chain i{width:14px;height:2px;background:var(--green);display:inline-block}
+</style>
+</helmet>
+<div class="scr" style="height: 1110px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Plans.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t num">AS-01279</span><span class="badge b-blue u-mr8">Repaying</span></div>
+  </div>
+  <sc-if value="{{isReady}}" hint-placeholder-val="{{ true }}"><div class="content u-gap14">
+    <div class="card u-pad">
+      <div style="display: flex; gap: 12px; align-items: center">
+        <span style="width: 56px; height: 56px; border-radius: 14px; background: var(--surface); display: grid; place-items: center; color: var(--glyph); flex: none"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+        <span class="u-grow"><b style="display: block; font-size: 17px">OXY 3218L Android</b><span class="small">3 months · no advance · 0% markup</span></span>
+      </div>
+      <div class="pbar" aria-label="1 of 3 months paid"><i></i></div>
+      <div class="sum">
+        <div><b>Rs. 47,000</b><span>total</span></div>
+        <div><b style="color: var(--green)">Rs. 15,666</b><span>paid</span></div>
+        <div><b>Rs. 31,334</b><span>to go</span></div>
+      </div>
+      <div class="chain u-mt14">Placed<i></i>Approved<i></i>Delivered 9 Nov<i></i><span style="color: var(--primary)">Repaying</span></div>
+    </div>
+
+    <div class="sec-h"><h2>Schedule</h2><span class="tiny">Due on the 10th</span></div>
+    <div class="list">
+      <div class="li"><span class="ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span><span class="u-grow"><b>1st month</b><span class="d">Due 10 Dec 2026 · paid 9 Nov by JazzCash</span></span><span style="text-align: right"><span class="amt" style="display: block">Rs. 15,666</span><span class="badge b-green u-mt4">Paid</span></span></div>
+      <div class="li" style="background: var(--amber-wash)"><span class="ico amber"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="u-grow"><b>2nd month</b><span class="d">Due 10 Jan 2027</span></span><span style="text-align: right"><span class="amt" style="display: block">Rs. 15,666</span><span class="badge b-amber u-mt4">Due</span></span></div>
+      <div class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></span><span class="u-grow"><b>3rd month</b><span class="d">Due 10 Feb 2027 · takes the rounding</span></span><span style="text-align: right"><span class="amt" style="display: block">Rs. 15,668</span><span class="badge b-grey u-mt4">Upcoming</span></span></div>
+    </div>
+
+    <div class="note blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>Pay Atomshop by hand, bank transfer, JazzCash, EasyPaisa or online. Each payment shows here once Atomshop records it.</span></div>
+    <a href="KeyFactStatement.dc.html" class="btn btn-g btn-block">Key Fact Statement</a>
+    <a href="AskAtomConvo.dc.html" class="btn btn-g btn-block">Ask Atom about a payment</a>
+  </div></sc-if>
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}"><div class="content u-gap14" aria-busy="true" aria-label="Loading this order">
+    <div class="sk-card"><div class="sk-row"><div class="skel" style="width: 56px; height: 56px; border-radius: 14px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 65%; height: 16px; border-radius: 99px"></div><div class="skel" style="width: 80%; height: 10px; border-radius: 99px"></div></div></div><div class="skel" style="width: 100%; height: 8px; border-radius: 99px"></div><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px"><div style="display: flex; flex-direction: column; gap: 6px"><div class="skel" style="width: 80%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 50%; height: 10px; border-radius: 99px"></div></div><div style="display: flex; flex-direction: column; gap: 6px"><div class="skel" style="width: 80%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 50%; height: 10px; border-radius: 99px"></div></div><div style="display: flex; flex-direction: column; gap: 6px"><div class="skel" style="width: 80%; height: 16px; border-radius: 8px"></div><div class="skel" style="width: 50%; height: 10px; border-radius: 99px"></div></div></div></div>
+    <div class="skel" style="width: 30%; height: 16px; border-radius: 8px"></div>
+    <div class="list"><div class="li"><div class="skel" style="width: 36px; height: 36px; border-radius: 50%; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 50%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 35%; height: 10px; border-radius: 99px"></div></div><div class="skel" style="width: 22%; height: 13px; border-radius: 99px"></div></div><div class="li"><div class="skel" style="width: 36px; height: 36px; border-radius: 50%; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 50%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 35%; height: 10px; border-radius: 99px"></div></div><div class="skel" style="width: 22%; height: 13px; border-radius: 99px"></div></div><div class="li"><div class="skel" style="width: 36px; height: 36px; border-radius: 50%; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 50%; height: 13px; border-radius: 99px"></div><div class="skel" style="width: 35%; height: 10px; border-radius: 99px"></div></div><div class="skel" style="width: 22%; height: 13px; border-radius: 99px"></div></div></div>
+    <div class="skel" style="height: 48px; border-radius: 999px"></div>
+  </div></sc-if>
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}"><div class="content state" role="alert">
+    <span class="ico grey"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8 11h6"/></svg></span>
+    <h2 class="h3">We can't find this order</h2>
+    <p class="small">It may belong to another account, or the link is out of date.</p>
+    <div class="acts"><a href="Plans.dc.html" class="btn btn-p btn-block">Go to my orders</a></div>
+    <span class="ref">Order AS-09999</span>
+  </div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["ready", "loading", "error"],"default":"ready","section":"State"},"$preview":{"width":390,"height":1110}}'>
+class Component extends DCLogic {
+  // States: ready, loading (skeleton in this screen's shape), error.
+  stateVals() {
+    const s = this.props.state || 'ready';
+    return { isReady: s === 'ready' || s === 'offline', isLoading: s === 'loading', isError: s === 'error', isEmpty: s === 'empty', isOffline: s === 'offline' };
+  }
+  renderVals() { return this.stateVals(); }
+}
+</script>
+</body>
+</html>

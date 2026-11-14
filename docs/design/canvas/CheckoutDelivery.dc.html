@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buy with AtomPay · delivery</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.wsteps.two-step{grid-template-columns:repeat(2,minmax(0,1fr))}
+.item{display:flex;gap:14px;align-items:center}
+.item .th{width:64px;height:64px;flex:none;border-radius:14px;background:var(--surface);display:grid;place-items:center;color:var(--glyph)}
+.item b{display:block;font-size:15px;font-weight:800;color:var(--ink)}
+.addr{display:flex;gap:12px;align-items:flex-start;width:100%;padding:16px;border:1px solid var(--line-2);border-radius:16px;background:var(--white);font:inherit;text-align:left;cursor:pointer}
+.addr.sel{border:2px solid var(--primary);padding:15px;background:var(--primary-soft)}
+.addr .dot{width:20px;height:20px;flex:none;border-radius:50%;border:2px solid var(--line-3);margin-top:1px}
+.addr.sel .dot{border:6px solid var(--primary)}
+.addr b{display:block;font-size:15px;font-weight:800;color:var(--ink)}
+.addr span{display:block;font-size:14px;font-weight:600;color:var(--body);line-height:1.5}
+.fee{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:700;color:var(--ink)}
+</style>
+</helmet>
+<div class="scr" style="height: 1120px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="ProductBuy.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Buy with AtomPay</span></div>
+    <div style="padding: 0 16px 14px">
+      <div class="wsteps two-step"><i class="on"></i><i></i></div>
+      <div style="display: flex; justify-content: space-between; margin-top: 8px"><span class="tiny">Step 1 of 2</span><span class="tiny" style="color: var(--ink); font-weight: 800">Delivery</span></div>
+    </div>
+  </div>
+  <div class="content u-gap14">
+    <div>
+      <h1 class="h2">Where should it go?</h1>
+      <p class="small u-mt6">Atomshop delivers it and calls you before the rider comes.</p>
+    </div>
+    <div class="card u-pad">
+      <div class="item">
+        <span class="th"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+        <span class="u-grow"><b>OXY 3218L Android</b><span class="small">Qty 1 · <span class="num">Rs. 47,000</span></span></span>
+      </div>
+    </div>
+    <div role="radiogroup" aria-label="Delivery address" style="display: flex; flex-direction: column; gap: 10px">
+      <button class="addr {{homeCls}}" role="radio" aria-checked="{{home}}" onClick="{{pickHome}}">
+        <i class="dot"></i>
+        <span class="u-grow"><b>My verified address</b><span>AtomPay Official · 0300 1234567</span><span>House 12, Street 5, Block E, Johar Town, Lahore</span></span>
+        <span class="badge b-green">Verified</span>
+      </button>
+      <button class="addr {{otherCls}}" role="radio" aria-checked="{{other}}" onClick="{{pickOther}}">
+        <i class="dot"></i>
+        <span class="u-grow"><b>A different address</b><span>Office, a relative's home. Your plan stays with your verified address.</span></span>
+      </button>
+    </div>
+    <sc-if value="{{other}}" hint-placeholder-val="{{ false }}">
+      <div class="form" style="display: flex; flex-direction: column; gap: 14px">
+        <div class="two">
+          <div class="field"><span>City</span><a href="CityPicker.dc.html" class="input picker u-plain" aria-label="City, Lahore. Change"><span>Lahore</span><svg class="u-body" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a></div>
+          <div class="field"><span>Area</span><a href="AreaPicker.dc.html" class="input picker u-plain" aria-label="Area, choose one"><span class="ph">Choose</span><svg class="u-body" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a></div>
+        </div>
+        <div class="field"><label for="cd1">Address</label><div class="input u-top"><textarea id="cd1" rows="2" placeholder="House, street, block"></textarea></div></div>
+        <div class="field"><label for="cd2">Mobile for the rider</label><div class="input"><input id="cd2" value="0300 1234567" inputmode="tel"></div></div>
+      </div>
+    </sc-if>
+    <div class="field"><label for="cd3">Note for the rider <span class="tiny">· optional</span></label><div class="input"><input id="cd3" placeholder="Landmark, best time to call"></div></div>
+    <div class="card u-pad">
+      <div class="fee"><span>Delivery</span><span class="num">Rs. 500 <span class="tbd">[from server]</span></span></div>
+      <p class="tiny u-mt6">Paid to the rider in cash on delivery. Not part of your instalments <span class="tbd">[confirm]</span>.</p>
+    </div>
+  </div>
+  <div class="actionbar">
+    <a href="CheckoutReview.dc.html" class="btn btn-p btn-lg">Continue</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  // The verified KYC address is chosen by default: no typing for most
+  // orders. A different address only changes where the parcel goes; the
+  // plan, the visit and the KFS stay with the verified address.
+  // Delivery charge and how it's paid are server decisions - the [tbd]
+  // marks them until POST /orders and its quote exist.
+  constructor(props) { super(props); this.state = { other: false }; }
+  renderVals() {
+    const o = this.state.other;
+    return {
+      home: !o, other: o,
+      homeCls: o ? '' : 'sel', otherCls: o ? 'sel' : '',
+      pickHome: () => this.setState({ other: false }),
+      pickOther: () => this.setState({ other: true }),
+    };
+  }
+}
+</script>
+</body>
+</html>

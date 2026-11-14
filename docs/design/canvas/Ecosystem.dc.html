@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Our ecosystem</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.eco{display:flex;gap:14px;align-items:flex-start}
+.eco img{width:48px;height:48px;border-radius:14px;flex:none;display:block}
+.eco .role{display:block;font-size:var(--fs-sm);font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.eco b{display:block;font-size:var(--fs-h4);margin-top:2px}
+.eco p{margin:4px 0 0;font-size:var(--fs-md);font-weight:500;color:var(--body);line-height:1.5}
+.stores{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.stores a,.stores span{min-height:48px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-md);font-weight:700;text-decoration:none;color:var(--ink);background:var(--white)}
+.stores span{color:var(--muted);background:var(--surface)}
+.stores span.here{color:var(--amber-ink);background:var(--amber-soft);border-color:var(--amber)}
+.stores a.web{border-color:transparent;padding:0 6px;color:var(--primary)}
+.stores a:active{background:var(--primary-soft)}
+</style>
+</helmet>
+<div class="scr" style="height: 1290px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Account.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Our ecosystem</span></div>
+  </div>
+  <div class="content u-gap14">
+    <p class="small">Four products, one marketplace and one account. AtomPay is the financing part — it never sells you anything itself.</p>
+    <div class="card u-pad"><div class="eco">
+      <img src="/_blob/8cf8a82d79c5f83aa330d31816673915" alt="">
+      <div class="u-grow"><span class="role">For shoppers</span><b>Atomshop.pk</b><p>The marketplace. The order, the delivery and the warranty all sit here.</p>
+        <div class="stores"><a href="https://play.google.com/store/apps/details?id=com.ecommerce.atomshop" aria-label="Atomshop on Google Play. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M5 3.5v17c0 .8.9 1.3 1.6.9l14-8.5c.7-.4.7-1.4 0-1.8l-14-8.5C5.9 2.2 5 2.7 5 3.5z"/></svg>Google Play</a><a href="https://apps.apple.com/us/app/atomshop/id6744655747" aria-label="Atomshop on the App Store. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M16.5 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8C6.9 7.4 5.4 8.3 4.6 9.8c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 2.9 2.4 1.2 0 1.6-.8 3-.8s1.8.8 3 .8 2-1.2 2.8-2.3c.9-1.3 1.2-2.6 1.3-2.6-.1 0-2.3-.9-2.3-3.3zM14.3 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>App Store</a><a href="https://atomshop.pk" class="web" aria-label="atomshop.pk website. Opens the browser."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>atomshop.pk</a></div></div>
+    </div></div>
+    <div class="card u-pad" style="border-color: var(--apay-line); background: var(--apay-wash)"><div class="eco">
+      <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="">
+      <div class="u-grow"><span class="role">For financing</span><b>AtomPay</b><p>A verified spending limit for eligible products. Three months, no advance, 0% markup.</p>
+        <div class="stores"><span class="here">You are here</span><a href="https://play.google.com/store/apps/details?id=com.ecommerce.atompay" aria-label="AtomPay on Google Play. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M5 3.5v17c0 .8.9 1.3 1.6.9l14-8.5c.7-.4.7-1.4 0-1.8l-14-8.5C5.9 2.2 5 2.7 5 3.5z"/></svg>Google Play</a><a href="https://apps.apple.com/us/app/atompay-pay-in-steps/id6817231756" aria-label="AtomPay on the App Store. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M16.5 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8C6.9 7.4 5.4 8.3 4.6 9.8c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 2.9 2.4 1.2 0 1.6-.8 3-.8s1.8.8 3 .8 2-1.2 2.8-2.3c.9-1.3 1.2-2.6 1.3-2.6-.1 0-2.3-.9-2.3-3.3zM14.3 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>App Store</a></div></div>
+    </div></div>
+    <div class="card u-pad"><div class="eco">
+      <img src="/_blob/eaad3f0a48de20cb70f5d548390fcd45" alt="">
+      <div class="u-grow"><span class="role">For local sellers</span><b>Atom Seller</b><p>Leads, deals, deliveries and collections, run by a verified seller in your area.</p>
+        <div class="stores"><a href="https://play.google.com/store/apps/details?id=com.ecommerce.atomseller" aria-label="Atom Seller on Google Play. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M5 3.5v17c0 .8.9 1.3 1.6.9l14-8.5c.7-.4.7-1.4 0-1.8l-14-8.5C5.9 2.2 5 2.7 5 3.5z"/></svg>Google Play</a><a href="https://apps.apple.com/us/app/atom-seller-sell-more/id6817232001" aria-label="Atom Seller on the App Store. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M16.5 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8C6.9 7.4 5.4 8.3 4.6 9.8c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 2.9 2.4 1.2 0 1.6-.8 3-.8s1.8.8 3 .8 2-1.2 2.8-2.3c.9-1.3 1.2-2.6 1.3-2.6-.1 0-2.3-.9-2.3-3.3zM14.3 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>App Store</a><a href="https://atomshop.pk/smart-seller" class="web" aria-label="Smart Seller website. Opens the browser."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Smart Seller</a></div></div>
+    </div></div>
+    <div class="card u-pad"><div class="eco">
+      <img src="/_blob/12679e931c8c36e18907eb43c4519da0" alt="">
+      <div class="u-grow"><span class="role">For brand partners</span><b>AtomBrand</b><p>A brand's own storefront and stock on Atomshop, with each order handed to a seller.</p>
+        <div class="stores"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M5 3.5v17c0 .8.9 1.3 1.6.9l14-8.5c.7-.4.7-1.4 0-1.8l-14-8.5C5.9 2.2 5 2.7 5 3.5z"/></svg>Android soon</span><a href="https://apps.apple.com/us/app/atombrand-brand-partner/id6820037360" aria-label="AtomBrand on the App Store. Opens the store."><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M16.5 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8C6.9 7.4 5.4 8.3 4.6 9.8c-1.7 2.9-.4 7.2 1.2 9.6.8 1.2 1.7 2.4 2.9 2.4 1.2 0 1.6-.8 3-.8s1.8.8 3 .8 2-1.2 2.8-2.3c.9-1.3 1.2-2.6 1.3-2.6-.1 0-2.3-.9-2.3-3.3zM14.3 5.6c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.7-1.3z"/></svg>App Store</a><a href="https://atomshop.pk/brand-partners" class="web" aria-label="Brand Partners website. Opens the browser."><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Brand Partners</a></div></div>
+    </div></div>
+    <p class="tiny u-center u-lh">Every link leaves AtomPay. Store links come from config('atompay.apps') and api.store_url, the same ones the website uses; a missing one shows "soon" instead of linking nowhere.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1130}}'>
+class Component extends DCLogic {
+  // Each button shows the link for the phone's own store (Android here). A
+  // missing link shows "Android soon" / "iOS soon" instead of linking nowhere.
+  // Atomshop opens the installed app if there is one, else its store page.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

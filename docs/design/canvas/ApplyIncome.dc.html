@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Apply · income</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.input.ro.neg{color:var(--rose);background:var(--rose-soft);border-color:var(--rose-line)}
+.pre{font-size:15px;font-weight:700;color:var(--muted)}
+</style>
+</helmet>
+<div class="scr" style="height: 1120px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar">
+      <a href="ApplyDocuments.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
+      <span class="t">Apply for your limit</span>
+    </div>
+    <div style="padding: 0 16px 14px">
+      <div class="wsteps"><i class="done"></i><i class="done"></i><i class="on"></i><i></i></div>
+      <div style="display: flex; justify-content: space-between; margin-top: 8px"><span class="tiny">Step 3 of 4</span><span class="tiny" style="color: var(--ink); font-weight: 800">Income &amp; financials</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <div>
+      <h1 class="h2">Income &amp; financial profile</h1>
+      <p class="small u-mt6">Honest figures get you the right limit — they are checked during verification.</p>
+    </div>
+    <div class="form">
+      <div class="two">
+        <div class="field"><span>Employment status</span><a href="EmploymentPicker.dc.html" class="input picker u-plain" aria-label="Employment status, Salaried. Change"><span>Salaried</span><svg class="u-body" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a></div>
+        <div class="field"><span>Income source</span><a href="IncomePicker.dc.html" class="input picker u-plain" aria-label="Income source, Salary. Change"><span>Salary</span><svg class="u-body" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a></div>
+      </div>
+      <div class="field"><label for="in1">Employer or business name</label><div class="input"><input id="in1" value="Cubic Reach (Pvt) Ltd"></div><span class="hint">Asked because you are salaried.</span></div>
+      <div class="field"><label for="in2">Monthly income</label><div class="input focus"><span class="pre">Rs.</span><input id="in2" inputmode="numeric" value="{{income}}" onChange="{{setIncome}}"></div></div>
+      <div class="two">
+        <div class="field"><label for="in3">Existing instalments</label><div class="input"><span class="pre">Rs.</span><input id="in3" inputmode="numeric" value="{{inst}}" onChange="{{setInst}}"></div></div>
+        <div class="field"><label for="in4">Household expenses</label><div class="input"><span class="pre">Rs.</span><input id="in4" inputmode="numeric" value="{{exp}}" onChange="{{setExp}}"></div></div>
+      </div>
+      <div class="field"><span>Disposable income</span><div class="{{dispCls}}">{{disposable}}</div><span class="hint">Income less instalments and expenses, a month.</span></div>
+    </div>
+    <sc-if value="{{valid}}" hint-placeholder-val="{{ true }}">
+      <div class="spend">
+        <div class="lbl">Provisional purchase limit</div>
+        <div class="amt">{{limit}}</div>
+        <div class="row"><span>Up to {{cap}} a month</span><span>30% of income</span></div>
+        <p style="font-size: 13px; font-weight: 600; margin-top: 10px; line-height: 1.5">Final figures are set by our team after the risk assessment.</p>
+      </div>
+    </sc-if>
+  </div>
+  <div class="actionbar">
+    <a href="ApplyDocuments.dc.html" class="btn btn-g btn-lg" style="flex: 0 0 auto">Back</a>
+    <a href="ApplyReview.dc.html" class="btn btn-p btn-lg">Continue</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1120}}'>
+class Component extends DCLogic {
+  // Same rule as the website (CreditAssessmentService): limit = 30% of income;
+  // monthly cap = the smaller of 10% of income and disposable income.
+  constructor(props) { super(props); this.state = { income: '200000', inst: '0', exp: '80000' }; }
+  renderVals() {
+    const n = (v) => Number(String(v).replace(/[^0-9]/g, '')) || 0;
+    const rs = (v) => 'Rs. ' + Math.round(v).toLocaleString('en-US');
+    const income = n(this.state.income), disp = income - n(this.state.inst) - n(this.state.exp);
+    const digits = (k) => (e) => this.setState({ [k]: e.target.value.replace(/[^0-9]/g, '') });
+    return {
+      income: this.state.income, inst: this.state.inst, exp: this.state.exp,
+      setIncome: digits('income'), setInst: digits('inst'), setExp: digits('exp'),
+      disposable: income ? rs(disp) : '—',
+      dispCls: disp < 0 ? 'input ro neg num' : 'input ro num',
+      valid: income >= 1000,
+      limit: rs(income * 0.3),
+      cap: rs(Math.max(0, Math.min(income * 0.1, disp))),
+    };
+  }
+}
+</script>
+</body>
+</html>

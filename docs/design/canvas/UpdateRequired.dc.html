@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Update required</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 0 28px; text-align: center">
+    <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="" style="width: 80px; height: 80px; border-radius: 22px; box-shadow: 0 16px 40px rgba(20,33,61,.08)">
+    <h1 class="h2">Time to update</h1>
+    <p class="lead" style="max-width: 300px">A new version of AtomPay is available. Please update to continue.</p>
+    <span class="badge b-grey">This version is no longer supported</span>
+  </div>
+  <div style="padding: 0 20px 34px; display: flex; flex-direction: column; gap: 12px">
+    <a href="#" class="btn btn-p btn-lg btn-block">Update on Google Play</a>
+    <p class="tiny u-center u-lh">Opens the store link from app-config. If there isn't one, this button is hidden and the support contacts show instead.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Blocking: shown whenever the app version is below app-config.min_version.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

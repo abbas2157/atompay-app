@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Permissions</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.never{display:flex;flex-wrap:wrap;gap:8px}
+.never span{min-height:36px;padding:0 12px;border-radius:999px;background:var(--surface);border:1px solid var(--line);display:inline-flex;align-items:center;font-size:var(--fs-md);font-weight:700;color:var(--body)}
+</style>
+</helmet>
+<div class="scr" style="height: 960px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Settings.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Permissions</span></div>
+  </div>
+  <div class="content" style="gap: 20px">
+    <p class="small">AtomPay asks for three things, only when you use the feature that needs them. You can change any of them at any time in your phone's settings.</p>
+    <section aria-labelledby="p1">
+      <h2 class="lbl" id="p1">What AtomPay can use</h2>
+      <div class="list">
+        <div class="li u-top"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="u-grow"><b>Camera</b><span class="d">To photograph your CNIC and take a selfie. Never in the background.</span></span><span class="badge b-green">Allowed</span></div>
+        <div class="li u-top"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><span class="u-grow"><b>Notifications</b><span class="d">Payment reminders and decisions on your limit.</span></span><span class="badge b-grey">Off</span></div>
+        <div class="li u-top"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><span class="u-grow"><b>Microphone</b><span class="d">Only to ask ask Atom a question by voice. Recordings are never kept.</span></span><span class="badge b-grey">Not asked</span></div>
+      </div>
+      <a href="#" class="btn btn-p btn-block u-mt14">Open phone settings<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+      <p class="tiny u-mt8 u-lh">Turned something off? The app keeps working; it asks again only when you use that feature.</p>
+    </section>
+    <section aria-labelledby="p2">
+      <h2 class="lbl" id="p2">Never asked for</h2>
+      <div class="never"><span>Contacts</span><span>Photos and files</span><span>Location</span><span>Calls and call logs</span><span>SMS</span><span>Phone number</span><span>Other apps</span></div>
+      <p class="tiny u-mt8 u-lh">Lending apps in Pakistan may not read these, even with your consent (Google Play and SECP rules).</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+  // Status is read live (permission_handler) each time the screen shows, so it
+  // is right after a trip to phone settings. "Open phone settings" calls
+  // openAppSettings(). The chips are labels, not controls.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orders in every status</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.os{display:flex;flex-direction:column;gap:6px;padding:14px 16px;background:var(--white);border:1px solid var(--line);border-radius:18px}
+.os .r{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.os b{font-size:15px}
+</style>
+</helmet>
+<div class="scr" style="height: 1240px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><span class="t u-pl8">My orders</span></div>
+  </div>
+  <div class="content" style="gap: 10px">
+    <span class="tiny" style="text-transform: uppercase; letter-spacing: 1px; font-weight: 800">Every status, as each would appear</span>
+    <div class="os"><div class="r"><b>Oppo A6K</b><span class="badge b-amber">Awaiting approval</span></div><span class="small">Atomshop is reviewing this order.</span></div>
+    <div class="os"><div class="r"><b>OXY 4018 Android TV</b><span class="badge b-amber">Verification</span></div><span class="small">We are confirming your details for this order.</span></div>
+    <div class="os"><div class="r"><b>Oppo A6</b><span class="badge b-blue">Processing</span></div><span class="small">Approved. Atomshop is preparing it for delivery.</span></div>
+    <div class="os"><div class="r"><b>OXY 4318F Smart TV</b><span class="badge b-blue">Delivered</span></div><span class="small">Your three months start now. The schedule appears shortly.</span></div>
+    <a href="PlanDetail.dc.html" class="os" style="text-decoration: none; color: var(--ink)"><div class="r"><b>OXY 3218L Android</b><span class="badge b-blue">Repaying</span></div><span class="small num">1 of 3 paid · next Rs. 15,666 on 10 Jan</span></a>
+    <a href="PlanLate.dc.html" class="os" style="text-decoration: none; color: var(--ink); border-color: var(--rose-line)"><div class="r"><b>OXY 3218L Android</b><span class="badge b-rose">Late</span></div><span class="small num">Rs. 15,666 was due on 10 Jan</span></a>
+    <div class="os"><div class="r"><b>OXY 6518G Smart TV</b><span class="badge b-green">Completed</span></div><span class="small">Fully repaid. Thank you.</span></div>
+    <div class="os"><div class="r"><b>Samsung Galaxy S26 FE</b><span class="badge b-grey">Cancelled</span></div><span class="small">Nothing is owed on this order.</span></div>
+    <p class="tiny" style="text-align: center; line-height: 1.5; padding: 4px 12px">Badges carry the words, not just the colour. Only Repaying and Late open a schedule.</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1240}}'>
+class Component extends DCLogic {
+  // Status labels follow the API's status_label (Pending, Verification,
+  // Processing, Delivered, Instalments, Completed, Cancelled); the product
+  // names are real catalogue rows used as examples.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

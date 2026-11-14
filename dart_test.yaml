@@ -1,0 +1,4 @@
+tags:
+  # Pixel comparisons of every canvas board (test/goldens). Generated on
+  # Windows; regenerate with `flutter test --tags golden --update-goldens`.
+  golden:

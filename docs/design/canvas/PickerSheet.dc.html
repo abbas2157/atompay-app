@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Picker sheet (every dropdown)</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.opts{flex:1;overflow-y:auto;padding:0 0 8px}
+.clr{width:48px;height:48px;margin-right:-12px;border:0;background:none;display:grid;place-items:center;color:var(--muted);cursor:pointer;border-radius:50%;flex:none}
+.clr:active{background:var(--grey-soft)}
+.opt small{display:block;font-size:var(--fs-sm);font-weight:600;color:var(--muted);margin-top:2px}
+.opt .tx{text-align:left}
+</style>
+</helmet>
+<div class="scr" style="height: 844px">
+  <div class="safe"></div>
+  <div style="padding: 8px 16px; display: flex; flex-direction: column; gap: 12px; opacity: .55" aria-hidden="true">
+    <div class="field">{{field}}<div class="input picker"><span>{{current}}</span></div></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="sheet" role="dialog" aria-label="{{title}}">
+    <div class="grab"></div>
+    <div style="padding: 6px 20px 12px; display: flex; flex-direction: column; gap: 12px; flex: none">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div class="u-grow"><div class="h3">{{title}}</div><div class="tiny" style="margin-top: 2px" aria-live="polite">{{countLabel}}</div></div>
+        <a href="{{back}}" class="icon-btn" aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+      </div>
+      <div class="input focus">
+        <svg class="u-body" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input aria-label="{{searchLabel}}" placeholder="{{placeholder}}" value="{{q}}" onChange="{{onQuery}}">
+        <sc-if value="{{hasQ}}" hint-placeholder-val="{{ false }}"><button class="clr" aria-label="Clear search" onClick="{{clear}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></sc-if>
+      </div>
+    </div>
+    <div class="opts" role="listbox" aria-label="{{title}}">
+      <sc-for list="{{items}}" as="it" hint-placeholder-count="8">
+        <button class="{{it.cls}}" onClick="{{it.pick}}" role="option" aria-selected="{{it.pressed}}">
+          <span class="tx">{{it.title}}<sc-if value="{{it.hasSub}}" hint-placeholder-val="{{ false }}"><small>{{it.sub}}</small></sc-if></span>
+          <sc-if value="{{it.sel}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><path d="M5 12l5 5L20 7"/></svg></sc-if>
+        </button>
+      </sc-for>
+      <sc-if value="{{none}}" hint-placeholder-val="{{ false }}">
+        <div style="text-align: center; padding: 28px 20px; display: flex; flex-direction: column; gap: 12px; align-items: center">
+          <p class="small u-m0">{{emptyText}}</p>
+          <button class="btn btn-g" onClick="{{clear}}">Clear search</button>
+        </div>
+      </sc-if>
+    </div>
+    <div class="actionbar"><a href="{{back}}" class="btn btn-p btn-lg">{{doneLabel}}</a></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"list":{"editor":"enum","options":["city","area","employment","income","topic","order"],"default":"city","section":"State"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // One sheet behind every dropdown in the app: search first, then the list.
+  // Search matches anywhere in the label, ignores case and extra spaces, and
+  // the list keeps its order. The current value is ticked and announced. Close,
+  // Android back and a swipe down all leave the value unchanged.
+  // Cities: the 99 active rows of the shared cities table (GET /cities).
+  // Areas: GET /areas/{city} (474 for Lahore; first 24 shown here).
+  // Employment and income: EmploymentStatus / IncomeSource, via GET /options.
+  constructor(props) { super(props); this.state = { q: '', picked: null }; }
+  cfg() {
+    const C = ["Ahmadpur East","Alipur","Attock","Bahawalnagar","Bahawalpur","Bhakkar","Bhalwal","Burewala","Chakwal","Chenab Nagar","Chichawatni","Chiniot","Chishtian","Chunian","Daska","Dera Ghazi Khan","Dijkot","Dina","Dipalpur","Faisalabad","Ferozewala","Fort Abbas","Gojra","Gujar Khan","Gujranwala","Gujrat","Hafizabad","Haroonabad","Hasilpur","Hassan Abdal","Hazro","Islamabad","Jalalpur Pirwala","Jaranwala","Jatoi","Jhang","Jhelum","Kabirwala","Kahuta","Kamalia","Kamoke","Kamra","Kasur","Khanewal","Khanpur","Kharian","Khushab","Kot Addu","Kot Radha Kishan","Lahore","Lalamusa","Layyah","Liaquatpur","Lodhran","Mailsi","Malakwal","Mandi Bahauddin","Mian Channu","Mianwali","Multan","Muridke","Murree","Muzaffargarh","Nankana Sahib","Narang Mandi","Narowal","Naushehra Virkan","Okara","Pakpattan","Pasrur","Pattoki","Phalia","Pind Dadan Khan","Pindi Bhattian","Rahim Yar Khan","Raiwind","Rajanpur","Rawalpindi","Renala Khurd","Sadiqabad","Sahiwal","Sambrial","Sammundri","Sangla Hill","Sargodha","Shahpur","Sheikhupura","Shorkot","Shujabad","Sialkot","Talagang","Tandlianwala","Taxila","Toba Tek Singh","Uch Sharif","Vehari","Wah Cantonment","Wazirabad","Yazman"];
+    const A = ['Abdalian Housing Society','Abu Bakar Block','Ahmed Block','Aibak Block','Airport Road','Aitchison Society','Ajodhia Pur','Akram Park Shad Bagh','Askari Colony','Bahria Town','Cantt','DHA 1','DHA 2','DHA 3','DHA 4','DHA 5','DHA 6','DHA 7','DHA 8','Dharampura','Faisal Park Baghban Pura','Faisal Park Shahdara','Faisal Town Lahore','Johar Town'];
+    const L = {
+      city: { field: 'City', title: 'Choose your city', noun: 'cities', total: 99, items: C, picked: 'Lahore', back: 'ApplyPersonal.dc.html', ph: 'Type to search, e.g. Multan' },
+      area: { field: 'Area', title: 'Choose your area', noun: 'areas in Lahore', total: 474, items: A, picked: 'Johar Town', back: 'ApplyPersonal.dc.html', ph: 'Type to search, e.g. DHA' },
+      employment: { field: 'Employment status', title: 'Employment status', noun: 'options', items: ['Salaried','Self-employed','Business owner','Freelancer','Retired','Unemployed'], picked: 'Salaried', back: 'ApplyIncome.dc.html', ph: 'Search, e.g. retired' },
+      income: { field: 'Income source', title: 'Main income source', noun: 'options', items: ['Salary','Business','Rental','Remittance','Pension','Other'], picked: 'Salary', back: 'ApplyIncome.dc.html', ph: 'Search, e.g. rental' },
+      topic: { field: 'What is it about?', title: 'What is it about?', noun: 'topics', items: ['A payment','An order','My limit or application','My account or sign-in','Something else'], picked: 'A payment', back: 'Complaints.dc.html', ph: 'Search topics' },
+      order: { field: 'Which order?', title: 'Which order?', noun: 'orders', items: [['AS-01279', 'OXY 3218L Android · delivered 9 Nov'], ['Not about an order', 'Leave this empty']], picked: 'AS-01279', back: 'Complaints.dc.html', ph: 'Search by order number or product' },
+    };
+    return L[this.props.list] || L.city;
+  }
+  renderVals() {
+    const c = this.cfg();
+    const all = c.items.map((x) => Array.isArray(x) ? { t: x[0], s: x[1] } : { t: x, s: '' });
+    const q = (this.state.q || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    const shown = all.filter((x) => !q || (x.t + ' ' + x.s).toLowerCase().indexOf(q) !== -1);
+    const picked = this.state.picked ?? c.picked;
+    const total = c.total || all.length;
+    return {
+      field: c.field, title: c.title, back: c.back, placeholder: c.ph,
+      searchLabel: 'Search ' + c.noun, current: picked,
+      q: this.state.q, hasQ: !!q,
+      onQuery: (e) => this.setState({ q: e.target.value }),
+      clear: () => this.setState({ q: '' }),
+      countLabel: q ? shown.length + ' of ' + total + ' ' + c.noun : total + ' ' + c.noun,
+      none: shown.length === 0,
+      emptyText: 'Nothing matches "' + this.state.q.trim() + '". Try fewer letters.',
+      doneLabel: 'Use ' + picked,
+      items: shown.map((x) => ({
+        title: x.t, sub: x.s, hasSub: !!x.s, sel: x.t === picked, pressed: x.t === picked ? 'true' : 'false',
+        cls: x.t === picked ? 'opt sel' : 'opt',
+        pick: () => this.setState({ picked: x.t }),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

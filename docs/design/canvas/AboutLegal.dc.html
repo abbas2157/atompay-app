@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>About and legal</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+
+
+</style>
+</helmet>
+<div class="scr" style="height: 1000px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Account.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">About and legal</span></div>
+  </div>
+  <div class="content" style="gap: 18px">
+    <div class="card" style="padding: 18px; display: flex; gap: 14px; align-items: center">
+      <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="" style="width: 52px; height: 52px; border-radius: 14px">
+      <span><b style="display: block; font-size: 17px">AtomPay</b><span class="small"><span class="num">Version 1.0.0 (1)</span> · Pay in steps</span></span>
+    </div>
+    <div>
+      <div class="lbl">Who provides your credit</div>
+      <div class="card u-pad-row">
+        <dl class="kv">
+          <div><dt>Company</dt><dd><span class="tbd">[LICENSED ENTITY NAME]</span></dd></div>
+          <div><dt>Licence</dt><dd>SECP · <span class="tbd">[LICENCE NO.]</span></dd></div>
+          <div><dt>Address</dt><dd><span class="tbd">[REGISTERED ADDRESS]</span></dd></div>
+          <div><dt>Your data</dt><dd>Stored in Pakistan <span class="tbd">[CONFIRM]</span></dd></div>
+        </dl>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Documents</div>
+      <div class="list">
+        <a href="https://atompay.shop/privacy" class="li"><span class="u-grow"><b>Privacy policy</b><span class="d">atompay.shop/privacy</span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+        <a href="#" class="li"><span class="u-grow"><b>Terms</b><span class="d">Hidden while app-config.terms_url is empty</span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+        <a href="KeyFactStatement.dc.html" class="li"><span class="u-grow"><b>Key Fact Statements</b><span class="d">One for each order</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a href="#" class="li"><span class="u-grow"><b>Open-source licences</b><span class="d">Flutter's built-in licence list</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      </div>
+    </div>
+    <div>
+      <div class="lbl">Permissions this app uses</div>
+      <div class="card u-pad-row"><p class="small u-body">Camera, while you photograph your CNIC. Notifications, if you turn them on. Microphone, only if you ask Atom by voice. Nothing else — no contacts, gallery, files, location, calls or messages.</p></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  // SECP: full corporate name and licensing status shown in the app. The
+  // business has not supplied them yet, so they are marked, not invented.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

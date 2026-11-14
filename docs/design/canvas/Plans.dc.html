@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My orders</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.ord{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--ink)}
+.ord .top{display:flex;gap:12px;align-items:center}
+.thumb{width:60px;height:60px;border-radius:14px;background:var(--surface);display:grid;place-items:center;color:var(--glyph);flex:none}
+
+
+
+
+</style>
+</helmet>
+<div class="scr" style="height: 844px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><span class="t u-pl8">My orders</span></div>
+  </div>
+  <sc-if value="{{isReady}}" hint-placeholder-val="{{ true }}"><div class="content">
+    <a href="PlanDetail.dc.html" class="card ord">
+      <div class="top">
+        <span class="thumb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+        <span style="flex: 1; min-width: 0"><b class="u-block u-fs-body">OXY 3218L Android</b><span class="small num">AS-01279 · delivered 9 Nov</span></span>
+        <span class="badge b-blue">Repaying</span>
+      </div>
+      <div class="mini3" aria-label="1 of 3 months paid"><i class="paid"></i><i class="next"></i><i></i></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px; align-items: baseline">
+        <span class="small"><b class="num u-ink">Rs. 15,666</b> of Rs. 47,000 paid</span>
+        <span class="badge b-amber">Due 10 Jan</span>
+      </div>
+    </a>
+    <p class="tiny" style="text-align: center; line-height: 1.55; padding: 4px 12px">Every order you place with AtomPay on Atomshop.pk shows here, whatever its status — waiting for approval, on its way, being repaid or completed.</p>
+  </div></sc-if>
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}"><div class="content u-gap14" aria-busy="true" aria-label="Loading your orders">
+    <div class="sk-card"><div class="sk-row"><div class="skel" style="width: 52px; height: 52px; border-radius: 14px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 70%; height: 14px; border-radius: 99px"></div><div class="skel" style="width: 45%; height: 10px; border-radius: 99px"></div></div><div class="skel" style="width: 22%; height: 22px; border-radius: 99px"></div></div><div class="skel" style="width: 100%; height: 8px; border-radius: 99px"></div><div class="sk-row" style="justify-content: space-between"><div class="skel" style="width: 46%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 24%; height: 22px; border-radius: 99px"></div></div></div>
+    <div class="sk-card"><div class="sk-row"><div class="skel" style="width: 52px; height: 52px; border-radius: 14px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 70%; height: 14px; border-radius: 99px"></div><div class="skel" style="width: 45%; height: 10px; border-radius: 99px"></div></div><div class="skel" style="width: 22%; height: 22px; border-radius: 99px"></div></div><div class="skel" style="width: 100%; height: 8px; border-radius: 99px"></div><div class="sk-row" style="justify-content: space-between"><div class="skel" style="width: 46%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 24%; height: 22px; border-radius: 99px"></div></div></div>
+    <div class="sk-card"><div class="sk-row"><div class="skel" style="width: 52px; height: 52px; border-radius: 14px; flex: none"></div><div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><div class="skel" style="width: 70%; height: 14px; border-radius: 99px"></div><div class="skel" style="width: 45%; height: 10px; border-radius: 99px"></div></div><div class="skel" style="width: 22%; height: 22px; border-radius: 99px"></div></div><div class="skel" style="width: 100%; height: 8px; border-radius: 99px"></div><div class="sk-row" style="justify-content: space-between"><div class="skel" style="width: 46%; height: 12px; border-radius: 99px"></div><div class="skel" style="width: 24%; height: 22px; border-radius: 99px"></div></div></div>
+  </div></sc-if>
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}"><div class="content state" role="alert">
+    <span class="ico rose"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 7v6M12 17h.01"/></svg></span>
+    <h2 class="h3">Something went wrong on our side</h2>
+    <p class="small">Your orders and payments are safe. Please try again in a moment.</p>
+    <div class="acts"><button class="btn btn-p btn-block">Try again</button><a href="HelpCentre.dc.html" class="btn btn-g btn-block">Contact support</a></div>
+    <span class="ref">Ref 7F3K-21A9</span>
+  </div></sc-if>
+  <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}"><div class="content state" role="status">
+    <span class="ico grey"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg></span>
+    <h2 class="h3">No orders yet</h2>
+    <p class="small">Choose AtomPay at checkout on an eligible Atomshop.pk product and the order shows here.</p>
+    <div class="acts"><a href="Products.dc.html" class="btn btn-p btn-block">See eligible products</a></div>
+    
+  </div></sc-if>
+  <nav class="tabbar" aria-label="Main">
+    <a href="HomeRepaying.dc.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>Home</a>
+    <a href="Products.dc.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 14H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>Shop</a>
+    <a href="AskAtom.dc.html" class="atom"><span class="ring"><img src="/_blob/8cf8a82d79c5f83aa330d31816673915" alt="" width="40" height="40" style="width: 40px; height: 40px; display: block"></span>Ask Atom</a>
+    <a href="Plans.dc.html" class="on" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/></svg>Orders</a>
+    <a href="Account.dc.html"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["ready", "loading", "empty", "error"],"default":"ready","section":"State"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // States: ready, loading (skeleton in this screen's shape), empty, error.
+  stateVals() {
+    const s = this.props.state || 'ready';
+    return { isReady: s === 'ready' || s === 'offline', isLoading: s === 'loading', isError: s === 'error', isEmpty: s === 'empty', isOffline: s === 'offline' };
+  }
+  renderVals() { return this.stateVals(); }
+}
+</script>
+</body>
+</html>

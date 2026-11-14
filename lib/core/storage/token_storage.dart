@@ -19,9 +19,8 @@ final tokenStorageProvider = Provider<TokenStorage>(
 const _installedKey = 'app.installed';
 
 /// iOS keeps Keychain items after the app is deleted, but not
-/// SharedPreferences. Without this, a reinstall would come back signed in
-/// with biometric lock off. Runs once per install, before anything reads the
-/// token.
+/// SharedPreferences. Without this a reinstall would come back signed in.
+/// Runs once per install, before anything reads the token.
 Future<void> clearSessionAfterReinstall(
   SharedPreferences prefs, {
   FlutterSecureStorage storage = secureStorage,
@@ -31,9 +30,9 @@ Future<void> clearSessionAfterReinstall(
   await prefs.setBool(_installedKey, true);
 }
 
-/// The bearer token and the last-known user live here and nowhere else
-/// (handbook rule 9). Keeps an in-memory copy of the token so the HTTP
-/// interceptor can read it synchronously.
+/// The bearer token and the last-known user live here and nowhere else.
+/// Keeps an in-memory copy of the token so the HTTP interceptor can read it
+/// synchronously.
 class TokenStorage {
   new(this._storage);
 
@@ -48,14 +47,7 @@ class TokenStorage {
   /// The token loaded by [load] or saved by [save]. Null when signed out.
   String? get token => _token;
 
-  Future<String?> load() async {
-    return _token = await _storage.read(key: _tokenKey);
-  }
-
-  Future<DateTime?> expiresAt() async {
-    final raw = await _storage.read(key: _expiresKey);
-    return raw == null ? null : DateTime.tryParse(raw);
-  }
+  Future<String?> load() async => _token = await _storage.read(key: _tokenKey);
 
   Future<void> save({required String token, required DateTime expiresAt}) {
     _token = token;
@@ -65,8 +57,8 @@ class TokenStorage {
     ]);
   }
 
-  /// The last `/me` response, for offline launch. Contains PII, which is why
-  /// it lives in secure storage and not SharedPreferences.
+  /// The last `/me` response, for an offline launch. It holds PII, which is
+  /// why it lives in secure storage and not SharedPreferences.
   Future<Map<String, dynamic>?> cachedUser() async {
     final raw = await _storage.read(key: _userKey);
     if (raw == null) return null;

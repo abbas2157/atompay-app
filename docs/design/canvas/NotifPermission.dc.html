@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turn on notifications</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+</style>
+</helmet>
+<div class="scr white" style="height: 844px">
+  <div class="safe"></div>
+  <div class="appbar"><span class="u-grow"></span><a href="HomeRepaying.dc.html" class="btn" style="min-height: 48px; background: transparent; color: var(--body); padding: 0 14px">Not now</a></div>
+  <div class="content" style="justify-content: center; gap: 22px">
+    <span class="ico" style="width: 76px; height: 76px; border-radius: 24px; align-self: center"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+    <div class="u-center"><h1 class="h2">Never miss a payment date</h1><p class="lead u-mt8">We will only tell you what matters to your plan.</p></div>
+    <div class="card u-pad">
+      <ul class="ticks">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--amber-ink)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span><b>Before a payment is due</b></span></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--rose)"><path d="M12 2l3 6 6 .9-4.5 4.4 1 6.2L12 16.5 6.5 19.5l1-6.2L3 8.9 9 8z"/></svg><span><b>When your limit is decided</b></span></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7"/></svg><span><b>When your order moves</b> — approved, delivered, paid</span></li>
+      </ul>
+    </div>
+    <p class="tiny u-center u-lh">Your inbox in the app shows everything either way. Change this any time in Account.</p>
+  </div>
+  <div class="actionbar"><a href="HomeRepaying.dc.html" class="btn btn-p btn-lg">Turn on notifications</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Pre-prompt before the system dialog (Android 13+ POST_NOTIFICATIONS, iOS).
+  // Shown after the first sign-in, never at launch; "Not now" never re-asks on every open.
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+
+</style>
+</helmet>
+<div class="scr" style="height: 900px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Settings.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Notifications</span></div>
+  </div>
+  <div class="content" style="gap: 18px">
+    <div>
+      <div class="lbl">Notifications</div>
+      <div class="list">
+        <div class="li"><span class="u-grow"><b>Push notifications</b><span class="d">On this phone only</span></span><button class="{{pushCls}}" onClick="{{togglePush}}" role="switch" aria-checked="{{pushOn}}" aria-label="Push notifications"><i></i></button></div>
+        <div class="li"><span class="u-grow"><b>Email alerts</b><span class="d">To the email on your account</span></span><button class="{{mailCls}}" onClick="{{toggleMail}}" role="switch" aria-checked="{{mailOn}}" aria-label="Email alerts"><i></i></button></div>
+      </div>
+      <p class="tiny" style="margin-top: 8px; line-height: 1.5">The inbox in the app always shows everything. Accounts with only a mobile number get no email, so that switch is hidden for them.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  // Push: POST/DELETE /devices (device level). Email: PATCH /me/preferences.
+  // The app is English only, so there is no language setting.
+  constructor(props) { super(props); this.state = { push: true, mail: true }; }
+  renderVals() {
+    const s = this.state;
+    return {
+      pushCls: s.push ? 'sw on' : 'sw off', pushOn: s.push ? 'true' : 'false', togglePush: () => this.setState({ push: !s.push }),
+      mailCls: s.mail ? 'sw on' : 'sw off', mailOn: s.mail ? 'true' : 'false', toggleMail: () => this.setState({ mail: !s.mail }),
+    };
+  }
+}
+</script>
+</body>
+</html>

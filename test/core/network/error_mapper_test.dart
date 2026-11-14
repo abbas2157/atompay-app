@@ -1,112 +1,106 @@
 import 'package:atompay_mobile/core/network/api_exception.dart';
 import 'package:atompay_mobile/core/network/error_mapper.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart' hide Timeout;
 
-ApiException _status(
+DioException response(
   int status, [
   Object? body,
   Map<String, List<String>> headers = const {},
 ]) {
   final options = RequestOptions(path: '/x');
-  return ErrorMapper.map(
-    DioException.badResponse(
-      statusCode: status,
+  return DioException(
+    requestOptions: options,
+    type: DioExceptionType.badResponse,
+    response: Response<dynamic>(
       requestOptions: options,
-      response: Response<dynamic>(
-        requestOptions: options,
-        statusCode: status,
-        data: body,
-        headers: Headers.fromMap(headers),
-      ),
+      statusCode: status,
+      data: body,
+      headers: Headers.fromMap(headers),
     ),
   );
 }
 
 void main() {
-  test('401 → Unauthorized', () {
-    expect(_status(401, {'message': 'Unauthenticated.'}), isA<Unauthorized>());
+  test('401 → Unauthenticated', () {
+    expect(ErrorMapper.map(response(401)), isA<Unauthenticated>());
   });
 
   test('403 keeps the server message', () {
-    final e = _status(403, {'message': 'Please sign in with a customer.'});
+    final e = ErrorMapper.map(response(403, {'message': 'Not a customer.'}));
     expect(e, isA<Forbidden>());
-    expect(e.message, 'Please sign in with a customer.');
+    expect(e.message, 'Not a customer.');
   });
 
   test('404 → NotFound', () {
-    expect(_status(404, {'message': 'Nope'}), isA<NotFound>());
+    expect(ErrorMapper.map(response(404)), isA<NotFound>());
   });
 
-  test('409 carries the code', () {
-    final e = _status(409, {'message': 'x', 'code': 'profile_required'});
+  test('409 carries its code', () {
+    final e = ErrorMapper.map(
+      response(409, {'message': 'Owed.', 'code': 'outstanding_balance'}),
+    );
     expect(
       e,
-      isA<Conflict>().having((c) => c.code, 'code', 'profile_required'),
+      isA<Conflict>().having((c) => c.code, 'code', 'outstanding_balance'),
     );
   });
 
-  test('422 exposes field errors', () {
-    final e = _status(422, {
-      'message': 'The given data was invalid.',
-      'errors': {
-        'login': ['Those details do not match an AtomShop account.'],
-        'password': ['Required.', 'Too short.'],
-      },
-    });
+  test('422 keeps every field error', () {
+    final e = ErrorMapper.map(
+      response(422, {
+        'message': 'Bad.',
+        'errors': {
+          'login': ['Those details do not match an AtomShop account.'],
+        },
+      }),
+    );
     expect(e, isA<Validation>());
-    final v = e as Validation;
-    expect(v.first('login'), 'Those details do not match an AtomShop account.');
-    expect(v.first('password'), 'Required.');
-    expect(v.first('name'), isNull);
+    expect(
+      (e as Validation).first('login'),
+      'Those details do not match an AtomShop account.',
+    );
   });
 
-  test('429 reads Retry-After, defaulting to 60 s', () {
-    final e = _status(
-      429,
-      {'message': 'Too Many Attempts.'},
-      {
-        'retry-after': ['42'],
-      },
+  test('429 reads Retry-After, defaulting to a minute', () {
+    final e = ErrorMapper.map(
+      response(429, null, {
+        'retry-after': ['48'],
+      }),
     );
     expect(
       e,
       isA<RateLimited>().having(
         (r) => r.retryAfter,
         'retryAfter',
-        const Duration(seconds: 42),
+        const Duration(seconds: 48),
       ),
+    );
+    final d = ErrorMapper.map(response(429)) as RateLimited;
+    expect(d.retryAfter, const Duration(seconds: 60));
+  });
+
+  test('5xx never carries server text, and 503 means maintenance', () {
+    final e = ErrorMapper.map(response(500, {'message': 'SQLSTATE[42S22]'}));
+    expect(e, isA<Server>());
+    expect(e.message, isNot(contains('SQL')));
+    expect((e as Server).reference, isNotNull);
+    expect((ErrorMapper.map(response(503)) as Server).isMaintenance, isTrue);
+  });
+
+  test('timeouts and connection errors', () {
+    final o = RequestOptions(path: '/x');
+    expect(
+      ErrorMapper.map(
+        DioException(requestOptions: o, type: DioExceptionType.receiveTimeout),
+      ),
+      isA<Timeout>(),
     );
     expect(
-      (_status(429) as RateLimited).retryAfter,
-      const Duration(seconds: 60),
+      ErrorMapper.map(
+        DioException(requestOptions: o, type: DioExceptionType.connectionError),
+      ),
+      isA<Offline>(),
     );
-  });
-
-  test('5xx never exposes server text', () {
-    final e = _status(500, {'message': 'SQLSTATE[42S02] …'});
-    expect(e, isA<ServerError>());
-    expect(e.message, isNot(contains('SQLSTATE')));
-  });
-
-  test('timeouts and connection errors → NetworkError', () {
-    final options = RequestOptions(path: '/x');
-    for (final e in [
-      DioException.connectionTimeout(
-        timeout: const Duration(seconds: 15),
-        requestOptions: options,
-      ),
-      DioException.receiveTimeout(
-        timeout: const Duration(seconds: 30),
-        requestOptions: options,
-      ),
-      DioException.connectionError(requestOptions: options, reason: 'x'),
-    ]) {
-      expect(ErrorMapper.map(e), isA<NetworkError>());
-    }
-  });
-
-  test('a non-JSON error body still maps by status', () {
-    expect(_status(422, '<html>'), isA<Validation>());
   });
 }

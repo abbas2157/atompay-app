@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ask Atom</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.ahead{background:var(--ink);color:var(--on-dark-2);flex:none}
+.ahead .row{display:flex;align-items:center;gap:10px;height:60px;padding:0 8px}
+.ahead .icon-btn{color:var(--white)}.ahead .icon-btn:hover{background:var(--ink-3);color:var(--white)}
+.av{width:42px;height:42px;border-radius:50%;background:var(--white);display:grid;place-items:center;flex:none}
+.ahead b{display:block;color:var(--white);font-size:17px;font-weight:800}
+.ahead small{font-size:12px;font-weight:600;color:var(--on-dark-2)}
+.abody{flex:1;overflow:hidden;padding:16px 16px 0;display:flex;flex-direction:column;gap:12px}
+
+.nc{display:flex;gap:12px;padding:14px;border-radius:16px;background:var(--white);border:1px solid var(--line);align-items:flex-start}
+.nc b{display:block;font-size:14px;font-weight:700}
+.nc span.d{display:block;font-size:13px;color:var(--body);margin-top:2px;font-weight:500}
+.mini{display:inline-flex;align-items:center;min-height:48px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--white);color:var(--ink);font-size:13px;font-weight:700;text-decoration:none;margin-top:8px}
+.mini.pri{background:var(--primary);border-color:var(--primary);color:var(--white)}
+.me{align-self:flex-end;max-width:80%;background:var(--primary);color:var(--white);border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:14px;font-weight:600;line-height:1.45}
+.bot{align-self:flex-start;max-width:94%;display:flex;gap:8px;align-items:flex-end}
+.bot .av{width:30px;height:30px;border:1px solid var(--line)}
+.bubble{background:var(--white);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:12px 14px;font-size:14px;line-height:1.55;color:var(--body);display:flex;flex-direction:column;gap:10px;font-weight:500}
+.bubble b{color:var(--ink)}
+.mt{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mt div{display:flex;justify-content:space-between;padding:8px 12px;font-size:13px;font-weight:600}
+.mt div + div{border-top:1px solid var(--line)}
+.mt div b{font-variant-numeric:tabular-nums}
+.fb{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:600;color:var(--muted)}
+.fb button{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:var(--white);cursor:pointer;color:var(--body);display:grid;place-items:center}
+.inbar{display:flex;gap:8px;align-items:center;padding:10px 12px 28px;background:var(--white);border-top:1px solid var(--line);flex:none}
+.inbar .input{flex:1;border-radius:999px}
+.mic{width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;flex:none;background:var(--primary-soft);color:var(--primary)}
+.mic:active{background:var(--primary-line)}
+.listen{flex:none;background:var(--white);border-top:1px solid var(--line);padding:16px 16px 28px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.wave{display:flex;align-items:center;gap:4px;height:40px}
+.wave i{display:block;width:5px;border-radius:99px;background:var(--primary);animation:wv 1s ease-in-out infinite}
+.wave i:nth-child(2n){animation-delay:.15s}.wave i:nth-child(3n){animation-delay:.3s}.wave i:nth-child(5n){animation-delay:.45s}
+@keyframes wv{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+@media (prefers-reduced-motion:reduce){.wave i{animation:none}}
+.heard{font-size:var(--fs-h4);font-weight:700;color:var(--ink);line-height:1.4;min-height:48px}
+.heard i{font-style:normal;color:var(--muted)}
+.lacts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.say{display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--white);font:inherit;font-size:var(--fs-sm);font-weight:700;color:var(--primary);cursor:pointer}
+.say:active{background:var(--primary-soft)}
+.say.on{background:var(--primary-soft);border-color:var(--primary-line)}
+.dlg-wrap{position:absolute;inset:0;display:flex;align-items:flex-end;z-index:5}
+.msheet{position:relative;width:100%;background:var(--white);border-radius:24px 24px 0 0;padding:8px 20px 30px;display:flex;flex-direction:column;gap:14px}
+.send{width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;flex:none;background:var(--primary);color:var(--white)}
+</style>
+</helmet>
+<div class="scr" style="height: 844px">
+  <div class="ahead">
+    <div class="safe"></div>
+    <div class="row">
+      <a href="HomeRepaying.dc.html" class="icon-btn" aria-label="Close Ask Atom"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></a>
+      <span class="av"><img src="/_blob/8cf8a82d79c5f83aa330d31816673915" alt="" width="36" height="36" style="width: 36px; height: 36px; display: block"></span>
+      <span style="flex: 1; min-width: 0"><b>Atom</b><small>Answers about AtomPay in seconds</small></span>
+      <a href="HelpCentre.dc.html" class="icon-btn" aria-label="Talk to a person"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg></a>
+    </div>
+  </div>
+
+  <div class="abody">
+    <sc-if value="{{isStart}}" hint-placeholder-val="{{ true }}">
+      <p class="h2" style="font-size: 22px">Hi Ayesha. What would you like to know?</p>
+      <div class="lbl">Atom noticed</div>
+      <div class="nc"><span class="ico amber"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="u-grow"><b>Your 2nd payment is due 10 Jan</b><span class="d">Rs. 15,666 for OXY 3218L Android</span><a href="PlanDetail.dc.html" class="mini pri">See the schedule</a></span></div>
+      <div class="nc"><span class="ico wash"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h20v12H2zM2 11h20"/></svg></span><span class="u-grow"><b>Rs. 28,666 left to spend</b><span class="d">Rs. 44,332 once January is paid</span></span></div>
+      <div class="lbl" style="margin-top: 2px">Ask</div>
+      <div class="chips">
+        <button class="chip" onClick="{{toChat}}">What does AtomPay cost?</button>
+        <button class="chip" onClick="{{toChat}}">How do I get a limit?</button>
+        <button class="chip" onClick="{{toChat}}">Which products can I buy?</button>
+        <button class="chip" onClick="{{toChat}}">When are my payments due?</button>
+        <button class="chip" onClick="{{toChat}}">Plan for Rs. 47,000</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isChat}}" hint-placeholder-val="{{ false }}">
+      <div class="me">What does AtomPay cost?</div>
+      <div class="bot">
+        <span class="av"><img src="/_blob/8cf8a82d79c5f83aa330d31816673915" alt="" width="24" height="24" style="width: 24px; height: 24px; display: block"></span>
+        <div class="bubble">
+          <span><b>Nothing for the financing.</b> AtomPay is 0% markup and takes no advance, so you repay exactly the cash price over 3 months.</span>
+          <span>A 3% processing fee is shown with every plan as a disclaimer, and delivery charges apply.</span>
+          <div class="fb"><button class="say" aria-label="Read this answer aloud"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>Listen</button></div>
+        </div>
+      </div>
+      <div class="me">Plan for Rs. 47,000</div>
+      <div class="bot">
+        <span class="av"><img src="/_blob/8cf8a82d79c5f83aa330d31816673915" alt="" width="24" height="24" style="width: 24px; height: 24px; display: block"></span>
+        <div class="bubble">
+          <span>On a <b>Rs. 47,000</b> product:</span>
+          <div class="mt"><div><span>Month 1</span><b>Rs. 15,666</b></div><div><span>Month 2</span><b>Rs. 15,666</b></div><div><span>Month 3</span><b>Rs. 15,668</b></div></div>
+          <span>No advance, no markup, Rs. 47,000 repaid in total. Your limit has to cover the whole price, because nothing is paid at checkout.</span>
+          <a href="Products.dc.html" class="mini" style="align-self: flex-start; margin-top: 0">See eligible products</a>
+          <div class="fb"><button class="{{sayCls}}" onClick="{{say}}" aria-pressed="{{sayPressed}}" aria-label="{{sayLabel}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>{{sayText}}</button><span style="margin-left: auto">Helpful?</span> <button class="fbx" aria-label="Helpful"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v11H3V10zM7 10l4-8a3 3 0 0 1 3 3v4h5.5a2 2 0 0 1 2 2.3l-1.4 8A2 2 0 0 1 18 21H7"/></svg></button><button class="fbx" aria-label="Not helpful"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 14V3h4v11zM17 14l-4 8a3 3 0 0 1-3-3v-4H4.5a2 2 0 0 1-2-2.3l1.4-8A2 2 0 0 1 6 3h11"/></svg></button></div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{isListening}}" hint-placeholder-val="{{ false }}">
+  <div class="listen" role="status" aria-live="polite">
+    <span class="tiny" style="font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--primary)">Listening · 0:04</span>
+    <div class="wave" aria-hidden="true"><i style="height: 14px"></i><i style="height: 26px"></i><i style="height: 38px"></i><i style="height: 22px"></i><i style="height: 34px"></i><i style="height: 18px"></i><i style="height: 30px"></i><i style="height: 40px"></i><i style="height: 24px"></i><i style="height: 16px"></i><i style="height: 28px"></i><i style="height: 12px"></i></div>
+    <p class="heard u-m0">When is my next payment <i>due…</i></p>
+    <span class="tiny">Speak in English. Stops by itself when you pause.</span>
+    <div class="lacts">
+      <button class="btn btn-g" onClick="{{cancelVoice}}">Cancel</button>
+      <button class="btn btn-p" onClick="{{doneVoice}}">Done</button>
+    </div>
+  </div>
+  </sc-if>
+  <sc-if value="{{notListening}}" hint-placeholder-val="{{ true }}">
+  <div class="inbar">
+    <div class="input"><input aria-label="Ask Atom" placeholder="Ask about your limit, a plan, a payment"></div>
+    <button class="mic" aria-label="Ask by voice" onClick="{{micTap}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button class="send" aria-label="Send" onClick="{{toChat}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </div>
+  </sc-if>
+  <sc-if value="{{isMicAsk}}" hint-placeholder-val="{{ false }}">
+    <div class="scrim" style="z-index: 4"></div>
+    <div class="dlg-wrap"><div class="msheet" role="dialog" aria-labelledby="mt" aria-describedby="md">
+      <div class="grab"></div>
+      <span class="ico" style="width: 56px; height: 56px; border-radius: 18px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+      <b id="mt" style="font-size: var(--fs-h3)">Ask Atom with your voice</b>
+      <p id="md" class="small u-body u-m0">AtomPay uses the microphone only while you hold this conversation open and tap the mic. Your phone turns speech into text; we keep the text, never the recording.</p>
+      <button class="btn btn-p btn-block btn-lg" onClick="{{allowMic}}">Allow microphone</button>
+      <button class="btn btn-g btn-block" onClick="{{cancelVoice}}">Not now, I'll type</button>
+    </div></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["start","chat","listening","micask"],"default":"start","section":"State"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  // Opens full screen over the current tab (the centre button); Close, Android
+  // back and the swipe all return to that tab, with its state as it was.
+  // Ask Atom on the website is rules-only (AskAtomService): it answers from
+  // AtomPay's own rules and the customer's account, no AI involved. These
+  // answers are word for word what it returns.
+  // Voice: speech_to_text with the phone's own recognizer, English only.
+  // RECORD_AUDIO (Android) and NSMicrophoneUsageDescription +
+  // NSSpeechRecognitionUsageDescription (iOS) are asked on the first mic tap,
+  // after this explanation - never at launch. Only the text is sent to Ask
+  // Atom; no audio is uploaded or stored. Denied -> the mic opens Permissions.
+  // Read aloud: flutter_tts on the device, one answer at a time.
+  constructor(props) { super(props); this.state = { chat: null, voice: null, granted: false, saying: false }; }
+  renderVals() {
+    const p = this.props.screen ?? 'start';
+    const chat = this.state.chat ?? (p !== 'start');
+    const voice = this.state.voice ?? (p === 'listening' ? 'listening' : p === 'micask' ? 'ask' : null);
+    const saying = this.state.saying;
+    return {
+      isStart: !chat, isChat: chat, toChat: () => this.setState({ chat: true }),
+      isListening: voice === 'listening', notListening: voice !== 'listening', isMicAsk: voice === 'ask',
+      micTap: () => this.setState({ voice: this.state.granted ? 'listening' : 'ask' }),
+      allowMic: () => this.setState({ granted: true, voice: 'listening' }),
+      cancelVoice: () => this.setState({ voice: 'none' }),
+      doneVoice: () => this.setState({ voice: 'none', chat: true }),
+      say: () => this.setState({ saying: !saying }),
+      sayCls: saying ? 'say on' : 'say', sayPressed: saying ? 'true' : 'false',
+      sayText: saying ? 'Stop' : 'Listen', sayLabel: saying ? 'Stop reading aloud' : 'Read this answer aloud',
+    };
+  }
+}
+</script>
+</body>
+</html>

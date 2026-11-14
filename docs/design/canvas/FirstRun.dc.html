@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Before you start</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.sub{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+</style>
+</helmet>
+<div class="scr white" style="height: 1060px">
+  <div class="safe"></div>
+  <div class="content" style="gap: 18px">
+    <div><span class="eyebrow ap">Before you start</span><h1 class="h1 u-mt8">What AtomPay asks for, and why</h1></div>
+
+    <div class="card" style="padding: 16px 18px; background: var(--apay-wash); border-color: var(--apay-line)">
+      <div class="sub" style="color: var(--rose)">Who provides your credit</div>
+      <p style="font-size: 15px; font-weight: 800"><span class="tbd">[LICENSED ENTITY NAME]</span></p>
+      <p class="small u-mt4">Licensed by the SECP · licence <span class="tbd">[LICENCE NO.]</span></p>
+    </div>
+
+    <div>
+      <div class="sub">We ask for</div>
+      <ul class="ticks">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><path d="M3 8h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg><span><b>Camera</b> — only while you photograph your CNIC and take a selfie. Never in the background.</span></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span><b>Notifications</b> — optional, for payment reminders and decisions.</span></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span><b>Microphone</b> — optional, only if you ask Atom by voice. We keep the text, not the recording.</span></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary)"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg><span><b>Your CNIC, address and income</b> — to verify you and set your limit, as the law requires.</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="sub">We never access</div>
+      <ul class="ticks">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--green)"><path d="M5 12l5 5L20 7"/></svg><span>Your contacts, photo gallery, files, call logs, messages or location — not even with your permission.</span></li>
+      </ul>
+    </div>
+    <div class="note blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/><circle cx="12" cy="12" r="9"/></svg><span>Your data is stored in Pakistan <span class="tbd">[CONFIRM HOSTING]</span>. Read the <a href="AboutLegal.dc.html" style="font-weight: 800">privacy policy</a> and <a href="AboutLegal.dc.html" style="font-weight: 800">terms</a>.</span></div>
+    <label class="consent"><input type="checkbox" checked="{{ok}}" onChange="{{toggle}}"><span>I have read the privacy policy and the terms.</span></label>
+  </div>
+  <div class="actionbar">
+    <sc-if value="{{ok}}" hint-placeholder-val="{{ false }}"><a href="SignUp.dc.html" class="btn btn-p btn-lg">Continue</a></sc-if>
+    <sc-if value="{{notOk}}" hint-placeholder-val="{{ true }}"><button class="btn btn-lg" disabled>Continue</button></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1060}}'>
+class Component extends DCLogic {
+  // Shown once, before sign in: Google Play "prominent disclosure" and SECP's
+  // minimum disclosures from download onward (lender name, licence, data use).
+  constructor(props) { super(props); this.state = { ok: false }; }
+  renderVals() {
+    const ok = this.state.ok;
+    return {
+      ok, notOk: !ok,
+      toggle: () => this.setState({ ok: !ok }),
+    };
+  }
+}
+</script>
+</body>
+</html>

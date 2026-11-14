@@ -1,4 +1,12 @@
 {
   "FLAVOR": "staging",
-  "API_BASE_URL": "https://atompay.shop/api/v1"
+  "API_BASE_URL": "https://atompay.shop/api/v1",
+  "LIVE_APIS": "all",
+  "FIREBASE_PROJECT_ID": "",
+  "FIREBASE_SENDER_ID": "",
+  "FIREBASE_ANDROID_API_KEY": "",
+  "FIREBASE_ANDROID_APP_ID": "",
+  "FIREBASE_IOS_API_KEY": "",
+  "FIREBASE_IOS_APP_ID": "",
+  "FIREBASE_IOS_BUNDLE_ID": ""
 }

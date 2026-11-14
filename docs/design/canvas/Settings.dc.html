@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./app.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:var(--primary)}a:hover{color:var(--primary-dark)}
+.dlg-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;z-index:5}
+.dlg-wrap .dlg{position:relative;width:100%}
+</style>
+</helmet>
+<div class="scr" style="height: 1330px">
+  <div class="topw">
+    <div class="safe"></div>
+    <div class="appbar"><a href="Account.dc.html" class="icon-btn" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a><span class="t">Settings</span></div>
+  </div>
+  <div class="content" style="gap: 20px">
+
+    <section aria-labelledby="s1">
+      <h2 class="lbl" id="s1">Account</h2>
+      <div class="list">
+        <a href="Verification.dc.html" class="li"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="u-grow"><b>Personal details</b><span class="d">Name, CNIC, mobile, city and area</span></span><span class="badge b-green">Verified</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a href="NotifSettings.dc.html" class="li"><span class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><span class="u-grow"><b>Notifications</b><span class="d">Push on · email on</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      </div>
+    </section>
+
+    <section aria-labelledby="s2">
+      <h2 class="lbl" id="s2">Security</h2>
+      <div class="list">
+        <a href="SecuritySettings.dc.html" class="li"><span class="ico green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="u-grow"><b>Account security</b><span class="d">Password, sign-out everywhere</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a href="ChangePassword.dc.html" class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><span class="u-grow"><b>Change password</b><span class="d">Also changes it on Atomshop.pk</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a href="Devices.dc.html" class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></span><span class="u-grow"><b>Active sessions</b><span class="d">2 devices signed in</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      </div>
+    </section>
+
+    <section aria-labelledby="s3">
+      <h2 class="lbl" id="s3">Privacy</h2>
+      <div class="list">
+        <a href="Permissions.dc.html" class="li"><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span><span class="u-grow"><b>Permissions</b><span class="d">Camera · notifications · microphone</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+        <a href="https://atompay.shop/privacy" class="li" aria-label="Privacy policy. Opens in the browser."><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><span class="u-grow"><b>Privacy policy</b><span class="d">How we use and keep your data</span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+        <a href="#" class="li" aria-label="Terms and conditions. Opens in the browser."><span class="ico grey"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h7M9 17h5"/></svg></span><span class="u-grow"><b>Terms and conditions</b><span class="d"><span class="tbd">[TERMS URL]</span> app-config.terms_url is empty</span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+      </div>
+    </section>
+
+    <section aria-labelledby="s4">
+      <h2 class="lbl" id="s4">Your data</h2>
+      <div class="list">
+        <a href="DeleteAccount.dc.html" class="li"><span class="ico rose"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></span><span class="u-grow"><b style="color: var(--rose)">Delete account</b><span class="d">Closes your Atomshop.pk account too</span></span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      </div>
+      <p class="tiny u-mt8 u-lh">Need a copy of your data? Ask through <a href="Complaints.dc.html" style="font-weight: 700">Help</a>. There's no self-service export yet.</p>
+    </section>
+
+    <button class="btn btn-g btn-block" onClick="{{askOut}}" style="color: var(--rose)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sign out</button>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 8px">
+      <img src="/_blob/f60d9ee9234031f0f149a0e5bc30d1e6" alt="" width="36" height="36" style="width: 36px; height: 36px; border-radius: 10px">
+      <span class="tiny num">AtomPay · Version 1.0.0 (1)</span>
+    </div>
+  </div>
+
+  <sc-if value="{{asking}}" hint-placeholder-val="{{ false }}">
+    <div class="scrim" style="z-index: 4"></div>
+    <div class="dlg-wrap"><div class="dlg" role="alertdialog" aria-labelledby="so-t" aria-describedby="so-d">
+      <b id="so-t" style="font-size: var(--fs-h4)">Sign out of AtomPay?</b>
+      <span id="so-d" class="small u-body">You'll need your AtomShop email or mobile and password to sign back in. Your limit and orders stay as they are.</span>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px">
+        <button class="btn btn-g btn-block" onClick="{{stay}}">Stay signed in</button>
+        <a href="SignIn.dc.html" class="btn btn-block" style="background: var(--rose); color: var(--white)">Sign out</a>
+      </div>
+    </div></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"signout":{"editor":"boolean","default":false,"section":"State"},"$preview":{"width":390,"height":1330}}'>
+class Component extends DCLogic {
+  // Opened from Account (gear and Settings row). Every row is the shared .li:
+  // icon, title, one-line summary of the current value, optional badge, chevron
+  // (or arrow for links that leave the app).
+  // Sign out: POST /auth/logout, then go('/signin') - Back cannot return here.
+  constructor(props) { super(props); this.state = { asking: null }; }
+  renderVals() {
+    const asking = this.state.asking ?? (this.props.signout === true || this.props.signout === 'true');
+    return { asking, askOut: () => this.setState({ asking: true }), stay: () => this.setState({ asking: false }) };
+  }
+}
+</script>
+</body>
+</html>

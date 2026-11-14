@@ -29,11 +29,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>AtomPay uses the camera to photograph your CNIC and take a selfie for identity verification.</string>
+	<string>AtomPay uses the camera to photograph your CNIC and take a selfie for identity verification. Photos go straight to verification and are not saved on your phone.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>AtomPay uses Face ID to unlock the app.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>AtomPay lets you choose a photo of your CNIC from your library for identity verification.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>AtomPay uses the microphone only while you ask Atom a question with your voice. Your phone turns speech into text; we keep the text, never the recording.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>AtomPay turns what you say to Atom into text so it can answer. Only the text is sent; the recording is never kept.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -73,6 +75,11 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<!-- Push: deliver FCM data while the app is in the background. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
 	</array>
 </dict>
 </plist>
