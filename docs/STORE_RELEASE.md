@@ -3,6 +3,30 @@
 What's done in the code, what the server must ship first, and the answers for the store
 consoles. Package / bundle id: `com.ecommerce.atompay` (prod flavour).
 
+## 0. What AtomPay is, for the purpose of these forms
+
+AtomPay is the **instalment payment option for purchases on AtomShop.pk**, which is also how
+atompay.shop describes it ("instalment partner of AtomShop.pk"). This matters because the store
+policies key off it:
+
+- No money is ever lent to the customer. The app has no wallet, no disbursement, no withdrawal and
+  no payout — `grep -rniE "disburse|withdraw|payout|wallet" lib/` returns nothing. A `Plan` is one
+  AtomShop order (`PlanOrder.id`, `reference`, `financed`, `advance`, `tenure`) against a
+  `PlanProduct`.
+- What the customer gets is goods now, paid for over a few months after a 20–60% down payment.
+
+So this is **point-of-sale instalment financing of goods, not a personal loan.** Google defines a
+personal loan as lending money to a consumer, excluding financing the purchase of a fixed asset.
+Declare **"Buy now, pay later"** in the Play Console financial features declaration, not
+"Personal loans".
+
+The app also carries a real identity-verification purpose — details go in once and the approved
+limit then carries across AtomShop orders instead of repeating verification per order. That is a
+good line for the **listing description**, but it does not replace the financial features
+declaration: 58 user-facing strings are credit servicing (`approvedLimitLabel`,
+`limitUsedPercent`, `nextDueTitle`, `instalmentLate`, `tenureLabel`), and an inaccurate
+declaration is treated far more harshly than the wrong-but-honest category.
+
 ## 1. Blockers: server work before submitting
 
 See [backend/SERVER_RELEASE_PROMPT.md](backend/SERVER_RELEASE_PROMPT.md). Verified live on 2026-10-27:
@@ -63,25 +87,37 @@ money itself):
 
 These are legal questions. Nothing in the code or on the site settles them.
 
-- [ ] **Apple 5.1.1(ix)**: financial-services apps must be submitted from an **Organization** developer
-      account in the name of the legal entity that provides the service (not an individual account).
-- [ ] **Apple 3.2.2(ix)**: personal-loan apps must clearly show all terms, including the maximum
-      equivalent **APR** and due dates. They may **not exceed 36% APR** (including fees) and may not require
-      full repayment within 60 days. Work out the equivalent APR of the instalment markup. If it's above
-      36%, Apple will reject the app.
-- [ ] **AtomPay is not SECP-registered.** Atomshop sells on instalments itself (merchant credit, no
-      lender), and the app claims no licence anywhere. **This is the biggest store risk:**
-      - For Pakistan, Google Play requires **personal-loan** apps to be run by an SECP-licensed NBFC, with
-        proof uploaded. An unlicensed app declared as a personal loan will be rejected.
-      - Declare AtomPay in the **Financial features declaration** (Policy → App content) as
-        **"Buy now, pay later / point-of-sale financing"** offered by the merchant, not as a personal loan.
-      - Get legal confirmation, in writing, that 0% markup instalments sold by Atomshop itself need no SECP
-        licence. Google may ask for it.
-      - Apple 3.2.2(ix) is written for loan apps. The KFS and the APR must still be shown, and the review
-        notes should explain the merchant-instalment model.
-- [ ] Play listing description must show: minimum and maximum repayment period, maximum APR, a
-      representative example of the total cost, and the company offering the instalments (Atomshop's
-      registered company). Apple wants the same in the app/listing.
+- [ ] **Operating entity.** atompay.shop names no company, no regulator and no licence — only
+      "instalment partner of AtomShop.pk" and a Pakistan copyright line. Play expects a financial
+      app's listing to name the entity behind the service. The App Store account is
+      **Atom Services Private Limited** (House No 240, Block D 2, Lahore, Pakistan); the site, the
+      privacy policy and the Play listing should say the same.
+- [ ] **SECP.** Google's Pakistan rules require SECP approval to offer *or facilitate* digital
+      lending, and allow one app per NBFC lender. "Or facilitate" is broad enough that the
+      BNPL classification does not automatically put AtomPay outside it. Whether an instalment
+      sale of goods is digital lending under Pakistani law is for counsel, not for this document.
+      Get that confirmation in writing — Google may ask for it.
+- [ ] **Apple 5.1.1(ix)**: financial-services apps must come from an **Organization** developer
+      account in the legal entity's name, not an individual account.
+- [ ] **Apple 3.2.1(ix)** — the open risk for iOS. The cap is written for *personal loans*, so on
+      the BNPL reading it does not apply. But atompay.shop publishes a 4%/month service charge on
+      the financed amount plus a worked example, which makes the rate computable by anyone:
+
+      financed      PKR 80,000   (100,000 product, 20% down)
+      monthly pay   PKR 16,533.33 x 6
+      total repaid  PKR 99,200   (service charge 19,200)
+      monthly IRR   6.52%  ->  nominal APR 78.2%  ->  effective APR 113.3%
+
+      The same figures come out of the live `/quote` endpoint. How Apple treats this is not
+      predictable from the guidelines; plan for the question being asked. The KFS and the APR must
+      be shown either way, and the review notes should explain the merchant-instalment model.
+      Note this is **not** a 0% markup product — any form answer saying so is wrong.
+- [ ] **Google's 36% APR cap does not apply.** It is United States–only in the Financial Services
+      policy, and this is a Pakistan-only app. (Earlier revisions of this document listed it as a
+      Play blocker. It is not one.)
+- [ ] Listing description should still state the repayment period range, the service rate, and a
+      representative worked example of the total cost. Good practice, and it matches the site.
+      Apple wants the same in the app/listing.
 - [ ] **Company details from the Atomshop admin panel** (`/app-config.business`, server prompt item 7),
       shown in rose until set:
       - company name and registered address;
