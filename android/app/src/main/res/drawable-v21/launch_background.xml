@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Pre-Android-12 launch screen: the mark on the nucleus background. -->
+<!-- Pre-Android-12 launch screen. Both the colour and the logo are
+     night-qualified, so dark mode gets the dark field and light-limbed mark. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/nucleus" />
+    <item android:drawable="@color/launch_background" />
     <item>
         <bitmap
             android:gravity="center"

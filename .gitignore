@@ -65,3 +65,5 @@ ios/config/*/GoogleService-Info.plist
 
 # Golden diff output from failed runs.
 test/goldens/failures/
+# Xcode writes here when building from the IDE or flutter build ipa.
+/ios/build/
