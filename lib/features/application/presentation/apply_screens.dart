@@ -70,7 +70,7 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     final first = flow.firstIncompleteStep();
     if (first < widget.step.clamp(1, 4)) {
       setState(() => _redirecting = true);
-      unawaited(context.replace(Routes.applicationStep(first)));
+      context.replace(Routes.applicationStep(first));
     }
   }
 

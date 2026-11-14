@@ -808,16 +808,17 @@ class _HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.text;
     final decided = a.decidedAt != null;
+    final outcome = switch (a.decision) {
+      AssessmentStatus.pending => 'under review',
+      AssessmentStatus.rejected => 'not approved',
+      AssessmentStatus.approved || AssessmentStatus.conditional => 'approved',
+      AssessmentStatus.unknown => (a.statusLabel ?? a.status).toLowerCase(),
+    };
     return AppCard(
       padding: _uPadRow,
       onTap: () => context.pushOnce(Routes.applicationDetail(a.id)),
       semanticLabel:
-          '$kind, ${switch (a.decision) {
-            AssessmentStatus.pending => 'under review',
-            AssessmentStatus.rejected => 'not approved',
-            AssessmentStatus.approved || AssessmentStatus.conditional => 'approved',
-            AssessmentStatus.unknown => (a.statusLabel ?? a.status).toLowerCase(),
-          }}. Application ${a.id}${inForce ? ', in force' : ''}.',
+          '$kind, $outcome. Application ${a.id}${inForce ? ', in force' : ''}.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

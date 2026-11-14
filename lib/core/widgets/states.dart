@@ -81,9 +81,7 @@ class _SkeletonState extends State<Skeleton>
     );
     // Without a width it fills the row, or is 0 wide where the width is
     // unbounded (as an empty Container was).
-    return widget.width == null
-        ? LimitedBox(maxWidth: 0, child: block)
-        : block;
+    return widget.width == null ? LimitedBox(maxWidth: 0, child: block) : block;
   }
 }
 
@@ -132,9 +130,8 @@ class _ShimmerScope extends InheritedWidget {
 
   final Animation<double> clock;
 
-  static Animation<double>? of(BuildContext context) => context
-      .dependOnInheritedWidgetOfExactType<_ShimmerScope>()
-      ?.clock;
+  static Animation<double>? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_ShimmerScope>()?.clock;
 
   @override
   bool updateShouldNotify(_ShimmerScope old) => old.clock != clock;

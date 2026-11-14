@@ -160,7 +160,7 @@ class AboutScreen extends ConsumerWidget {
 
 /// One About fact: an optional lead-in ([value]) in ink, then the fact
 /// from the server ([known]) in ink, or its placeholder ([tbd]) in rose
-/// while the server doesn't send it ("Stored in Pakistan [CONFIRM]").
+/// while the server doesn't send it ("Stored in Pakistan `[CONFIRM]`").
 @immutable
 class _Fact {
   const new(this.label, {this.tbd = '', this.value, this.known});

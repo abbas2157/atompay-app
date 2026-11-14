@@ -28,9 +28,9 @@ abstract class User with _$User {
 
   const User._();
 
-  KycStatus get kyc => KycStatus.parse(kycStatus);
-
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+
+  KycStatus get kyc => KycStatus.parse(kycStatus);
 
   /// "AK" for the avatar.
   String get initials {

@@ -288,9 +288,10 @@ class _Hero extends StatelessWidget {
           child: Image.asset(
             photo,
             // Decoded at screen size, not the photo's 1600 px.
-            cacheWidth: (MediaQuery.sizeOf(context).width *
-                    MediaQuery.devicePixelRatioOf(context))
-                .round(),
+            cacheWidth:
+                (MediaQuery.sizeOf(context).width *
+                        MediaQuery.devicePixelRatioOf(context))
+                    .round(),
             height: 240,
             width: double.infinity,
             fit: BoxFit.cover,
