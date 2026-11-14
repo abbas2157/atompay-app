@@ -103,6 +103,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _finish() => unawaited(ref.read(onboardedProvider.notifier).finish());
 
+  /// The header fits the mark, the wordmark and Skip up to about 130%.
+  static bool _bigText(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(10) >= 13;
+
   void _goTo(int page) {
     if (context.reduceMotion) {
       _pages.jumpToPage(page);
@@ -144,6 +148,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Row(
                     children: [
                       // One stop for a screen reader, not mark then word.
+                      // The word is decorative, so it gives way to Skip
+                      // once large text leaves no room for both.
                       Semantics(
                         container: true,
                         label: 'AtomPay',
@@ -151,13 +157,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: Row(
                             children: [
                               const AtomPayMark(size: 44),
-                              const SizedBox(width: Space.s12),
-                              Text(
-                                'AtomPay',
-                                style: t.h4.copyWith(
-                                  fontWeight: FontWeight.w700,
+                              if (!_bigText(context)) ...[
+                                const SizedBox(width: Space.s12),
+                                Text(
+                                  'AtomPay',
+                                  style: t.h4.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
