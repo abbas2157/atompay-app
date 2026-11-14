@@ -73,6 +73,7 @@ Future<Harness> start(
   WidgetTester tester, {
   FakeScenario scenario = FakeScenario.newCustomer,
   FakeCamera? camera,
+  void Function(FakeServer server)? setup,
 }) async {
   tester.view
     ..physicalSize = const Size(420, 1400)
@@ -80,6 +81,7 @@ Future<Harness> start(
   addTearDown(tester.view.reset);
   final h = await Harness.create(
     scenario: scenario,
+    setup: setup,
     token: 'token',
     overrides: [
       cameraServiceProvider.overrideWithValue(camera ?? FakeCamera()),
@@ -255,7 +257,11 @@ void main() {
     tester,
   ) async {
     final camera = FakeCamera(permission: CamPermission.notAsked);
-    final h = await start(tester, camera: camera);
+    final h = await start(
+      tester,
+      camera: camera,
+      setup: (s) => s.seedDraftProfile(),
+    );
     h.container.read(routerProvider).go(Routes.applicationStep(2));
     await settle(tester);
     await tapText(tester, 'CNIC front');

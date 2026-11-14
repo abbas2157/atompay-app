@@ -55,6 +55,14 @@ class _ApplyScreenState extends ConsumerState<ApplyScreen> {
     unawaited(_load());
   }
 
+  @override
+  void didUpdateWidget(ApplyScreen old) {
+    super.didUpdateWidget(old);
+    // The redirect only changes ?step=, so the router keeps this State and
+    // hands it the new step: the redirect has landed.
+    if (old.step != widget.step) _redirecting = false;
+  }
+
   Future<void> _load() async {
     setState(() => _loadError = null);
     final flow = ref.read(applyFlowProvider.notifier);
