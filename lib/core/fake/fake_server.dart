@@ -96,6 +96,10 @@ class FakeServer implements HttpClientAdapter {
   /// `app-config.features.push`: the server has FCM credentials.
   bool pushEnabled = false;
 
+  /// `app-config.features.in_app_orders`: "Buy with AtomPay" in the app
+  /// (docs/api/orders.md).
+  bool inAppOrders = false;
+
   // ---- state ---------------------------------------------------------------
 
   static const validPassword = 'password12';
@@ -873,6 +877,7 @@ class FakeServer implements HttpClientAdapter {
           'business': business,
           'features': {
             'push': pushEnabled,
+            'in_app_orders': inAppOrders,
             'password_reset_channels': ['email', 'whatsapp'],
             'signup_channels': ['email', 'whatsapp'],
             'voice': true,
@@ -1321,6 +1326,53 @@ class FakeServer implements HttpClientAdapter {
       return _productDetail(segs[1]);
     }
     if (segs.length == 3 &&
+        segs[0] == 'products' &&
+        segs[2] == 'kfs' &&
+        method == 'GET') {
+      final (code, product) = _canOrder(segs[1]);
+      if (code != null) return code;
+      return ok(_productKfs(product!));
+    }
+    if (segs.length == 1 && segs[0] == 'orders' && method == 'POST') {
+      if (body['accept_kfs'] != true) {
+        return invalid('accept_kfs', 'Accept the Key Fact Statement.');
+      }
+      final (code, product) = _canOrder('${body['product_id']}');
+      if (code != null) return code;
+      final (pid, _, title, price, _, _) = product!;
+      final id = 1280 + orders.length;
+      orders.add(
+        _order(
+          id: id,
+          reference: 'AS-0$id',
+          productId: pid,
+          title: title,
+          price: price,
+          firstDue: 40,
+          paidCount: 0,
+          status: 'Pending',
+        ),
+      );
+      final m = price ~/ 3;
+      return (
+        201,
+        {
+          'data': {
+            'order_id': id,
+            'order_number': 'AS-0$id',
+            'product': title,
+            'total': price,
+            'advance': 0,
+            'months': 3,
+            'instalments': [m, m, price - 2 * m],
+            'area': (profile?['area'] as Map?)?['title'],
+            'status': 'pending',
+          },
+        },
+        none,
+      );
+    }
+    if (segs.length == 3 &&
         segs[0] == 'profile' &&
         segs[1] == 'documents' &&
         method == 'GET') {
@@ -1356,6 +1408,69 @@ class FakeServer implements HttpClientAdapter {
     final p = _products.where((x) => x.$1 == id).firstOrNull;
     if (p == null) return (404, {'message': 'Not found.'}, const {});
     return (200, {'data': _productJson(p, detail: true)}, const {});
+  }
+
+  /// The 404/409 answers shared by `GET /products/{id}/kfs` and
+  /// `POST /orders` (docs/api/orders.md), or the product when it can be
+  /// ordered.
+  ((int, Object?, Map<String, List<String>>)?, _Product?) _canOrder(
+    String raw,
+  ) {
+    (int, Object?, Map<String, List<String>>) conflict(String code, String m) =>
+        (409, {'message': m, 'code': code}, const {});
+    if (!inAppOrders) {
+      return (
+        conflict('orders_unavailable', 'Order this on Atomshop.pk for now.'),
+        null,
+      );
+    }
+    final id = int.tryParse(raw);
+    final p = _products.where((x) => x.$1 == id).firstOrNull;
+    if (p == null) return ((404, {'message': 'Not found.'}, const {}), null);
+    final active = _active;
+    if (active == null) {
+      return (
+        conflict('limit_required', 'Apply for your limit to buy with AtomPay.'),
+        null,
+      );
+    }
+    if (p.$4 > (active['approved_limit'] as int) - _used) {
+      return (
+        conflict('over_limit', 'This costs more than your available limit.'),
+        null,
+      );
+    }
+    return (null, p);
+  }
+
+  /// `GET /products/{id}/kfs`: the statement before the order exists.
+  Map<String, dynamic> _productKfs(_Product p) {
+    final (_, _, title, price, _, _) = p;
+    final m = price ~/ 3;
+    return {
+      'order_id': null,
+      'order_number': null,
+      'product': title,
+      'lender': {'name': null, 'licence': null, 'address': null},
+      'amount_financed': price,
+      'advance': 0,
+      'markup_percent': 0,
+      'processing_fee_percent': 3,
+      'processing_fee': price * 3 ~/ 100,
+      'apr_percent': 18.5,
+      'months': 3,
+      'schedule_final': false,
+      'instalments': [
+        for (final (i, a) in [m, m, price - 2 * m].indexed)
+          {'number': i + 1, 'due_date': null, 'amount': a},
+      ],
+      'total_repayable': price,
+      'late_payment': null,
+      'early_settlement': null,
+      'complaints': 'In the app: Help › Complaints.',
+      'accepted_at': null,
+      'issued_at': _now.toIso8601String(),
+    };
   }
 
   Map<String, dynamic> _kfs(Map<String, dynamic> o) {
@@ -1495,3 +1610,7 @@ class RoutingAdapter implements HttpClientAdapter {
 
 String grouped(int v) =>
     v.toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => ',');
+
+/// One row of [FakeServer._products]: id, brand, title, price, category
+/// id and title.
+typedef _Product = (int, String, String, int, int, String);

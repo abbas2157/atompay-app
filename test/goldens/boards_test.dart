@@ -6,11 +6,13 @@ import 'dart:io';
 
 import 'package:atompay_mobile/core/fake/fake_server.dart';
 import 'package:atompay_mobile/core/router/app_router.dart';
+import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/utils/app_clock.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/features/account/data/device_permissions.dart';
 import 'package:atompay_mobile/features/application/application/apply_controller.dart';
 import 'package:atompay_mobile/features/application/data/camera_service.dart';
+import 'package:atompay_mobile/features/application/data/capture_doc.dart';
 import 'package:atompay_mobile/features/ask_atom/data/voice_service.dart';
 import 'package:atompay_mobile/features/home/application/home_controller.dart';
 import 'package:atompay_mobile/features/launch/presentation/onboarding_screen.dart';
@@ -168,12 +170,14 @@ Future<void> _type(WidgetTester t, List<String> values) async {
 }
 
 /// Income answers as on the canvas (the identity part comes from
-/// [FakeServer.seedDraftProfile]).
-Future<void> _fillIncome(WidgetTester t, Harness h) async {
+/// [FakeServer.seedDraftProfile]). The three photos are taken too: a later
+/// step only opens once the earlier ones are done.
+Future<void> _fillIncome(WidgetTester t, Harness h, {int step = 3}) async {
   h.container
       .read(applyFlowProvider.notifier)
       .update(
         (d) => d.copyWith(
+          photos: {for (final doc in CaptureDoc.values) doc: Uint8List(0)},
           employment: 'salaried',
           employer: 'Cubic Reach (Pvt) Ltd',
           source: 'salary',
@@ -184,7 +188,7 @@ Future<void> _fillIncome(WidgetTester t, Harness h) async {
       );
   // The text fields read the draft when the step opens: open it again.
   final router = h.container.read(routerProvider);
-  final here = router.state.uri.toString();
+  final here = Routes.applicationStep(step);
   router.go('/application?step=1');
   await settle(t);
   router.go(here);
@@ -339,7 +343,7 @@ final boards = <Board>[
     route: '/application?step=4',
     scenario: FakeScenario.newCustomer,
     before: (s) => s.seedDraftProfile(),
-    act: (t, h, _) => _fillIncome(t, h),
+    act: (t, h, _) => _fillIncome(t, h, step: 4),
   ),
   Board(
     'CityPicker',
@@ -418,9 +422,18 @@ final boards = <Board>[
     'AppReview',
     route: '/application/status',
     scenario: FakeScenario.approved,
-    before: (s) => s.assessments.first
-      ..['status'] = 'pending'
-      ..['status_label'] = 'Pending',
+    // A review is a second, pending assessment while #311 stays in force.
+    before: (s) => s.assessments.add({
+      ...s.assessments.first,
+      'id': 312,
+      'status': 'pending',
+      'status_label': 'Pending',
+      'is_usable': false,
+      'approved_limit': null,
+      'max_instalment': null,
+      'approved_tenure': null,
+      'decided_at': null,
+    }),
   ),
   Board(
     'AppRejected',
@@ -451,6 +464,37 @@ final boards = <Board>[
     'ProductPlan',
     route: '/shop/51',
     scenario: FakeScenario.approved,
+  ),
+  // Buy with AtomPay (docs/api/orders.md): on once the server takes orders.
+  Board(
+    'ProductBuy',
+    route: '/shop/51',
+    scenario: FakeScenario.approved,
+    before: (s) => s.inAppOrders = true,
+  ),
+  Board(
+    'CheckoutDelivery',
+    route: '/shop/51/buy',
+    scenario: FakeScenario.approved,
+    before: (s) => s.inAppOrders = true,
+  ),
+  Board(
+    'CheckoutReview',
+    route: '/shop/51/buy',
+    scenario: FakeScenario.approved,
+    before: (s) => s.inAppOrders = true,
+    act: (t, h, _) => _tapText(t, 'Continue'),
+  ),
+  Board(
+    'OrderPlaced',
+    route: '/shop/51/buy',
+    scenario: FakeScenario.approved,
+    before: (s) => s.inAppOrders = true,
+    act: (t, h, _) async {
+      await _tapText(t, 'Continue');
+      await _tap(t, find.textContaining('I have read the Key Fact Statement'));
+      await _tapText(t, 'Place order');
+    },
   ),
   Board(
     'Calculator',
