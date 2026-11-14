@@ -1,6 +1,7 @@
 import 'package:atompay_mobile/core/format/pk.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
+import 'package:atompay_mobile/core/widgets/brand.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/dialogs.dart';
 import 'package:atompay_mobile/core/widgets/fields.dart';
@@ -133,6 +134,25 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               onPressed: () => context.go(Routes.login),
             ),
             children: [
+              // One stop for a screen reader; the heading below names the
+              // page, so the lockup itself stays decorative.
+              Semantics(
+                container: true,
+                label: 'AtomPay',
+                child: ExcludeSemantics(
+                  child: Row(
+                    children: [
+                      const AtomPayMark(size: 52),
+                      const SizedBox(width: Space.s14),
+                      Text(
+                        'AtomPay',
+                        style: t.h4.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              AuthGap.form,
               PageIntro(
                 eyebrow: 'Create an account',
                 title: 'Start with your name',
@@ -145,6 +165,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               AuthGap.form,
               AppTextField(
                 label: 'Full name',
+                placeholder: 'Ali Raza',
                 controller: _name,
                 focusNode: _focus['name'],
                 textCapitalization: TextCapitalization.words,
@@ -159,6 +180,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               AuthGap.field,
               AppTextField(
                 label: emailOnly ? 'Email address' : 'Email or mobile number',
+                placeholder: emailOnly
+                    ? 'you@example.com'
+                    : 'you@example.com or 0300 1234567',
                 controller: _login,
                 focusNode: _focus['login'],
                 keyboardType: TextInputType.emailAddress,
@@ -174,33 +198,30 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 },
               ),
               AuthGap.field,
-              _PasswordPair(
-                password: AppTextField(
-                  label: 'Password',
-                  controller: _password,
-                  focusNode: _focus['password'],
-                  obscureText: true,
-                  keyboardType: TextInputType.visiblePassword,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.newPassword],
-                  error: status.field('password'),
-                  onChanged: (_) {
-                    form.clearField('password');
-                    setState(() {});
-                  },
-                ),
-                confirm: AppTextField(
-                  label: 'Confirm',
-                  controller: _confirm,
-                  focusNode: _focus['password_confirmation'],
-                  obscureText: true,
-                  keyboardType: TextInputType.visiblePassword,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.newPassword],
-                  error: status.field('password_confirmation'),
-                  onChanged: (_) => form.clearField('password_confirmation'),
-                  onSubmitted: (_) => _submit(),
-                ),
+              PasswordField(
+                label: 'Password',
+                placeholder: 'Create a password',
+                controller: _password,
+                focusNode: _focus['password'],
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.newPassword],
+                error: status.field('password'),
+                onChanged: (_) {
+                  form.clearField('password');
+                  setState(() {});
+                },
+              ),
+              AuthGap.field,
+              PasswordField(
+                label: 'Confirm password',
+                placeholder: 'Re-enter your password',
+                controller: _confirm,
+                focusNode: _focus['password_confirmation'],
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.newPassword],
+                error: status.field('password_confirmation'),
+                onChanged: (_) => form.clearField('password_confirmation'),
+                onSubmitted: (_) => _submit(),
               ),
               AuthGap.field,
               Text(
@@ -221,34 +242,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-/// Password and Confirm side by side (canvas `.two`, 12 apart), stacked
-/// once large text leaves no room for two columns.
-class _PasswordPair extends StatelessWidget {
-  const new({required this.password, required this.confirm});
-
-  final Widget password;
-  final Widget confirm;
-
-  @override
-  Widget build(BuildContext context) {
-    final stacked = MediaQuery.textScalerOf(context).scale(10) >= 13;
-    if (stacked) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [password, AuthGap.field, confirm],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: password),
-        const SizedBox(width: Space.s12),
-        Expanded(child: confirm),
-      ],
     );
   }
 }

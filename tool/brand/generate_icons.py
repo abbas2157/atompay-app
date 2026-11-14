@@ -18,7 +18,7 @@ Source: tool/brand/atompay_logo_source.png (transparent, mark above the
 import json
 import os
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SOURCE = os.path.join(ROOT, "tool", "brand", "atompay_logo_source.png")
@@ -36,6 +36,79 @@ IOS_MARK = 0.62
 # around the mark. The in-app splash (SplashScreen) draws the same disc.
 DISC_DP = 160
 DISC_MARK_DP = 100
+
+# iOS launch screen. The storyboard centres this image on `paper`, and the
+# Flutter SplashScreen draws the same lockup, so the hand-off doesn't jump:
+# a rounded white tile with the mark, then ATOMPAY / PAY IN STEPS.
+FONTS = os.path.join(ROOT, "assets", "fonts")
+INK = (20, 21, 26, 255)  # tokens.dart `ink`
+MUTED = (108, 108, 116, 255)  # tokens.dart `muted`
+LAUNCH_TILE_DP = 120
+LAUNCH_TILE_MARK_DP = 84
+LAUNCH_GAP_DP = 20  # tile to wordmark
+LAUNCH_SUB_GAP_DP = 7  # wordmark to tagline
+# `t.h1` is 30/w800 and `t.xs` 11/w700; SplashScreen overrides the tracking.
+LAUNCH_WORD = ("ATOMPAY", "PlusJakartaSans-ExtraBold.ttf", 30, -0.8, INK)
+LAUNCH_SUB = ("PAY IN STEPS", "PlusJakartaSans-Bold.ttf", 11, 3.4, MUTED)
+
+
+def tracked(draw, xy, text, font, spacing, fill):
+    """PIL has no letter-spacing, so step through the glyphs."""
+    x, y = xy
+    for ch in text:
+        draw.text((x, y), ch, font=font, fill=fill)
+        x += draw.textlength(ch, font=font) + spacing
+
+
+def tracked_width(draw, text, font, spacing):
+    if not text:
+        return 0.0
+    return sum(draw.textlength(c, font=font) for c in text) + spacing * (len(text) - 1)
+
+
+def launch_lockup(scale: int) -> Image.Image:
+    """The iOS launch image at `scale`x, on a transparent canvas."""
+    tile_px = LAUNCH_TILE_DP * scale
+    pad = 24 * scale  # room for the tile's shadow
+    probe = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+
+    rows = []
+    for text, file, size, spacing, fill in (LAUNCH_WORD, LAUNCH_SUB):
+        font = ImageFont.truetype(os.path.join(FONTS, file), size * scale)
+        width = tracked_width(probe, text, font, spacing * scale)
+        ascent, descent = font.getmetrics()
+        rows.append((text, font, spacing * scale, fill, width, ascent + descent))
+
+    width = round(max([tile_px] + [r[4] for r in rows]) + pad * 2)
+    height = round(
+        tile_px
+        + LAUNCH_GAP_DP * scale
+        + rows[0][5]
+        + LAUNCH_SUB_GAP_DP * scale
+        + rows[1][5]
+        + pad * 2
+    )
+    canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+
+    # The splash's `boxShadow`: 0.08 ink, blur 40, offset (0, 16).
+    tile = shape(tile_px, "square")
+    place(tile, load_mark(), LAUNCH_TILE_MARK_DP * scale)
+    tile_x = (width - tile_px) // 2
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    shadow.paste(
+        Image.new("RGBA", (tile_px, tile_px), INK[:3] + (20,)),
+        (tile_x, pad + 8 * scale),
+        tile.getchannel("A"),
+    )
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(10 * scale)))
+    canvas.alpha_composite(tile, (tile_x, pad))
+
+    draw = ImageDraw.Draw(canvas)
+    y = pad + tile_px + LAUNCH_GAP_DP * scale
+    for text, font, spacing, fill, text_w, line_h in rows:
+        tracked(draw, ((width - text_w) / 2, y), text, font, spacing, fill)
+        y += line_h + LAUNCH_SUB_GAP_DP * scale
+    return canvas
 
 
 def load_mark() -> Image.Image:
@@ -135,12 +208,10 @@ def main() -> None:
     place(clear, mark, 1024)
     save(clear, os.path.join(ROOT, "assets", "images", "atompay_mark_clear.png"))
 
-    # iOS launch image: the disc at 1x, 2x and 3x.
+    # iOS launch image: the full lockup at 1x, 2x and 3x.
     launch = os.path.join(IOS, "LaunchImage.imageset")
     for scale, suffix in [(1, ""), (2, "@2x"), (3, "@3x")]:
-        disc = shape(DISC_DP * scale, "circle")
-        place(disc, mark, DISC_MARK_DP * scale)
-        save(disc, os.path.join(launch, f"LaunchImage{suffix}.png"))
+        save(launch_lockup(scale), os.path.join(launch, f"LaunchImage{suffix}.png"))
 
 
 if __name__ == "__main__":
