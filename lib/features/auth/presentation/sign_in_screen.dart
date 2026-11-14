@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:atompay_mobile/core/router/navigation.dart';
 import 'package:atompay_mobile/core/router/routes.dart';
 import 'package:atompay_mobile/core/theme/tokens.dart';
+import 'package:atompay_mobile/core/widgets/brand.dart';
 import 'package:atompay_mobile/core/widgets/buttons.dart';
 import 'package:atompay_mobile/core/widgets/dialogs.dart';
 import 'package:atompay_mobile/core/widgets/fields.dart';
@@ -89,6 +90,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Widget build(BuildContext context) {
     final status = ref.watch(signInFormProvider);
     final offline = ref.watch(isOfflineProvider);
+    final t = context.text;
     return FormExitGuard(
       dirty: false,
       busy: status.busy,
@@ -107,6 +109,24 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               onPressed: () => context.go(Routes.register),
             ),
             children: [
+              // One stop for a screen reader; the heading names the page.
+              Semantics(
+                container: true,
+                label: 'AtomPay',
+                child: ExcludeSemantics(
+                  child: Row(
+                    children: [
+                      const AtomPayMark(size: 52),
+                      const SizedBox(width: Space.s14),
+                      Text(
+                        'AtomPay',
+                        style: t.h4.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              AuthGap.form,
               const PageIntro(
                 eyebrow: 'Welcome back',
                 title: 'Sign in with your AtomShop account',
@@ -117,6 +137,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               AuthGap.form,
               AppTextField(
                 label: 'Email or mobile number',
+                placeholder: 'you@example.com or 0300 1234567',
                 controller: _login,
                 focusNode: _loginFocus,
                 keyboardType: TextInputType.emailAddress,
@@ -135,6 +156,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               AuthGap.field,
               PasswordField(
                 label: 'Password',
+                placeholder: 'Your password',
                 controller: _password,
                 focusNode: _passwordFocus,
                 textInputAction: TextInputAction.done,

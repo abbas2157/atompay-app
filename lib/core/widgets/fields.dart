@@ -152,6 +152,7 @@ class PasswordField extends StatefulWidget {
     this.focusNode,
     this.error,
     this.hint,
+    this.placeholder,
     this.textInputAction,
     this.autofillHints = const [AutofillHints.password],
     this.onChanged,
@@ -164,6 +165,9 @@ class PasswordField extends StatefulWidget {
   final FocusNode? focusNode;
   final String? error;
   final String? hint;
+
+  /// Shown inside the empty field.
+  final String? placeholder;
   final TextInputAction? textInputAction;
   final Iterable<String> autofillHints;
   final ValueChanged<String>? onChanged;
@@ -183,6 +187,7 @@ class _PasswordFieldState extends State<PasswordField> {
     focusNode: widget.focusNode,
     error: widget.error,
     hint: widget.hint,
+    placeholder: widget.placeholder,
     obscureText: !_shown,
     keyboardType: TextInputType.visiblePassword,
     textInputAction: widget.textInputAction,

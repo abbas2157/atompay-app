@@ -118,6 +118,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final t = context.text;
     final count = onboardingSlides.length;
     return PopScope(
       // Back steps through the slides before leaving the app.
@@ -142,7 +143,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   constraints: const BoxConstraints(minHeight: 48),
                   child: Row(
                     children: [
-                      const AtomPayMark(size: 32),
+                      // One stop for a screen reader, not mark then word.
+                      Semantics(
+                        container: true,
+                        label: 'AtomPay',
+                        child: ExcludeSemantics(
+                          child: Row(
+                            children: [
+                              const AtomPayMark(size: 44),
+                              const SizedBox(width: Space.s12),
+                              Text(
+                                'AtomPay',
+                                style: t.h4.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                       const Spacer(),
                       if (!_last) TextLink('Skip', onPressed: _finish),
                     ],
